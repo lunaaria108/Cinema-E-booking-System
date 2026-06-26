@@ -1,0 +1,73 @@
+* {
+  margin: 0;
+  Padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0f0f0f;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* navbarrr */
+nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid #333;
+}
+
+nav h1 { color:#e50914; }
+
+nav ul { display: flex; list-style: none; gap: 2rem; }
+
+.hero {
+  height: 40vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), #333;
+  text-align: center;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  padding: 3%;
+}
+
+
+.carousel-wrapper { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  perspective: 1000px; 
+  padding: 50px 0;
+}
+
+.carousel-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+}
+
+movie-card {
+  position: absolute; 
+  width: 250px;
+  height: 350px;
+  background: #1c1c1c;
+  border-radius: 12px;
+  border: 1px solid #e50914;
+  display: flex;
+  align-items: center;
+  justify-content: center;.
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+}
+
+.nav-btn { background: #e50914; color: white; border: none; padding: 10px; cursor: pointer; }
