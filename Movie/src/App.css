@@ -1,73 +1,99 @@
-* {
-  margin: 0;
-  Padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  background-color: #0f0f0f;
-  color: #e0e0e0;
-  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  background: linear-gradient(135deg, #0b0b0b 0%, #171717 100%);
+  color: #f5f1e8;
+  font-family: Inter, sans-serif;
 }
 
-/* navbarrr */
 nav {
   display: flex;
   justify-content: space-between;
-  padding: 1.5rem 3rem;
-  background: rgba(0, 0, 0, 0.8);
-  border-bottom: 1px solid #333;
+  align-items: center;
+  padding: 1.2rem 2rem;
+  background: rgba(0, 0, 0, 0.9);
+  border-bottom: 1px solid #234f33;
 }
 
-nav h1 { color:#e50914; }
+nav h1 {
+  margin: 0;
+  letter-spacing: 0.2rem;
+  color: #f0c96b;
+}
 
-nav ul { display: flex; list-style: none; gap: 2rem; }
+.toggle-bar {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.toggle-bar button {
+  border: 1px solid #3b5d43;
+  background: transparent;
+  color: #f5f1e8;
+  padding: 0.7rem 1rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-bar button.active {
+  background: #0f4d2a;
+  color: #f0c96b;
+  border-color: #f0c96b;
+}
 
 .hero {
-  height: 40vh;
+  min-height: 45vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+.featured-card {
+  display: flex;
+  gap: 18px;
+  align-items: stretch;
+  cursor: pointer;
+  background: rgba(20, 20, 20, 0.95);
+  padding: 20px;
+  border-radius: 18px;
+  border: 1px solid #4c6d51;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  color: #f5f1e8;
+  max-width: 900px;
+  width: min(100%, 900px);
+}
+
+.hero-poster {
+  width: 220px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
+.featured-card .details {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), #333;
+  gap: 10px;
+}
+
+.featured-card h2 {
+  margin: 0;
+  color: #f0c96b;
+}
+
+.featured-card .rating {
+  margin: 0;
+  color: #ffd76b;
+  font-weight: 700;
+}
+
+.movie-list {
+  padding: 0 1rem 2rem;
+}
+
+.movie-list h2 {
   text-align: center;
+  color: #f0c96b;
+  margin-bottom: 0.5rem;
 }
-
-.grid {
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  padding: 3%;
-}
-
-
-.carousel-wrapper { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center;
-  perspective: 1000px; 
-  padding: 50px 0;
-}
-
-.carousel-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-movie-card {
-  position: absolute; 
-  width: 250px;
-  height: 350px;
-  background: #1c1c1c;
-  border-radius: 12px;
-  border: 1px solid #e50914;
-  display: flex;
-  align-items: center;
-  justify-content: center;.
-  box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
-}
-
-.nav-btn { background: #e50914; color: white; border: none; padding: 10px; cursor: pointer; }
