@@ -1,4 +1,5 @@
 import './MovieModal.css';
+import BookingPage from './BookingPage';
 
 function MovieModal({ movie, onClose }) {
   return (

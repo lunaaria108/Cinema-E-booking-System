@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './App.css';
 import MovieCarousel from './components/MovieCarousel';
 import MovieModal from './components/MovieModal';
+import NavBar from './components/NavBar';
+import BookingPage from './components/BookingPage';
 
 function App() {
   const [view, setView] = useState('featured');
@@ -47,13 +49,14 @@ function App() {
 
   return (
     <div className="app-container">
-      <nav>
-        <h1>CINEMA-E</h1>
+      <NavBar />
+
+      <div className="flex justify-end items-center p-4">
         <div className="toggle-bar">
           <button onClick={() => setView('featured')} className={view === 'featured' ? 'active' : ''}>Featured</button>
           <button onClick={() => setView('comingSoon')} className={view === 'comingSoon' ? 'active' : ''}>Coming Soon</button>
         </div>
-      </nav>
+      </div>
 
       <main>
         <section className="hero">
