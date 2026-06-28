@@ -25,4 +25,11 @@ public class MovieService {
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
+    public List<Movie> searchMovies(String movieTitle) {
+    return movieRepository.findByMovieTitleContainingIgnoreCase(movieTitle);
+    }
+
+    public List<Movie> filterByGenre(String genreName) {
+    return movieRepository.findByGenreGenreNameIgnoreCase(genreName);
+    }
 }
