@@ -1,7 +1,11 @@
 import './MovieModal.css';
-import BookingPage from './BookingPage';
+import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
 
 function MovieModal({ movie, onClose }) {
+  const navigate = useNavigate();
+  const [selectedShowtime, setSelectedShowtime] = useState(null);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -23,12 +27,16 @@ function MovieModal({ movie, onClose }) {
           <h3>Show Times</h3>
           <div className="showtimes">
             {movie.showtimes.map((time) => (
-              <button key={time} className="showtime-btn">{time}</button>
+              <button key={time} onClick={() => setSelectedShowtime(time)} className={`showtime-btn ${selectedShowtime === time ? 'selected' : ''}`}>
+                {time}
+              </button>
             ))}
           </div>
         </div>
 
-        <button className="book-btn">Book Now</button>
+        <button className="book-btn" onClick={() => !selectedShowtime ? alert('Please select a showtime before booking.') : navigate('/booking', { state: { movie, selectedShowtime } })}>
+          Book Now
+        </button>
       </div>
     </div>
   );

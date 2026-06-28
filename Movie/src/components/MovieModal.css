@@ -81,6 +81,16 @@
   cursor: pointer;
 }
 
+.showtime-btn:hover {
+  background: #003D1A;
+  color: #D4AF37;
+}
+
+.showtime-btn.selected {
+  background: #003D1A;
+  color: #D4AF37;
+}
+
 .book-btn {
   background: #003D1A;
   color: #D4AF37;
