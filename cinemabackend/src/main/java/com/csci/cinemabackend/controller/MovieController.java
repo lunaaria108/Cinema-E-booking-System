@@ -41,4 +41,15 @@ public class MovieController {
     public Movie getMovieById(@PathVariable Integer id) {
         return movieRepository.findById(id).orElseThrow(() -> new RuntimeException("Movie not found"));
     }
+    // Search movies by title
+    @GetMapping("/search")
+    public List<Movie> searchMovies(@RequestParam String title) {
+        return movieRepository.findByMovieTitleContainingIgnoreCase(title);
+    }
+
+    // Filter movies by genre
+    @GetMapping("/filter")
+    public List<Movie> filterMovies(@RequestParam String genre) {
+        return movieRepository.findByGenreGenreNameIgnoreCase(genre);
+    }
 }
