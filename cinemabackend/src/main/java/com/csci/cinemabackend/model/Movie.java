@@ -6,6 +6,9 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "movie")
+/**
+ * Represents a movie entity in the cinema booking system.
+ */
 public class Movie {
 
     @Id

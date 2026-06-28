@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "genre")
+/**
+ * Represents a genre entity in the cinema booking system.
+ */
 public class Genre {
 
     @Id

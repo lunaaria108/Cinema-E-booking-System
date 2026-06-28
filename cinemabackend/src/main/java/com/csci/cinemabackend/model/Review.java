@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
+/**
+ * Represents a review entity in the cinema booking system.
+ */
 public class Review {
 
     @Id
