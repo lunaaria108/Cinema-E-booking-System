@@ -1,5 +1,3 @@
-
-
 INSERT INTO Genre (genre_name)
 VALUES
 ('Action'),
@@ -10,111 +8,101 @@ VALUES
 ('Animation'),
 ('Adventure');
 
-
 INSERT INTO Movie
 (movie_title, genre_id, director, producer, cast_members, synopsis,
  trailer_image, trailer_video, mpaa_rating, release_date, status)
 VALUES
-
 (
- 'Interstellar',
- 5,
- 'Christopher Nolan',
- 'Emma Thomas',
- 'Matthew McConaughey, Anne Hathaway, Jessica Chastain',
- 'A group of astronauts travels through a wormhole to search for a new home for humanity.',
- 'https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_.jpg',
- 'http://youtube.com/watch?v=Lm8p5rlrSkY',
- 'PG-13',
- '2014-11-07',
- 'Ended'
-),
-
-(
- 'The Dark Knight',
+ 'Superman',
  1,
- 'Christopher Nolan',
- 'Emma Thomas',
- 'Christian Bale, Heath Ledger, Michael Caine',
- 'Batman faces the Joker, a criminal mastermind who pushes Gotham into chaos.',
- 'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_FMjpg_UX1000_.jpg',
- 'https://www.youtube.com/watch?v=oz7wymKGzOU',
+ 'James Gunn',
+ 'Peter Safran',
+ 'David Corenswet, Rachel Brosnahan, Nicholas Hoult',
+ 'Superman balances his Kryptonian heritage with his human upbringing while facing new threats.',
+ 'https://upload.wikimedia.org/wikipedia/en/3/32/Superman_%282025_film%29_poster.jpg',
+ 'https://www.youtube.com/watch?v=uhUht6vAsMY',
  'PG-13',
- '2008-07-18',
- 'Ended'
+ '2025-07-11',
+ 'Currently Running'
 ),
-
 (
- 'Inception',
- 5,
- 'Christopher Nolan',
- 'Emma Thomas',
- 'Leonardo DiCaprio, Joseph Gordon-Levitt, Tom Hardy',
- 'A thief who steals secrets through dreams is given a chance to erase his past.',
- 'https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg',
- 'https://www.youtube.com/watch?v=YoHD9XEInc0',
- 'PG-13',
- '2010-07-16',
- 'Ended'
-),
-
-
-(
- 'Toy Story',
- 6,
- 'John Lasseter',
- 'Ralph Guggenheim',
- 'Tom Hanks, Tim Allen, Annie Potts',
- 'A group of toys come to life when humans are not around.',
- 'https://upload.wikimedia.org/wikipedia/en/1/13/Toy_Story.jpg',
- 'https://www.youtube.com/watch?v=v-PjgYDrg70',
- 'G',
- '1995-11-22',
- 'Ended'
-),
-
-(
- 'Spider-Man: No Way Home',
+ 'Jurassic World Rebirth',
  1,
- 'Jon Watts',
+ 'Gareth Edwards',
+ 'Frank Marshall',
+ 'Scarlett Johansson, Mahershala Ali, Jonathan Bailey',
+ 'A new mission brings humans face to face with dangerous dinosaurs in a changed world.',
+ 'https://upload.wikimedia.org/wikipedia/en/a/a5/Jurassic_World_Rebirth_poster.jpg',
+ 'https://www.youtube.com/watch?v=jan5CFWs9ic',
+ 'PG-13',
+ '2025-07-02',
+ 'Currently Running'
+),
+(
+ 'Avengers: Doomsday',
+ 1,
+ 'Anthony Russo, Joe Russo',
  'Kevin Feige',
- 'Tom Holland, Zendaya, Benedict Cumberbatch',
- 'Spider-Man faces villains from across the multiverse after his identity is revealed.',
+ 'Robert Downey Jr., Chris Hemsworth, Anthony Mackie',
+ 'The Avengers face a powerful new threat that could change the multiverse forever.',
+ 'https://upload.wikimedia.org/wikipedia/en/9/9f/Avengers_Doomsday_logo.jpg',
+ 'https://www.youtube.com/watch?v=TcMBFSGVi1c',
+ 'PG-13',
+ '2026-12-18',
+ 'Coming Soon'
+),
+(
+ 'Spider-Man: Brand New Day',
+ 1,
+ 'Destin Daniel Cretton',
+ 'Kevin Feige',
+ 'Tom Holland, Zendaya',
+ 'Peter Parker begins a new chapter as Spider-Man while facing new dangers.',
  'https://upload.wikimedia.org/wikipedia/en/0/00/Spider-Man_No_Way_Home_poster.jpg',
  'https://www.youtube.com/watch?v=JfVOs4VSpmA',
  'PG-13',
- '2021-12-17',
- 'Ended'
+ '2026-07-31',
+ 'Coming Soon'
 ),
-
 (
- 'The Super Mario Bros. Movie',
+ 'Shrek 5',
  6,
- 'Aaron Horvath',
- 'Chris Meledandri',
- 'Chris Pratt, Anya Taylor-Joy, Jack Black',
- 'Two brothers are transported to the Mushroom Kingdom and must save it.',
- 'https://upload.wikimedia.org/wikipedia/en/4/44/The_Super_Mario_Bros._Movie_poster.jpg',
- 'https://www.youtube.com/watch?v=TnGl01FkMMo',
+ 'Walt Dohrn',
+ 'Gina Shay',
+ 'Mike Myers, Eddie Murphy, Cameron Diaz',
+ 'Shrek, Fiona, and Donkey return for a new animated adventure.',
+ 'https://upload.wikimedia.org/wikipedia/en/3/39/Shrek.jpg',
+ 'https://www.youtube.com/watch?v=CwXOrWvPBPk',
  'PG',
- '2023-04-05',
- 'Ended'
+ '2026-12-23',
+ 'Coming Soon'
 ),
-
 (
- 'A Quiet Place',
- 4,
- 'John Krasinski',
- 'Michael Bay',
- 'Emily Blunt, John Krasinski',
- 'A family must survive while avoiding creatures that hunt by sound.',
- 'https://upload.wikimedia.org/wikipedia/en/a/a0/A_Quiet_Place_film_poster.png',
- 'https://www.youtube.com/watch?v=WR7cc5t7tv8',
- 'PG-13',
- '2018-04-06',
- 'Ended'
+ 'Frozen III',
+ 6,
+ 'Jennifer Lee',
+ 'Peter Del Vecho',
+ 'Kristen Bell, Idina Menzel, Josh Gad',
+ 'Anna, Elsa, Olaf, and their friends return for a new adventure.',
+ 'https://upload.wikimedia.org/wikipedia/en/0/05/Frozen_%282013_film%29_poster.jpg',
+ 'https://www.youtube.com/watch?v=TbQm5doF_Uc',
+ 'PG',
+ '2027-11-24',
+ 'Coming Soon'
 ),
-
+(
+ 'Zootopia 2',
+ 6,
+ 'Jared Bush',
+ 'Yvett Merino',
+ 'Ginnifer Goodwin, Jason Bateman',
+ 'Judy Hopps and Nick Wilde return for a new case in Zootopia.',
+ 'https://upload.wikimedia.org/wikipedia/en/e/ea/Zootopia.jpg',
+ 'https://www.youtube.com/watch?v=jWM0ct-OLsM',
+ 'PG',
+ '2025-11-26',
+ 'Coming Soon'
+),
 (
  'Dune: Part Two',
  5,
@@ -128,7 +116,6 @@ VALUES
  '2024-03-01',
  'Currently Running'
 ),
-
 (
  'Deadpool & Wolverine',
  1,
@@ -142,7 +129,6 @@ VALUES
  '2024-07-26',
  'Currently Running'
 ),
-
 (
  'Inside Out 2',
  6,
@@ -157,35 +143,44 @@ VALUES
  'Currently Running'
 );
 
-
-
-
 INSERT INTO Review
 (movie_id, reviewer_name, rating, review_text)
 VALUES
-
-(1, 'James', 5.0, 'One of the best science fiction movies ever made.'),
-(2, 'Alex', 4.8, 'Great performances and an incredible villain.'),
-(3, 'Maria', 4.7, 'A creative and complex story.'),
-(4, 'David', 4.5, 'A classic animated movie.'),
-(7, 'Chris', 4.3, 'Very suspenseful and well made.'),
-(8, 'Emily', 4.9, 'Amazing visuals and world building.');
-
-
+(1, 'James', 4.7, 'Great action and a strong superhero story.'),
+(2, 'Alex', 4.5, 'Exciting dinosaur action and visuals.'),
+(8, 'Emily', 4.9, 'Amazing visuals and world building.'),
+(9, 'Chris', 4.6, 'Funny, violent, and entertaining.'),
+(10, 'Maria', 4.8, 'A great emotional sequel.');
 
 INSERT INTO Showtime
 (movie_id, show_date, show_time, hall_number)
 VALUES
+(1, '2026-07-01', '14:00:00', 1),
+(1, '2026-07-01', '19:30:00', 2),
 
-(8, '2026-07-01', '14:00:00', 1),
-(8, '2026-07-01', '19:30:00', 2),
+(2, '2026-07-01', '16:00:00', 3),
+(2, '2026-07-02', '20:15:00', 1),
 
-(9, '2026-07-01', '16:00:00', 3),
-(9, '2026-07-02', '20:15:00', 1),
+(3, '2026-07-01', '15:30:00', 2),
+(3, '2026-07-03', '18:45:00', 3),
 
-(10, '2026-07-01', '15:30:00', 2),
-(10, '2026-07-03', '18:45:00', 3),
+(4, '2026-07-02', '13:00:00', 1),
+(4, '2026-07-02', '17:30:00', 2),
 
-(2, '2026-07-02', '21:00:00', 1),
+(5, '2026-07-03', '18:00:00', 3),
+(5, '2026-07-03', '21:00:00', 1),
 
-(1, '2026-07-03', '19:00:00', 2);
+(6, '2026-07-04', '14:00:00', 1),
+(6, '2026-07-04', '19:30:00', 2),
+
+(7, '2026-07-05', '16:00:00', 3),
+(7, '2026-07-05', '20:15:00', 1),
+
+(8, '2026-07-06', '15:30:00', 2),
+(8, '2026-07-06', '18:45:00', 3),
+
+(9, '2026-07-07', '13:00:00', 1),
+(9, '2026-07-07', '17:30:00', 2),
+
+(10, '2026-07-08', '18:00:00', 3),
+(10, '2026-07-08', '21:00:00', 1);
