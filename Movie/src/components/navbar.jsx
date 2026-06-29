@@ -18,6 +18,11 @@ export default function NavBar({booking=false, onSearch = () => {}}) {
                             Browse Movies
                         </button>
                     )}
+                    {!booking && (
+                        <button className="text-[#D8CC88] hover:underline" onClick={() => navigate("/")}>
+                            Filter
+                        </button>
+                    )}
                     <SearchBar onSearch={onSearch} />
                 </div>
             </div>
