@@ -3,6 +3,7 @@ import './HomePage.css';
 import MovieCarousel from './MovieCarousel';
 import MovieModal from './MovieModal';
 import NavBar from './NavBar';
+import FilterModal from './FilterModal';
 
 function HomePage() {
   const [view, setView] = useState('featured');
@@ -10,6 +11,8 @@ function HomePage() {
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [comingSoonMovies, setComingSoonMovies] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [isFiltered, setIsFiltered] = useState(false);
 
   const handleSearch = (searchTerm) => {
     if (searchTerm.trim() === '') {
@@ -37,6 +40,42 @@ function HomePage() {
       .catch((error) => console.error('Error fetching search results:', error));
   };
 
+  const handleFilter = (genre) => {
+  fetch(`http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(genre)}`)
+    .then((response) => response.json())
+    .then((data) => {
+      setFeaturedMovies(data);
+      setComingSoonMovies([]);
+      setIsSearching(true);
+      setShowFilterModal(false);
+      setIsFiltered(true);
+    })
+    .catch((error) => console.error("Error filtering movies:", error));
+
+    setIsSearching(true);
+
+    fetch(`http://localhost:8080/api/movies/search?title=${encodeURIComponent(searchTerm)}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setFeaturedMovies(data);
+        setComingSoonMovies(data);
+      })
+      .catch((error) => console.error('Error fetching search results:', error));
+  };
+
+  const handleBrowseMovies = () => {
+    setIsFiltered(false);
+    setIsSearching(false);
+
+    fetch("http://localhost:8080/api/movies/current")
+        .then(res => res.json())
+        .then(data => setFeaturedMovies(data));
+
+    fetch("http://localhost:8080/api/movies/coming-soon")
+        .then(res => res.json())
+        .then(data => setComingSoonMovies(data));
+  };
+
   useEffect(() => {
     fetch('http://localhost:8080/api/movies/current')
       .then((response) => response.json())
@@ -55,7 +94,7 @@ function HomePage() {
   if (!currentHero) {
     return (
       <div className="app-container">
-        <NavBar onSearch={handleSearch} />
+        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={true} onBrowseMovies={handleBrowseMovies}/>
         <p className="text-white p-10">Loading movies...</p>
       </div>
     );
@@ -63,7 +102,7 @@ function HomePage() {
 
   return (
     <div className="app-container">
-      <NavBar onSearch={handleSearch} />
+      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies}/>
 
     {!isSearching && (
       <div className="flex justify-end items-center p-4">
@@ -99,6 +138,7 @@ function HomePage() {
       </main>
 
       {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
+      {showFilterModal && <FilterModal onClose={() => setShowFilterModal(false)} onApplyFilter={handleFilter} />}
     </div>
   );
 }
