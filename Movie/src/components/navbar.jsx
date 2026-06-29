@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.jpg";
 import SearchBar from "./SearchBar";
 
-export default function NavBar({booking=false}) {
+export default function NavBar({booking=false, onSearch = () => {}}) {
     const navigate = useNavigate();
     
     return(
@@ -18,7 +18,7 @@ export default function NavBar({booking=false}) {
                             Browse Movies
                         </button>
                     )}
-                    <SearchBar />
+                    <SearchBar onSearch={onSearch} />
                 </div>
             </div>
         </div>       

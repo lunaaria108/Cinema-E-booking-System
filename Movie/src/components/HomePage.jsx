@@ -9,6 +9,33 @@ function HomePage() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [comingSoonMovies, setComingSoonMovies] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearch = (searchTerm) => {
+    if (searchTerm.trim() === '') {
+      setIsSearching(false);
+
+      fetch('http://localhost:8080/api/movies/current')
+        .then((response) => response.json())
+        .then((data) => setFeaturedMovies(data));
+
+      fetch("http://localhost:8080/api/movies/coming-soon")
+        .then((response) => response.json())
+        .then((data) => setComingSoonMovies(data));
+      
+        return;  
+    }
+
+    setIsSearching(true);
+
+    fetch(`http://localhost:8080/api/movies/search?title=${encodeURIComponent(searchTerm)}`)
+      .then((response) => response.json())
+      .then((data) => {
+        setFeaturedMovies(data);
+        setComingSoonMovies(data);
+      })
+      .catch((error) => console.error('Error fetching search results:', error));
+  };
 
   useEffect(() => {
     fetch('http://localhost:8080/api/movies/current')
@@ -28,7 +55,7 @@ function HomePage() {
   if (!currentHero) {
     return (
       <div className="app-container">
-        <NavBar />
+        <NavBar onSearch={handleSearch} />
         <p className="text-white p-10">Loading movies...</p>
       </div>
     );
@@ -36,14 +63,16 @@ function HomePage() {
 
   return (
     <div className="app-container">
-      <NavBar />
+      <NavBar onSearch={handleSearch} />
 
+    {!isSearching && (
       <div className="flex justify-end items-center p-4">
         <div className="toggle-bar">
           <button onClick={() => setView('featured')} className={view === 'featured' ? 'active' : ''}>Featured</button>
           <button onClick={() => setView('comingSoon')} className={view === 'comingSoon' ? 'active' : ''}>Coming Soon</button>
         </div>
       </div>
+    )}
 
       <main>
         <section className="hero">
@@ -61,10 +90,12 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="movie-list">
-          <h2>Now Showing</h2>
-          <MovieCarousel movies={carouselMovies} onMovieClick={setSelectedMovie} />
-        </section>
+        {!isSearching && (
+          <section className="movie-list">
+            <h2>Now Showing</h2>
+            <MovieCarousel movies={carouselMovies} onMovieClick={setSelectedMovie} />
+          </section>
+        )}
       </main>
 
       {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
