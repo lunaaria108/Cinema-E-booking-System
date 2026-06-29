@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.jpg";
 import SearchBar from "./SearchBar";
 
-export default function NavBar({booking=false, onSearch = () => {}}) {
+export default function NavBar({booking=false, onSearch = () => {}, onFilter = () => {}, isFiltered = false, onBrowseMovies = () => {}}) {
     const navigate = useNavigate();
     
     return(
@@ -19,8 +19,13 @@ export default function NavBar({booking=false, onSearch = () => {}}) {
                         </button>
                     )}
                     {!booking && (
-                        <button className="text-[#D8CC88] hover:underline" onClick={() => navigate("/")}>
+                       <button className="text-[#D8CC88] hover:underline" onClick={onFilter}>
                             Filter
+                        </button>
+                    )}
+                    {isFiltered && (
+                        <button className="text-[#D8CC88] hover:underline" onClick={onBrowseMovies}>
+                            Browse Movies
                         </button>
                     )}
                     <SearchBar onSearch={onSearch} />
