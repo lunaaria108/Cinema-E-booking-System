@@ -13,7 +13,7 @@ INSERT INTO Movie
  trailer_image, trailer_video, mpaa_rating, release_date, status)
 VALUES
 (
- 'Toy Story 5',
+ 'Toy Story FIVE',
  6,
  'Andrew Stanton',
  'Pixar Animation Studios',
