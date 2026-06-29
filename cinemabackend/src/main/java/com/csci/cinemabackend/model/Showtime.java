@@ -26,4 +26,20 @@ public class Showtime {
     private LocalTime showTime;
 
     private Integer hallNumber;
+
+    public Integer getShowtimeId() {
+        return showtimeId;
+    }
+
+    public LocalDate getShowDate() {
+        return showDate;
+    }
+
+    public LocalTime getShowTime() {
+        return showTime;
+    }
+
+    public Integer getHallNumber() {
+        return hallNumber;
+    }
 }
