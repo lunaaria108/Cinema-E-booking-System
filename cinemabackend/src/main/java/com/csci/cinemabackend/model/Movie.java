@@ -45,6 +45,58 @@ public class Movie {
     @OneToMany(mappedBy = "movie")
     private List<Showtime> showtimes;
 
+    public Integer getMovieId() {
+        return movieId;
+    }
+
+    public String getMovieTitle() {
+        return movieTitle;
+    }
+
+    public Genre getGenre() {
+        return genre;
+    }
+
+    public String getDirector() {
+        return director;
+    }
+
+    public String getProducer() {
+        return producer;
+    }
+
+    public String getCastMembers() {
+        return castMembers;
+    }
+
+    public String getSynopsis() {
+        return synopsis;
+    }
+
+    public String getTrailerImage() {
+        return trailerImage;
+    }
+
+    public String getTrailerVideo() {
+        return trailerVideo;
+    }
+
+    public String getMpaaRating() {
+        return mpaaRating;
+    }
+
+    public LocalDate getReleaseDate() {
+        return releaseDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public List<Showtime> getShowtimes() {
+        return showtimes;
+    }
+
     @Override
     public String toString() {
         return "Movie{" +
