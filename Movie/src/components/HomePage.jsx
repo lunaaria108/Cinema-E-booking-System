@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './HomePage.css';
 import MovieCarousel from './MovieCarousel';
 import MovieModal from './MovieModal';
@@ -7,44 +7,32 @@ import NavBar from './NavBar';
 function HomePage() {
   const [view, setView] = useState('featured');
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [featuredMovies, setFeaturedMovies] = useState([]);
+  const [comingSoonMovies, setComingSoonMovies] = useState([]);
 
-  // API-ready structure: these can be swapped for fetched data later.
-  const featuredMovies = [
-    {
-      title: 'Inception',
-      rating: 8.8,
-      description: 'A mind-bending thriller where dreams become the battlefield.',
-      showtimes: ['14:00', '17:00', '20:30'],
-      poster: 'https://via.placeholder.com/300x430?text=Inception'
-    },
-    {
-      title: 'The Matrix',
-      rating: 8.7,
-      description: 'Reality is a simulation and freedom is a choice.',
-      showtimes: ['15:30', '19:00', '22:00'],
-      poster: 'https://via.placeholder.com/300x430?text=The+Matrix'
-    }
-  ];
+  useEffect(() => {
+    fetch('http://localhost:8080/api/movies/current')
+      .then((response) => response.json())
+      .then((data) => setFeaturedMovies(data))
+      .catch((err) => console.error('Error fetching featured movies:', error));
 
-  const comingSoonMovies = [
-    {
-      title: 'Avatar 3',
-      rating: 'N/A',
-      description: 'Returning to Pandora for a spectacle beyond imagination.',
-      showtimes: ['TBD'],
-      poster: 'https://via.placeholder.com/300x430?text=Avatar+3'
-    },
-    {
-      title: 'Dune Part 3',
-      rating: 'N/A',
-      description: 'The prophecy continues across new deserts and new dangers.',
-      showtimes: ['TBD'],
-      poster: 'https://via.placeholder.com/300x430?text=Dune+Part+3'
-    }
-  ];
+    fetch('http://localhost:8080/api/movies/coming-soon')
+      .then((response) => response.json())
+      .then((data) => setComingSoonMovies(data))
+      .catch((err) => console.error('Error fetching coming soon movies:', error));
+  }, []);
 
   const currentHero = view === 'featured' ? featuredMovies[0] : comingSoonMovies[0];
   const carouselMovies = [...featuredMovies, ...comingSoonMovies];
+
+  if (!currentHero) {
+    return (
+      <div className="app-container">
+        <NavBar />
+        <p className="text-white p-10">Loading movies...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
@@ -60,15 +48,15 @@ function HomePage() {
       <main>
         <section className="hero">
           <div className="featured-card" onClick={() => setSelectedMovie(currentHero)}>
-            {currentHero.poster ? (
-              <img className="hero-poster" src={currentHero.poster} alt={`${currentHero.title} poster`} />
+            {currentHero.trailerImage ? (
+              <img className="hero-poster" src={currentHero.trailerImage} alt={`${currentHero.movieTitle} poster`} />
             ) : (
               <div className="poster-placeholder">Poster</div>
             )}
             <div className="details">
-              <h2>{currentHero.title}</h2>
-              <p className="rating">{currentHero.rating} ★</p>
-              <p>{currentHero.description}</p>
+              <h2>{currentHero.movieTitle}</h2>
+              <p className="rating">{currentHero.mpaaRating}</p>
+              <p>{currentHero.synopsis}</p>
             </div>
           </div>
         </section>

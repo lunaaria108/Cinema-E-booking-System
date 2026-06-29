@@ -34,7 +34,7 @@ function MovieCarousel({ movies, onMovieClick }) {
 
           return (
             <motion.div
-              key={`${movie.title}-${movieIndex}`}
+              key={`${movie.movieTitle}-${movieIndex}`}
               className={`movie-card ${position}`}
               variants={variants}
               initial={false}
@@ -43,15 +43,15 @@ function MovieCarousel({ movies, onMovieClick }) {
               onClick={() => onMovieClick(movie)}
             >
               <div className="poster-thumb">
-                {movie.poster ? (
-                  <img src={movie.poster} alt={`${movie.title} poster`} />
+                {movie.trailerImage ? (
+                  <img src={movie.trailerImage} alt={`${movie.movieTitle} poster`} />
                 ) : (
                   <div className="poster-placeholder">Poster</div>
                 )}
               </div>
               <div className="card-info">
-                <h3>{movie.title}</h3>
-                <p>{movie.rating} ★</p>
+                <h3>{movie.movieTitle}</h3>
+                <p>{movie.mpaaRating} ★</p>
               </div>
             </motion.div>
           );

@@ -32,7 +32,7 @@ export default function BookingPage() {
     };
 
     const handleCheckout = () => {
-        alert(`Success! You bought ${totalTickets} ticket(s) for ${movie?.title} at ${selectedShowtime}. Seats: ${selectedSeats.join(', ')}`);
+        alert(`Success! You bought ${totalTickets} ticket(s) for ${movie?.movieTitle} at ${selectedShowtime?.showTime}. Seats: ${selectedSeats.join(', ')}`);
     };
 
     return(
@@ -40,9 +40,9 @@ export default function BookingPage() {
             <NavBar booking={true}/>
 
             <div className="bg-[#000000] h-[150px] flex justify-evenly items-center text-white">
-                <img className="h-[120px] rounded object-cover" src={movie?.poster} alt={`${movie?.title} poster`} />
-                <p className="text-2xl font-bold text-[#D4AF37]">{movie?.title || "Select a Movie"}</p>
-                <p className="text-xl">{selectedShowtime || "No time selected"}</p>
+                <img className="h-[120px] rounded object-cover" src={movie?.trailerImage} alt={`${movie?.movieTitle} poster`} />
+                <p className="text-2xl font-bold text-[#D4AF37]">{movie?.movieTitle || "Select a Movie"}</p>
+                <p className="text-xl">{selectedShowtime?.showTime || "No time selected"}</p>
             </div>
 
             <div className="grid grid-cols-3 gap-10 p-10 max-w-4xl mx-auto text-xl">
