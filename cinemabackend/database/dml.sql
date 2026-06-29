@@ -1,5 +1,4 @@
 
-
 INSERT INTO Genre (genre_name)
 VALUES
 ('Action'),
@@ -136,7 +135,7 @@ VALUES
  'Kevin Feige',
  'Ryan Reynolds, Hugh Jackman',
  'Two unlikely heroes team up for a dangerous multiverse mission.',
- 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Deadpool_%26_Wolverine_poster.jpg/220px-Deadpool_%26_Wolverine_poster.jpg',
+ 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNO4E7MPUg2DxeemsNOasNCvKwfUFasy3DMQ&s',
  'https://www.youtube.com/watch?v=73_1biulkYk',
  'R',
  '2024-07-26',
@@ -151,10 +150,24 @@ VALUES
  'Amy Poehler, Maya Hawke, Ayo Edebiri',
  'A teenage girl experiences new emotions as she grows up.',
  'https://upload.wikimedia.org/wikipedia/en/f/f7/Inside_Out_2_poster.jpg',
- 'https://www.youtube.com/watch?v=LEjhY15eCx0',
+ 'https://www.youtube.com/watch?v=Swiz1XyfhcI',
  'PG',
  '2024-06-14',
  'Currently Running'
+),
+
+(
+    'Shrek 5',
+    7,
+    'Walt Dohrn',
+    'Chris Meledandri',
+    'Mike Myers, Eddie Murphy, Cameron Diaz',
+    'Shrek returns for a new adventure alongside Donkey, Fiona, and old friends.',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjeJ_4r-dk-3wYqe0jCPLPDlSK9mq3AZvssh_gn3Rqr577-enhj-B5v1tktkyBcSgU5ALXUw&s=10',
+    'https://www.youtube.com/watch?v=Swiz1XyfhcI',
+    'PG',
+    '2026-12-23',
+    'Coming Soon'
 );
 
 
