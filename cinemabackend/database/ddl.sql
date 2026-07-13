@@ -1,3 +1,46 @@
+
+
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY, 
+    email VARCHAR(100) NOT NULL UNIQUE,
+    user_name VARCHAR(100) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT FALSE,
+    created TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
+CREATE TABLE PasswordResetToken (
+    token_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_reset_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE EmailVerificationToken (
+    token_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+    
+    CONSTRAINT fk_verified_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE
+);
+
+
 CREATE TABLE Genre (
     genre_id SERIAL PRIMARY KEY,
     genre_name VARCHAR(50) NOT NULL UNIQUE
@@ -28,13 +71,18 @@ CREATE TABLE Movie (
 CREATE TABLE Review (
     review_id SERIAL PRIMARY KEY,
     movie_id INT NOT NULL,
-    reviewer_name VARCHAR(100),
+    user_id INT NOT NULL,
     rating DECIMAL(2,1),
     review_text TEXT,
 
     CONSTRAINT fk_review_movie
         FOREIGN KEY (movie_id)
         REFERENCES Movie(movie_id)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT fk_review_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
         ON DELETE CASCADE
 );
 
@@ -52,14 +100,38 @@ CREATE TABLE Showtime (
         ON DELETE CASCADE
 );
 
+CREATE TABLE FavoriteMovie (
+    user_id INT NOT NULL,
+    movie_id INT NOT NULL,
+    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-CREATE TABLE User (
-    user_id SERIAL PRIMARY KEY, 
-    email VARCHAR(100) NOT NULL,
-    user_name VARCHAR(100) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    is_admin BOOLEAN NOT NULL UNIQUE,
-    created TIMESTAMP NOT NULL DEFAULT NOW()
-)
+    PRIMARY KEY (user_id, movie_id),
+
+    CONSTRAINT fk_favorite_movie
+        FOREIGN KEY (movie_id)
+        REFERENCES Movie(movie_id)
+        ON DELETE CASCADE,
     
-    
+    CONSTRAINT fk_favorite_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE
+);
+
+
+CREATE TABLE PaymentCard (
+    card_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    cardholder_name VARCHAR(100) NOT NULL,
+    card_number VARCHAR(255) NOT NULL,
+    expiration_month INT NOT NULL,
+    expiration_year INT NOT NULL,
+    cvv VARCHAR(255) NOT NULL,
+    billing_zip VARCHAR(10),
+    created TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_payment_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE
+);
