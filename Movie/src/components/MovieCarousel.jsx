@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import './MovieCarousel.css';
 
-function MovieCarousel({ movies, onMovieClick }) {
+function MovieCarousel({ movies, onMovieClick, onFavorite }) {
   const [index, setIndex] = useState(0);
 
   const handleNext = () => setIndex((prev) => (prev + 1) % movies.length);
@@ -43,6 +43,26 @@ function MovieCarousel({ movies, onMovieClick }) {
               onClick={() => onMovieClick(movie)}
             >
               <div className="poster-thumb">
+                
+                {/* --- NEW FAVORITE BUTTON --- */}
+                <div 
+                  className="favorite-container" 
+                  title="Add to Favorites"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents the modal from opening
+                    if (onFavorite) onFavorite(movie);
+                  }}
+                >
+                  <motion.button 
+                    className="heart-btn"
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.8 }}
+                  >
+                    🤍
+                  </motion.button>
+                </div>
+                {/* --------------------------- */}
+
                 {movie.trailerImage ? (
                   <img src={movie.trailerImage} alt={`${movie.movieTitle} poster`} />
                 ) : (

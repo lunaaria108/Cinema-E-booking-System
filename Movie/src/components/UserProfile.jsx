@@ -129,17 +129,6 @@ export default function UserProfile() {
                         </button>
                     </motion.div>
 
-                    <motion.div className="bg-[#121212] p-6 rounded-xl border border-[#003D1A] lg:col-span-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-                        <h2 className="text-2xl text-[#D4AF37] mb-4">Favorite Movies</h2>
-                        <div className="flex gap-4 overflow-x-auto pb-4">
-                            <div className="min-w-[150px] bg-black border border-[#003D1A] rounded p-3">
-                                <div className="h-32 bg-gray-800 rounded mb-2 flex items-center justify-center text-gray-500">Poster</div>
-                                <h3 className="text-[#D4AF37] font-bold text-sm truncate">Sample Favorite</h3>
-                                <p className="text-xs text-gray-400">PG-13</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
                 </div>
             </div>
         </div>
