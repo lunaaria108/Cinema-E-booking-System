@@ -87,3 +87,33 @@
 .movie-card.right {
   opacity: 0.85;
 }
+
+.poster-thumb {
+  position: relative;
+}
+
+.favorite-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 15; 
+}
+
+.heart-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid #D4AF37;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: white; 
+  transition: background 0.2s ease;
+}
+
+.heart-btn:hover {
+  background: rgba(0, 61, 26, 0.9); /* Your dark green theme color */
+}
