@@ -1,5 +1,6 @@
 package com.csci.cinemabackend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -30,6 +31,7 @@ public class User {
     /**
      * Stores the securely hashed password, never the plaintext password.
      */
+    @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
