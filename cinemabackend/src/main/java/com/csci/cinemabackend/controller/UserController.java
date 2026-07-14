@@ -1,18 +1,23 @@
 package com.csci.cinemabackend.controller;
 
+import com.csci.cinemabackend.dto.PaymentCardRequest;
 import com.csci.cinemabackend.dto.UpdateProfileRequest;
 import com.csci.cinemabackend.model.FavoriteMovie;
+import com.csci.cinemabackend.model.PaymentCard;
 import com.csci.cinemabackend.model.User;
 import com.csci.cinemabackend.service.FavoriteMovieService;
+import com.csci.cinemabackend.service.PaymentCardService;
 import com.csci.cinemabackend.service.UserService;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
- * Handles user profile and favorite movie requests.
+ * Handles user profile, favorite movie, and payment card requests.
  */
 @RestController
 @RequestMapping("/api/users")
@@ -21,17 +26,28 @@ public class UserController {
 
     private final UserService userService;
     private final FavoriteMovieService favoriteMovieService;
+    private final PaymentCardService paymentCardService;
 
     public UserController(
             UserService userService,
-            FavoriteMovieService favoriteMovieService) {
+            FavoriteMovieService favoriteMovieService,
+            PaymentCardService paymentCardService) {
 
         this.userService = userService;
         this.favoriteMovieService = favoriteMovieService;
+        this.paymentCardService = paymentCardService;
     }
+
+    /*
+     * =========================================================
+     * PROFILE ENDPOINTS
+     * =========================================================
+     */
 
     /**
      * Retrieves a user's profile.
+     *
+     * GET /api/users/{userId}
      */
     @GetMapping("/{userId}")
     public ResponseEntity<User> getUserProfile(
@@ -48,6 +64,11 @@ public class UserController {
 
     /**
      * Updates the editable fields of a user's profile.
+     *
+     * Email, password, administrator status, and account status
+     * cannot be changed through this endpoint.
+     *
+     * PUT /api/users/{userId}
      */
     @PutMapping("/{userId}")
     public ResponseEntity<User> updateUserProfile(
@@ -68,8 +89,16 @@ public class UserController {
         return ResponseEntity.ok(updatedUser.get());
     }
 
+    /*
+     * =========================================================
+     * FAVORITE MOVIE ENDPOINTS
+     * =========================================================
+     */
+
     /**
-     * Retrieves all favorite movies for a user.
+     * Retrieves all favorite movies stored for a user.
+     *
+     * GET /api/users/{userId}/favorites
      */
     @GetMapping("/{userId}/favorites")
     public ResponseEntity<List<FavoriteMovie>> getFavorites(
@@ -79,13 +108,16 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(
-                favoriteMovieService.getFavorites(userId)
-        );
+        List<FavoriteMovie> favorites =
+                favoriteMovieService.getFavorites(userId);
+
+        return ResponseEntity.ok(favorites);
     }
 
     /**
      * Adds a movie to a user's favorite list.
+     *
+     * POST /api/users/{userId}/favorites/{movieId}
      */
     @PostMapping("/{userId}/favorites/{movieId}")
     public ResponseEntity<FavoriteMovie> addFavorite(
@@ -104,6 +136,8 @@ public class UserController {
 
     /**
      * Removes a movie from a user's favorite list.
+     *
+     * DELETE /api/users/{userId}/favorites/{movieId}
      */
     @DeleteMapping("/{userId}/favorites/{movieId}")
     public ResponseEntity<Void> removeFavorite(
@@ -114,6 +148,88 @@ public class UserController {
                 favoriteMovieService.removeFavorite(userId, movieId);
 
         if (!removed) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    /*
+     * =========================================================
+     * PAYMENT CARD ENDPOINTS
+     * =========================================================
+     */
+
+    /**
+     * Retrieves all stored payment cards for a user.
+     *
+     * GET /api/users/{userId}/cards
+     */
+    @GetMapping("/{userId}/cards")
+    public ResponseEntity<List<PaymentCard>> getPaymentCards(
+            @PathVariable Integer userId) {
+
+        if (userService.getUserById(userId).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<PaymentCard> cards =
+                paymentCardService.getCards(userId);
+
+        return ResponseEntity.ok(cards);
+    }
+
+    /**
+     * Adds a payment card for a user.
+     *
+     * POST /api/users/{userId}/cards
+     */
+    @PostMapping("/{userId}/cards")
+    public ResponseEntity<?> addPaymentCard(
+            @PathVariable Integer userId,
+            @RequestBody PaymentCardRequest request) {
+
+        try {
+            Optional<PaymentCard> card =
+                    paymentCardService.addCard(
+                            userId,
+                            request.getCardholderName(),
+                            request.getCardNumber(),
+                            request.getExpirationMonth(),
+                            request.getExpirationYear(),
+                            request.getCvv(),
+                            request.getBillingZip()
+                    );
+
+            if (card.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(card.get());
+
+        } catch (IllegalArgumentException |
+                 IllegalStateException exception) {
+
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", exception.getMessage())
+            );
+        }
+    }
+
+    /**
+     * Deletes a stored payment card.
+     *
+     * DELETE /api/users/{userId}/cards/{cardId}
+     */
+    @DeleteMapping("/{userId}/cards/{cardId}")
+    public ResponseEntity<Void> deletePaymentCard(
+            @PathVariable Integer userId,
+            @PathVariable Integer cardId) {
+
+        boolean deleted =
+                paymentCardService.deleteCard(userId, cardId);
+
+        if (!deleted) {
             return ResponseEntity.notFound().build();
         }
 
