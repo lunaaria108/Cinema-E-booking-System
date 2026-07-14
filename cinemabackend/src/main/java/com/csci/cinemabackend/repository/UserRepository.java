@@ -2,15 +2,19 @@ package com.csci.cinemabackend.repository;
 
 import com.csci.cinemabackend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@Repository
+/**
+ * Provides database operations for users.
+ */
 public interface UserRepository extends JpaRepository<User, Integer> {
-    Optional<User> findByEmailIgnoreCase(String email);
 
-    Optional<User> findByUsernameIgnoreCase(String username);
+    Optional<User> findByEmail(String email);
 
-    boolean existsByEmailIgnoreCaseOrUsernameIgnoreCase(String email, String username);
+    Optional<User> findByUserName(String userName);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByUserName(String userName);
 }

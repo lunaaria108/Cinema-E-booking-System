@@ -2,112 +2,127 @@ package com.csci.cinemabackend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
+/**
+ * Represents a registered user in the Cinema E-Booking System.
+ */
 @Entity
-@Table(name = "Users")
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Integer userid;
+    private Integer userId;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "user_name", nullable = false, unique = true)
-    private String username;
+    @Column(name = "user_name", nullable = false, length = 100)
+    private String userName;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstname;
+    @Column(name = "first_name", nullable = false, length = 100)
+    private String firstName;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastname;
+    @Column(name = "last_name", nullable = false, length = 100)
+    private String lastName;
 
+    /**
+     * Stores the securely hashed password, never the plaintext password.
+     */
     @JsonIgnore
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "is_admin", nullable = false)
-    private Boolean isAdmin;
+    private Boolean isAdmin = false;
 
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive;
+    private Boolean isActive = false;
 
-    @Column(name = "created", nullable = false)
-    private Instant created;
+    @Column(name = "created", nullable = false, updatable = false)
+    private LocalDateTime created;
 
-    public Integer getUserid() {
-        return userid;
+    public User() {
     }
 
-    public void setUserid(Integer userid) {
-        this.userid = userid;
+    @PrePersist
+    protected void onCreate() {
+        if (created == null) {
+            created = LocalDateTime.now();
+        }
+
+        if (isAdmin == null) {
+            isAdmin = false;
+        }
+
+        if (isActive == null) {
+            isActive = false;
+        }
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getUserName() {
+        return userName;
     }
 
-    public String getUsername() {
-        return username;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
+    public String getLastName() {
+        return lastName;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public Boolean getIsAdmin() {
         return isAdmin;
-    }
-
-    public void setIsAdmin(Boolean isAdmin) {
-        this.isAdmin = isAdmin;
     }
 
     public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
-    }
-
-    public Instant getCreated() {
+    public LocalDateTime getCreated() {
         return created;
     }
 
-    public void setCreated(Instant created) {
-        this.created = created;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 }
