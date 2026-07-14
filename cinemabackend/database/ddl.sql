@@ -40,6 +40,20 @@ CREATE TABLE EmailVerificationToken (
         ON DELETE CASCADE
 );
 
+    CREATE TABLE UserSession (
+        session_id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        revoked BOOLEAN NOT NULL DEFAULT FALSE,
+        created TIMESTAMP NOT NULL DEFAULT NOW(),
+
+        CONSTRAINT fk_session_user
+        FOREIGN KEY (user_id)
+        REFERENCES Users(user_id)
+        ON DELETE CASCADE
+    );
+
 
 CREATE TABLE Genre (
     genre_id SERIAL PRIMARY KEY,
