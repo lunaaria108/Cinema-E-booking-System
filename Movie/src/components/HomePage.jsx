@@ -41,26 +41,17 @@ function HomePage() {
   };
 
   const handleFilter = (genre) => {
-  fetch(`http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(genre)}`)
-    .then((response) => response.json())
-    .then((data) => {
-      setFeaturedMovies(data);
-      setComingSoonMovies([]);
-      setIsSearching(true);
-      setShowFilterModal(false);
-      setIsFiltered(true);
-    })
-    .catch((error) => console.error("Error filtering movies:", error));
-
-    setIsSearching(true);
-
-    fetch(`http://localhost:8080/api/movies/search?title=${encodeURIComponent(searchTerm)}`)
+    fetch(`http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(genre)}`)
       .then((response) => response.json())
       .then((data) => {
         setFeaturedMovies(data);
-        setComingSoonMovies(data);
+        setComingSoonMovies([]);
+        setIsSearching(true);
+        setShowFilterModal(false);
+        setIsFiltered(true);
       })
-      .catch((error) => console.error('Error fetching search results:', error));
+      .catch((error) => console.error("Error filtering movies:", error));
+      
   };
 
   const handleBrowseMovies = () => {
@@ -80,12 +71,12 @@ function HomePage() {
     fetch('http://localhost:8080/api/movies/current')
       .then((response) => response.json())
       .then((data) => setFeaturedMovies(data))
-      .catch((err) => console.error('Error fetching featured movies:', error));
+      .catch((error) => console.error('Error fetching featured movies:', error)); 
 
     fetch('http://localhost:8080/api/movies/coming-soon')
       .then((response) => response.json())
       .then((data) => setComingSoonMovies(data))
-      .catch((err) => console.error('Error fetching coming soon movies:', error));
+      .catch((error) => console.error('Error fetching coming soon movies:', error));
   }, []);
 
   const currentHero = view === 'featured' ? featuredMovies[0] : comingSoonMovies[0];
