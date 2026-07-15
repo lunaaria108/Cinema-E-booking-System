@@ -12,8 +12,8 @@ export default function FilterModal({ onClose, onApplyFilter }) {
 
     return (
         <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-[1000]" onClick={onClose}>
-            <div className="bg-[#121212] border border-[#003D1A] rounded-xl p-6 text-[#D4AF37]" onClick={(e) => e.stopPropagation()}>
-                <button className="close-btn" onClick={onClose}>✕</button>
+            <div className="relative bg-[#121212] w-full max-w-md h-full max-h-[300px] border border-[#003D1A] rounded-xl p-6 text-[#D4AF37]" onClick={(e) => e.stopPropagation()}>
+                <button className="absolute top-4 right-4 text-[#D4AF37] text-3xl hover:text-white transition-colors" onClick={onClose}>✕</button>
                 <h2>Filter Movies</h2>
                 <div className="flex flex-col gap-4 mt-4">
                     <select

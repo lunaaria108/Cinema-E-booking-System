@@ -4,6 +4,7 @@ import MovieCarousel from './MovieCarousel';
 import MovieModal from './MovieModal';
 import NavBar from './NavBar';
 import FilterModal from './FilterModal';
+import LoginModal from './LoginModal';
 
 function HomePage() {
   const [view, setView] = useState('featured');
@@ -13,6 +14,7 @@ function HomePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
+  const [showLogIn, setShowLogIn] = useState(false);
 
   const handleSearch = (searchTerm) => {
     if (searchTerm.trim() === '') {
@@ -85,15 +87,15 @@ function HomePage() {
   if (!currentHero) {
     return (
       <div className="app-container">
-        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={true} onBrowseMovies={handleBrowseMovies}/>
-        <p className="text-white p-10">Loading movies...</p>
+        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} onLogIn={() => setShowLogIn(true)}/>
+        <p className="text-white p-10">Movie not found</p>
       </div>
     );
   }
 
   return (
     <div className="app-container">
-      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies}/>
+      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)}/>
 
     {!isSearching && (
       <div className="flex justify-end items-center p-4">
@@ -130,6 +132,7 @@ function HomePage() {
 
       {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
       {showFilterModal && <FilterModal onClose={() => setShowFilterModal(false)} onApplyFilter={handleFilter} />}
+      {showLogIn && <LoginModal onClose={() => setShowLogIn(false)} />}
     </div>
   );
 }
