@@ -100,7 +100,11 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            {showLogIn && <LoginModal onClose={() => setShowLogIn(false)} />}
+            {showLogIn && (
+                <LoginModal
+                    onClose={() => setShowLogIn(false)}
+                />
+            )}
         </>
     );
 }
