@@ -156,19 +156,77 @@ VALUES
 );
 
 
+INSERT INTO Users
+(
+    email,
+    user_name,
+    first_name,
+    last_name,
+    password,
+    is_admin,
+    is_active
+)
+VALUES
+(
+    'james@example.com',
+    'james',
+    'James',
+    'Reviewer',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'alex@example.com',
+    'alex',
+    'Alex',
+    'Reviewer',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'emily@example.com',
+    'emily',
+    'Emily',
+    'Reviewer',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'chris@example.com',
+    'chris',
+    'Chris',
+    'Reviewer',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'maria@example.com',
+    'maria',
+    'Maria',
+    'Reviewer',
+    'temporary-password',
+    FALSE,
+    TRUE
+);
+
+
 INSERT INTO Review
 (
     movie_id,
-    reviewer_name,
+    user_id,
     rating,
     review_text
 )
 VALUES
-(1, 'James', 4.8, 'A fun animated movie for all ages.'),
-(2, 'Alex', 4.4, 'A darker adventure story with strong performances.'),
-(3, 'Emily', 4.5, 'Exciting superhero action.'),
-(4, 'Chris', 4.2, 'Funny and chaotic.'),
-(5, 'Maria', 4.6, 'A strong science fiction story.');
+(1, 1, 4.8, 'A fun animated movie for all ages.'),
+(2, 2, 4.4, 'A darker adventure story with strong performances.'),
+(3, 3, 4.5, 'Exciting superhero action.'),
+(4, 4, 4.2, 'Funny and chaotic.'),
+(5, 5, 4.6, 'A strong science fiction story.');
 
 
 INSERT INTO Showtime
