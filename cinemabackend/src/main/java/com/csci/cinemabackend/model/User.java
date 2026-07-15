@@ -2,6 +2,7 @@ package com.csci.cinemabackend.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 /**
@@ -27,6 +28,9 @@ public class User {
 
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
+
+    @Column(name = "phone_number", nullable = false, length = 20)
+    private String phoneNumber;
 
     /**
      * Stores the securely hashed password, never the plaintext password.
@@ -82,6 +86,10 @@ public class User {
         return lastName;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -112,6 +120,10 @@ public class User {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public void setPassword(String password) {

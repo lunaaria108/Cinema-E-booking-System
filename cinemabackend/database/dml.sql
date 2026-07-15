@@ -162,10 +162,62 @@ INSERT INTO Users
     user_name,
     first_name,
     last_name,
+    phone_number,
     password,
     is_admin,
     is_active
 )
+VALUES
+(
+    'james@example.com',
+    'james',
+    'James',
+    'Reviewer',
+    '7705550101',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'alex@example.com',
+    'alex',
+    'Alex',
+    'Reviewer',
+    '7705550102',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'emily@example.com',
+    'emily',
+    'Emily',
+    'Reviewer',
+    '7705550103',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'chris@example.com',
+    'chris',
+    'Chris',
+    'Reviewer',
+    '7705550104',
+    'temporary-password',
+    FALSE,
+    TRUE
+),
+(
+    'maria@example.com',
+    'maria',
+    'Maria',
+    'Reviewer',
+    '7705550105',
+    'temporary-password',
+    FALSE,
+    TRUE
+);
 VALUES
 (
     'james@example.com',
