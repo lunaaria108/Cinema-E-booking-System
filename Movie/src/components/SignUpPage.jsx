@@ -87,7 +87,15 @@ export default function SignUpPage() {
                             <label htmlFor="confirmPassword" className=" w-24 text-[#D4AF37] text-left">
                                 Confirm Password:
                             </label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" required className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2" />
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                minLength={8}
+                                required
+                                className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"
+                            />
                         </div>
 
                         <div className="w-full flex justify-center items-center">
