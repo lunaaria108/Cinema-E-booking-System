@@ -9,7 +9,9 @@ export default function NavBar({
     isFiltered = false, 
     onBrowseMovies = () => {},
     isLoggedIn = false, 
-    isAdmin = false 
+    isAdmin = false, 
+    isSignUpPage = false,
+    onLogIn = () => {}
 }) {
     const navigate = useNavigate();
     
@@ -58,12 +60,15 @@ export default function NavBar({
                             </>
                         ) : (
                             <>
-                                <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={() => navigate("/login")}>
-                                    Login
+                                <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={onLogIn}>
+                                    Log In
                                 </button>
-                                <button className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229] transition-colors" onClick={() => navigate("/register")}>
-                                    Sign Up
-                                </button>
+                                {!isSignUpPage && (
+                                    <button className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229] transition-colors"
+                                     onClick={() => navigate("/signup")}>
+                                        Sign Up
+                                    </button>
+                                )}
                             </>
                         )}
                     </div>
