@@ -12,7 +12,7 @@ CREATE TABLE Users (
 );
 
 
-CREATE TABLE PasswordResetToken (
+CREATE TABLE password_reset_token (
     token_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -27,7 +27,7 @@ CREATE TABLE PasswordResetToken (
 );
 
 
-CREATE TABLE EmailVerificationToken (
+CREATE TABLE email_verification_token (
     token_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -41,7 +41,7 @@ CREATE TABLE EmailVerificationToken (
 );
 
 
-CREATE TABLE UserSession (
+CREATE TABLE user_session (
     session_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
