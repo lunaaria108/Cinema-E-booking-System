@@ -99,8 +99,11 @@ export default function SignUpPage() {
                         </div>
 
                         <div className="w-full flex justify-center items-center">
-                            <button type="submit" className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] 
-                            hover:bg-[#0a5229] transition-colors">
+                            <button
+                                type="submit"
+                                className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg
+                                border border-[#D4AF37] hover:bg-[#0a5229] transition-colors"
+                            >
                                 Sign Up
                             </button>
                         </div>
