@@ -34,6 +34,7 @@ app:
     reset-expiration-minutes: 30
     session-expiration-hours: 8
 
+
 card:
   encryption:
-    key: ${CARD_ENCRYPTION_KEY:MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+    key: ${CARD_ENCRYPTION_KEY:VGhpc0lzQVRlc3RLZXlGb3JBRVMxMjM0NTY3ODkwMTI=}
