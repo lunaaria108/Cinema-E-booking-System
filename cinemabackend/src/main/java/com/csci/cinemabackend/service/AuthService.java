@@ -61,21 +61,22 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        if (userRepository.existsByEmailIgnoreCaseOrUsernameIgnoreCase(request.email(), request.username())) {
+        if (userRepository.existsByEmail(request.email()) || userRepository.existsByUserName(request.username())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email or username already exists");
         }
 
+        // Create a new user and save it to the database
         User user = new User();
-        user.setFirstname(request.firstname().trim());
-        user.setLastname(request.lastname().trim());
-        user.setUsername(request.username().trim());
+        user.setFirstName(request.firstname().trim());
+        user.setLastName(request.lastname().trim());
+        user.setUserName(request.username().trim());
         user.setEmail(request.email().trim().toLowerCase());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setIsAdmin(false);
         user.setIsActive(false);
-        user.setCreated(Instant.now());
         user = userRepository.save(user);
 
+        // Generate a verification token and send it via email
         String verificationToken = UUID.randomUUID().toString();
         EmailVerificationToken token = new EmailVerificationToken();
         token.setUser(user);
@@ -87,14 +88,14 @@ public class AuthService {
         mailService.send(
                 user.getEmail(),
                 "Confirm your Cinema Booking Service account",
-                "Welcome " + user.getFirstname() + ",\n\nUse this confirmation token to activate your account: "
+                "Welcome " + user.getFirstName() + ",\n\nUse this confirmation token to activate your account: "
                         + verificationToken +
                         "\n\nOr open: http://localhost:8080/api/auth/confirm-email?token=" + verificationToken);
 
         return new AuthResponse(
                 "Registration successful. Please confirm your email to activate the account.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),
@@ -118,8 +119,8 @@ public class AuthService {
 
         return new AuthResponse(
                 "Email confirmed. Account is now active.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),
@@ -129,8 +130,8 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmailIgnoreCase(request.identifier())
-                .or(() -> userRepository.findByUsernameIgnoreCase(request.identifier()))
+        User user = userRepository.findByEmail(request.identifier())
+                .or(() -> userRepository.findByUserName(request.identifier()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login credentials"));
 
         if (Boolean.FALSE.equals(user.getIsActive())) {
@@ -152,8 +153,8 @@ public class AuthService {
 
         return new AuthResponse(
                 "Login successful.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),
@@ -163,7 +164,7 @@ public class AuthService {
     }
 
     public AuthResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmailIgnoreCase(request.email())
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         String resetTokenValue = UUID.randomUUID().toString();
@@ -183,8 +184,8 @@ public class AuthService {
 
         return new AuthResponse(
                 "Password reset instructions sent.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),
@@ -215,12 +216,12 @@ public class AuthService {
 
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
-        userSessionRepository.deleteByUserUserid(user.getUserid());
+        userSessionRepository.deleteByUserUserId(user.getUserId());
 
         return new AuthResponse(
                 "Password updated successfully.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),
@@ -245,8 +246,8 @@ public class AuthService {
         User user = session.getUser();
         return new AuthResponse(
                 "Logout successful.",
-                user.getUserid(),
-                user.getUsername(),
+                user.getUserId(),
+                user.getUserName(),
                 user.getEmail(),
                 user.getIsAdmin(),
                 user.getIsActive(),

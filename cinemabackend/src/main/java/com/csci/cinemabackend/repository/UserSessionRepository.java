@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface UserSessionRepository extends JpaRepository<UserSession, Integer> {
     Optional<UserSession> findByTokenAndRevokedFalse(String token);
 
-    List<UserSession> findByUserUserid(Integer userId);
+    List<UserSession> findByUserUserId(Integer userId);
 
-    void deleteByUserUserid(Integer userId);
+    void deleteByUserUserId(Integer userId);
 }
