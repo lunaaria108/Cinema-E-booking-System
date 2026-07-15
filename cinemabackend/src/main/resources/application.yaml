@@ -16,6 +16,25 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+app:
+  auth:
+    verification-expiration-hours: 24
+    reset-expiration-minutes: 30
+    session-expiration-hours: 8
+
+
 card:
   encryption:
     key: ${CARD_ENCRYPTION_KEY:VGhpc0lzQVRlc3RLZXlGb3JBRVMxMjM0NTY3ODkwMTI=}
