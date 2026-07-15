@@ -5,6 +5,7 @@ import MovieModal from './MovieModal';
 import NavBar from './NavBar';
 import FilterModal from './FilterModal';
 import LoginModal from './LoginModal';
+import ResetModal from './ResetModal';
 
 function HomePage() {
   const [view, setView] = useState('featured');
@@ -15,6 +16,7 @@ function HomePage() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
   const [showLogIn, setShowLogIn] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   const handleSearch = (searchTerm) => {
     if (searchTerm.trim() === '') {
@@ -132,7 +134,8 @@ function HomePage() {
 
       {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
       {showFilterModal && <FilterModal onClose={() => setShowFilterModal(false)} onApplyFilter={handleFilter} />}
-      {showLogIn && <LoginModal onClose={() => setShowLogIn(false)} />}
+      {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}}/>)}
+      {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)} />)}
     </div>
   );
 }
