@@ -13,9 +13,14 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final MailService mailService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(
+            UserRepository userRepository,
+            MailService mailService) {
+
         this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
     /**
@@ -35,7 +40,9 @@ public class UserService {
             Integer userId,
             String userName,
             String firstName,
-            String lastName) {
+            String lastName,
+            String phoneNumber,
+            String streetAddress) {
 
         Optional<User> optionalUser = userRepository.findById(userId);
 
@@ -57,6 +64,25 @@ public class UserService {
             user.setLastName(lastName.trim());
         }
 
-        return Optional.of(userRepository.save(user));
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            user.setPhoneNumber(phoneNumber.trim());
+        }
+
+        if (streetAddress != null && !streetAddress.isBlank()) {
+            user.setStreetAddress(streetAddress.trim());
+        }
+
+        User savedUser = userRepository.save(user);
+
+        mailService.send(
+                savedUser.getEmail(),
+                "Your Cinema E-Booking profile was updated",
+                "Hello " + savedUser.getFirstName() + ",\n\n"
+                        + "Your profile information was updated successfully.\n\n"
+                        + "If you made this change, no further action is required.\n"
+                        + "If you did not make this change, please contact support immediately."
+        );
+
+        return Optional.of(savedUser);
     }
 }
