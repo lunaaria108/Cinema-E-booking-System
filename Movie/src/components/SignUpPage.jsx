@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import NavBar from "./NavBar";
 import logo from "../assets/logo.jpg";
 import LoginModal from "./LoginModal";
+import { clearAuthState, loadAuthState } from "../utils/authStorage";
+import { useNavigate } from "react-router-dom";
 
 const handleSubmit = async (event) => {
     event.preventDefault();
@@ -46,7 +48,37 @@ const handleSubmit = async (event) => {
 };
 
 export default function SignUpPage() {
+    const navigate = useNavigate();
+    const [auth, setAuth] = useState(() => loadAuthState());
     const [showLogIn, setShowLogIn] = useState(false);
+
+    const handleLoginSuccess = () => {
+        setAuth(loadAuthState());
+    };
+
+    const handleLogout = async () => {
+        if (!auth.token) {
+            clearAuthState();
+            setAuth(loadAuthState());
+            return;
+        }
+
+        try {
+            await fetch("http://localhost:8080/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ token: auth.token }),
+            });
+        } catch (error) {
+            console.error("Logout request failed:", error);
+        } finally {
+            clearAuthState();
+            setAuth(loadAuthState());
+            navigate("/");
+        }
+    };
 
     return (
         <>
@@ -54,11 +86,13 @@ export default function SignUpPage() {
                 booking={true}
                 isSignUpPage={true}
                 onLogIn={() => setShowLogIn(true)}
+                isLoggedIn={Boolean(auth.token)}
+                onLogout={handleLogout}
             />
 
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0b0b] px-4">
                 <div
-                    className="w-full max-w-lg min-h-[600px] rounded-3xl border-1 border-[#D4AF37]
+                    className="w-full max-w-lg min-h-150 rounded-3xl border border-[#D4AF37]
                     bg-black/90 p-8 shadow-xl flex justify-center items-center flex-col mt-10 mb-10"
                 >
                     <div className="flex flex-col items-center gap-4">
@@ -214,6 +248,7 @@ export default function SignUpPage() {
             {showLogIn && (
                 <LoginModal
                     onClose={() => setShowLogIn(false)}
+                    onLoginSuccess={handleLoginSuccess}
                 />
             )}
         </>

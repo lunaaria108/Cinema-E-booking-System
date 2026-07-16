@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import NavBar from './NavBar';
+import { useNavigate } from 'react-router-dom';
+import { clearAuthState, loadAuthState } from '../utils/authStorage';
 
 export default function UserProfile() {
+    const navigate = useNavigate();
+    const [auth, setAuth] = useState(() => loadAuthState());
     const [user, setUser] = useState({
         firstName: "John",
         lastName: "Doe",
@@ -44,6 +48,26 @@ export default function UserProfile() {
             .catch(error => console.error(error));
     }, []);
 
+        const handleLogout = async () => {
+            if (auth.token) {
+                try {
+                    await fetch('http://localhost:8080/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ token: auth.token }),
+                    });
+                } catch (error) {
+                    console.error('Logout request failed:', error);
+                }
+            }
+
+            clearAuthState();
+            setAuth(loadAuthState());
+            navigate('/');
+        };
+
     const handleAddCard = () => {
         if (paymentCards.length < 3) {
             setPaymentCards([...paymentCards, { id: Date.now(), last4: "0000", exp: "00/00" }]);
@@ -56,7 +80,7 @@ export default function UserProfile() {
 
     return (
         <div className="min-h-screen bg-[#0b0b0b] text-[#f5f1e8] pb-20">
-            <NavBar isLoggedIn={true} />
+            <NavBar isLoggedIn={Boolean(auth.token)} onLogout={handleLogout} />
 
             <div className="max-w-6xl mx-auto p-8 mt-6">
                 <h1 className="text-4xl font-bebas text-[#D4AF37] mb-8 border-b border-[#003D1A] pb-4">Manage Profile</h1>
