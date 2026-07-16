@@ -6,7 +6,8 @@ import LoginModal from "./LoginModal";
 const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
 
     const user = {
         firstname: formData.get("firstname"),
@@ -34,7 +35,7 @@ const handleSubmit = async (event) => {
 
         if (response.ok) {
             alert("Account created! Please check your email to verify it.");
-            event.currentTarget.reset();
+            form.reset();
         } else {
             alert(responseText || "Unable to create account.");
         }
