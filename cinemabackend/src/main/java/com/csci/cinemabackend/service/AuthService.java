@@ -31,8 +31,9 @@ public class AuthService {
     private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final UserSessionRepository userSessionRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder;
     private final MailService mailService;
+
     private final long verificationExpirationHours;
     private final long resetExpirationMinutes;
     private final long sessionExpirationHours;
@@ -43,58 +44,96 @@ public class AuthService {
             PasswordResetTokenRepository passwordResetTokenRepository,
             UserSessionRepository userSessionRepository,
             MailService mailService,
-            @Value("${app.auth.verification-expiration-hours:24}") long verificationExpirationHours,
-            @Value("${app.auth.reset-expiration-minutes:30}") long resetExpirationMinutes,
-            @Value("${app.auth.session-expiration-hours:8}") long sessionExpirationHours) {
+            @Value("${app.auth.verification-expiration-hours:24}")
+            long verificationExpirationHours,
+            @Value("${app.auth.reset-expiration-minutes:30}")
+            long resetExpirationMinutes,
+            @Value("${app.auth.session-expiration-hours:8}")
+            long sessionExpirationHours) {
+
         this.userRepository = userRepository;
-        this.emailVerificationTokenRepository = emailVerificationTokenRepository;
-        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.emailVerificationTokenRepository =
+                emailVerificationTokenRepository;
+        this.passwordResetTokenRepository =
+                passwordResetTokenRepository;
         this.userSessionRepository = userSessionRepository;
         this.mailService = mailService;
-        this.verificationExpirationHours = verificationExpirationHours;
-        this.resetExpirationMinutes = resetExpirationMinutes;
-        this.sessionExpirationHours = sessionExpirationHours;
+        this.passwordEncoder = new BCryptPasswordEncoder();
+
+        this.verificationExpirationHours =
+                verificationExpirationHours;
+        this.resetExpirationMinutes =
+                resetExpirationMinutes;
+        this.sessionExpirationHours =
+                sessionExpirationHours;
     }
 
     public AuthResponse register(RegistrationRequest request) {
         if (!request.password().equals(request.confirmPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Passwords do not match"
+            );
         }
 
-        if (userRepository.existsByEmailIgnoreCase(request.email())
-                || userRepository.existsByUserNameIgnoreCase(request.username())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email or username already exists");
+        String normalizedEmail =
+                request.email().trim().toLowerCase();
+        String normalizedUsername =
+                request.username().trim();
+
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)
+                || userRepository.existsByUserNameIgnoreCase(
+                        normalizedUsername)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email or username already exists"
+            );
         }
 
-        // Create a new user and save it to the database
         User user = new User();
         user.setFirstName(request.firstname().trim());
         user.setLastName(request.lastname().trim());
-        user.setUserName(request.username().trim());
-        user.setEmail(request.email().trim().toLowerCase());
+        user.setUserName(normalizedUsername);
+        user.setEmail(normalizedEmail);
         user.setPhoneNumber(request.phoneNumber().trim());
         user.setStreetAddress(request.streetAddress().trim());
-        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setPassword(
+                passwordEncoder.encode(request.password())
+        );
         user.setIsAdmin(false);
         user.setIsActive(false);
+
         user = userRepository.save(user);
 
-        // Generate a verification token and send it via email
-        String verificationToken = UUID.randomUUID().toString();
-        EmailVerificationToken token = new EmailVerificationToken();
+        String verificationToken =
+                UUID.randomUUID().toString();
+
+        EmailVerificationToken token =
+                new EmailVerificationToken();
+
         token.setUser(user);
         token.setToken(verificationToken);
         token.setCreated(Instant.now());
-        token.setExpiresAt(Instant.now().plus(verificationExpirationHours, ChronoUnit.HOURS));
+        token.setExpiresAt(
+                Instant.now().plus(
+                        verificationExpirationHours,
+                        ChronoUnit.HOURS
+                )
+        );
+
         emailVerificationTokenRepository.save(token);
 
-mailService.send(
-        user.getEmail(),
-        "Confirm your Cinema Booking Service account",
-        "Welcome " + user.getFirstName() + ",\n\nUse this confirmation token to activate your account: "
-                + verificationToken +
-                "\n\nOr open: ..."
-);
+        mailService.send(
+                user.getEmail(),
+                "Confirm your Cinema Booking Service account",
+                "Welcome " + user.getFirstName()
+                        + ",\n\nUse this confirmation token to activate your account: "
+                        + verificationToken
+                        + "\n\nOr open: http://localhost:8080/api/auth/confirm-email?token="
+                        + verificationToken
+        );
+
         return new AuthResponse(
                 "Registration successful. Please confirm your email to activate the account.",
                 user.getUserId(),
@@ -104,19 +143,31 @@ mailService.send(
                 user.getIsActive(),
                 null,
                 verificationToken,
-                null);
+                null
+        );
     }
 
     public AuthResponse confirmEmail(String tokenValue) {
-        EmailVerificationToken token = emailVerificationTokenRepository.findByToken(tokenValue)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Confirmation token not found"));
+        EmailVerificationToken token =
+                emailVerificationTokenRepository
+                        .findByToken(tokenValue)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Confirmation token not found"
+                                )
+                        );
 
         if (token.getExpiresAt().isBefore(Instant.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Confirmation token has expired");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Confirmation token has expired"
+            );
         }
 
         User user = token.getUser();
         user.setIsActive(true);
+
         userRepository.save(user);
         emailVerificationTokenRepository.delete(token);
 
@@ -129,31 +180,64 @@ mailService.send(
                 user.getIsActive(),
                 null,
                 null,
-                null);
+                null
+        );
     }
 
     public AuthResponse login(LoginRequest request) {
-        String identifier = request.identifier().trim();
+        String identifier =
+                request.identifier().trim();
 
-        User user = userRepository.findByEmailIgnoreCase(identifier)
-                .or(() -> userRepository.findByUserNameIgnoreCase(identifier))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login credentials"));
+        User user =
+                userRepository
+                        .findByEmailIgnoreCase(identifier)
+                        .or(() ->
+                                userRepository
+                                        .findByUserNameIgnoreCase(
+                                                identifier
+                                        )
+                        )
+                        .orElseThrow(
+                                () -> new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Invalid login credentials"
+                                )
+                        );
 
         if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Account is inactive. Please confirm your email.");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Account is inactive. Please confirm your email."
+            );
         }
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login credentials");
+        if (!passwordEncoder.matches(
+                request.password(),
+                user.getPassword())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid login credentials"
+            );
         }
 
-        String sessionToken = UUID.randomUUID().toString();
-        UserSession session = new UserSession();
+        String sessionToken =
+                UUID.randomUUID().toString();
+
+        UserSession session =
+                new UserSession();
+
         session.setUser(user);
         session.setToken(sessionToken);
         session.setCreated(Instant.now());
-        session.setExpiresAt(Instant.now().plus(sessionExpirationHours, ChronoUnit.HOURS));
+        session.setExpiresAt(
+                Instant.now().plus(
+                        sessionExpirationHours,
+                        ChronoUnit.HOURS
+                )
+        );
         session.setRevoked(false);
+
         userSessionRepository.save(session);
 
         return new AuthResponse(
@@ -165,27 +249,53 @@ mailService.send(
                 user.getIsActive(),
                 sessionToken,
                 null,
-                null);
+                null
+        );
     }
 
-    public AuthResponse forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+    public AuthResponse forgotPassword(
+            ForgotPasswordRequest request) {
 
-        String resetTokenValue = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken();
+        String normalizedEmail =
+                request.email().trim().toLowerCase();
+
+        User user =
+                userRepository
+                        .findByEmailIgnoreCase(normalizedEmail)
+                        .orElseThrow(
+                                () -> new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found"
+                                )
+                        );
+
+        String resetTokenValue =
+                UUID.randomUUID().toString();
+
+        PasswordResetToken resetToken =
+                new PasswordResetToken();
+
         resetToken.setUser(user);
         resetToken.setToken(resetTokenValue);
         resetToken.setCreated(Instant.now());
-        resetToken.setExpiresAt(Instant.now().plus(resetExpirationMinutes, ChronoUnit.MINUTES));
+        resetToken.setExpiresAt(
+                Instant.now().plus(
+                        resetExpirationMinutes,
+                        ChronoUnit.MINUTES
+                )
+        );
         resetToken.setUsed(false);
+
         passwordResetTokenRepository.save(resetToken);
 
         mailService.send(
                 user.getEmail(),
                 "Reset your Cinema Booking Service password",
-                "Use this password reset token: " + resetTokenValue +
-                        "\n\nOr open: http://localhost:8080/api/auth/reset-password?token=" + resetTokenValue);
+                "Use this password reset token: "
+                        + resetTokenValue
+                        + "\n\nOr open: http://localhost:5173/reset-password?token="
+                        + resetTokenValue
+        );
 
         return new AuthResponse(
                 "Password reset instructions sent.",
@@ -196,32 +306,64 @@ mailService.send(
                 user.getIsActive(),
                 null,
                 null,
-                resetTokenValue);
+                resetTokenValue
+        );
     }
 
-    public AuthResponse resetPassword(ResetPasswordRequest request) {
-        if (!request.newPassword().equals(request.confirmPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
+    public AuthResponse resetPassword(
+            ResetPasswordRequest request) {
+
+        if (!request.newPassword()
+                .equals(request.confirmPassword())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Passwords do not match"
+            );
         }
 
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(request.token())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reset token not found"));
+        PasswordResetToken resetToken =
+                passwordResetTokenRepository
+                        .findByToken(request.token())
+                        .orElseThrow(
+                                () -> new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Reset token not found"
+                                )
+                        );
 
         if (Boolean.TRUE.equals(resetToken.getUsed())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reset token has already been used");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Reset token has already been used"
+            );
         }
 
-        if (resetToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Reset token has expired");
+        if (resetToken.getExpiresAt()
+                .isBefore(Instant.now())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Reset token has expired"
+            );
         }
 
         User user = resetToken.getUser();
-        user.setPassword(passwordEncoder.encode(request.newPassword()));
+
+        user.setPassword(
+                passwordEncoder.encode(
+                        request.newPassword()
+                )
+        );
+
         userRepository.save(user);
 
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
-        userSessionRepository.deleteByUserUserId(user.getUserId());
+
+        userSessionRepository.deleteByUserUserId(
+                user.getUserId()
+        );
 
         return new AuthResponse(
                 "Password updated successfully.",
@@ -232,23 +374,40 @@ mailService.send(
                 user.getIsActive(),
                 null,
                 null,
-                null);
+                null
+        );
     }
 
     public AuthResponse logout(LogoutRequest request) {
-        UserSession session = userSessionRepository.findByTokenAndRevokedFalse(request.token())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Session token not found"));
+        UserSession session =
+                userSessionRepository
+                        .findByTokenAndRevokedFalse(
+                                request.token()
+                        )
+                        .orElseThrow(
+                                () -> new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Session token not found"
+                                )
+                        );
 
-        if (session.getExpiresAt().isBefore(Instant.now())) {
+        if (session.getExpiresAt()
+                .isBefore(Instant.now())) {
+
             session.setRevoked(true);
             userSessionRepository.save(session);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session has expired");
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Session has expired"
+            );
         }
 
         session.setRevoked(true);
         userSessionRepository.save(session);
 
         User user = session.getUser();
+
         return new AuthResponse(
                 "Logout successful.",
                 user.getUserId(),
@@ -258,6 +417,7 @@ mailService.send(
                 user.getIsActive(),
                 null,
                 null,
-                null);
+                null
+        );
     }
 }
