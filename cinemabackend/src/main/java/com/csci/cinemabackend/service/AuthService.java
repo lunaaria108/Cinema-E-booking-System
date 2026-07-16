@@ -88,13 +88,13 @@ public class AuthService {
         token.setExpiresAt(Instant.now().plus(verificationExpirationHours, ChronoUnit.HOURS));
         emailVerificationTokenRepository.save(token);
 
-        mailService.send(
-                user.getEmail(),
-                "Confirm your Cinema Booking Service account",
-                "Welcome " + user.getFirstName() + ",\n\nUse this confirmation token to activate your account: "
-                        + verificationToken +
-                        "\n\nOr open: http://localhost:8080/api/auth/confirm-email?token=" + verificationToken);
-
+mailService.send(
+        user.getEmail(),
+        "Reset your Cinema Booking Service password",
+        "Use this password reset token: " + resetTokenValue
+                + "\n\nOr open: http://localhost:5173/reset-password?token="
+                + resetTokenValue
+);
         return new AuthResponse(
                 "Registration successful. Please confirm your email to activate the account.",
                 user.getUserId(),
