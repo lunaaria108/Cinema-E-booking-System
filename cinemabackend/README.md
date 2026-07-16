@@ -32,6 +32,9 @@ Using Maven:
 ```bash
 ./mvnw spring-boot:run
 ```
+
+### Testing the mail service
+Go to localhost:8025 in your browser to access the MailHog web interface. You can view the emails sent by the application here.
 ## Resetting the Database
 
 If the database schema changes, recreate the database by running:
