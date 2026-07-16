@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
@@ -29,6 +29,8 @@ spring:
             enable: false
 
 app:
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@cinema.local}
   auth:
     verification-expiration-hours: 24
     reset-expiration-minutes: 30

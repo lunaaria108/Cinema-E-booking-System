@@ -11,7 +11,8 @@ export default function NavBar({
     isLoggedIn = false, 
     isAdmin = false, 
     isSignUpPage = false,
-    onLogIn = () => {}
+    onLogIn = () => {},
+    onLogout = () => {}
 }) {
     const navigate = useNavigate();
     
@@ -54,7 +55,7 @@ export default function NavBar({
                                 <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={() => navigate("/profile")}>
                                     Profile
                                 </button>
-                                <button className="text-red-400 hover:text-red-300 transition-colors" onClick={() => console.log("Trigger logout...")}>
+                                <button className="text-red-400 hover:text-red-300 transition-colors" onClick={onLogout}>
                                     Logout
                                 </button>
                             </>

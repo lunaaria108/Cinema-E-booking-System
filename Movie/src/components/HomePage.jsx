@@ -6,8 +6,10 @@ import NavBar from './NavBar';
 import FilterModal from './FilterModal';
 import LoginModal from './LoginModal';
 import ResetModal from './ResetModal';
+import { clearAuthState, loadAuthState } from "../utils/authStorage";
 
 function HomePage() {
+  const [auth, setAuth] = useState(() => loadAuthState());
   const [view, setView] = useState('featured');
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [featuredMovies, setFeaturedMovies] = useState([]);
@@ -17,6 +19,33 @@ function HomePage() {
   const [isFiltered, setIsFiltered] = useState(false);
   const [showLogIn, setShowLogIn] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+
+  const handleLoginSuccess = () => {
+    setAuth(loadAuthState());
+  };
+
+  const handleLogout = async () => {
+    if (!auth.token) {
+      clearAuthState();
+      setAuth(loadAuthState());
+      return;
+    }
+
+    try {
+      await fetch('http://localhost:8080/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: auth.token }),
+      });
+    } catch (error) {
+      console.error('Logout request failed:', error);
+    } finally {
+      clearAuthState();
+      setAuth(loadAuthState());
+    }
+  };
 
   const handleSearch = (searchTerm) => {
     if (searchTerm.trim() === '') {
@@ -89,7 +118,7 @@ function HomePage() {
   if (!currentHero) {
     return (
       <div className="app-container">
-        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} onLogIn={() => setShowLogIn(true)}/>
+        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
         <p className="text-white p-10">Movie not found</p>
       </div>
     );
@@ -97,7 +126,8 @@ function HomePage() {
 
   return (
     <div className="app-container">
-      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)}/>
+      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
+  {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
 
     {!isSearching && (
       <div className="flex justify-end items-center p-4">

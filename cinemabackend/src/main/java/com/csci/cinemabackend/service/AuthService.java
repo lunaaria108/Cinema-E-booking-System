@@ -61,7 +61,8 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Passwords do not match");
         }
 
-        if (userRepository.existsByEmail(request.email()) || userRepository.existsByUserName(request.username())) {
+        if (userRepository.existsByEmailIgnoreCase(request.email())
+                || userRepository.existsByUserNameIgnoreCase(request.username())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email or username already exists");
         }
 
@@ -72,6 +73,7 @@ public class AuthService {
         user.setUserName(request.username().trim());
         user.setEmail(request.email().trim().toLowerCase());
         user.setPhoneNumber(request.phoneNumber().trim());
+        user.setStreetAddress(request.streetAddress().trim());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setIsAdmin(false);
         user.setIsActive(false);
@@ -131,8 +133,10 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.identifier())
-                .or(() -> userRepository.findByUserName(request.identifier()))
+        String identifier = request.identifier().trim();
+
+        User user = userRepository.findByEmailIgnoreCase(identifier)
+                .or(() -> userRepository.findByUserNameIgnoreCase(identifier))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login credentials"));
 
         if (Boolean.FALSE.equals(user.getIsActive())) {

@@ -1,8 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import NavBar from './NavBar';
+import { clearAuthState, loadAuthState } from "../utils/authStorage";
 
 export default function BookingPage() {
+    const navigate = useNavigate();
     const { state } = useLocation();
     const { movie, selectedShowtime } = state || {};
     
@@ -13,6 +16,7 @@ export default function BookingPage() {
 
     const [showSeating, setShowSeating] = useState(false);
     const [selectedSeats, setSelectedSeats] = useState([]);
+    const [auth, setAuth] = useState(() => loadAuthState());
 
     const totalTickets = adultTickets + childTickets + seniorTickets + studentTickets;
 
@@ -35,12 +39,32 @@ export default function BookingPage() {
         alert(`Success! You bought ${totalTickets} ticket(s) for ${movie?.movieTitle} at ${selectedShowtime?.showTime}. Seats: ${selectedSeats.join(', ')}`);
     };
 
+    const handleLogout = async () => {
+        if (auth.token) {
+            try {
+                await fetch('http://localhost:8080/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: auth.token }),
+                });
+            } catch (error) {
+                console.error('Logout request failed:', error);
+            }
+        }
+
+        clearAuthState();
+        setAuth(loadAuthState());
+        navigate('/');
+    };
+
     return(
         <div className="min-h-screen pb-20">
-            <NavBar booking={true}/>
+            <NavBar booking={true} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
 
-            <div className="bg-[#000000] h-[150px] flex justify-evenly items-center text-white">
-                <img className="h-[120px] rounded object-cover" src={movie?.trailerImage} alt={`${movie?.movieTitle} poster`} />
+            <div className="bg-[#000000] h-37.5 flex justify-evenly items-center text-white">
+                <img className="h-30 rounded object-cover" src={movie?.trailerImage} alt={`${movie?.movieTitle} poster`} />
                 <p className="text-2xl font-bold text-[#D4AF37]">{movie?.movieTitle || "Select a Movie"}</p>
                 <p className="text-xl">{selectedShowtime?.showTime || "No time selected"}</p>
             </div>
@@ -88,7 +112,7 @@ export default function BookingPage() {
             {!showSeating && (
                 <div className="flex justify-center items-center mt-6">
                     <button 
-                        className="h-[50px] w-[400px] border border-[#D4AF37] bg-transparent text-[#D4AF37] rounded-[10px] hover:bg-[#003D1A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-12.5 w-100 border border-[#D4AF37] bg-transparent text-[#D4AF37] rounded-[10px] hover:bg-[#003D1A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => setShowSeating(true)}
                         disabled={totalTickets === 0}
                     >
@@ -133,7 +157,7 @@ export default function BookingPage() {
                         <p className="text-lg mb-4">
                             Seats Selected: <span className="text-[#D4AF37] font-bold">{selectedSeats.length} / {totalTickets}</span>
                         </p>
-                        <p className="text-md text-gray-400 mb-6 min-h-[24px]">
+                        <p className="text-md text-gray-400 mb-6 min-h-6">
                             {selectedSeats.length > 0 ? `Your seats: ${selectedSeats.join(', ')}` : "Click on the map to choose your seats."}
                         </p>
                         

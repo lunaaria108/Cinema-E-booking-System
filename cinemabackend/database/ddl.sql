@@ -6,6 +6,7 @@ CREATE TABLE Users (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
+    street_address VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     address VARCHAR(255),
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
