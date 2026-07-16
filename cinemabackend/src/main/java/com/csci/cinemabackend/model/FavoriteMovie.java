@@ -8,16 +8,18 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "favoritemovie")
-@IdClass(FavoriteMovieId.class)
 public class FavoriteMovie {
 
-    @Id
+    @EmbeddedId
+    private FavoriteMovieId id = new FavoriteMovieId();
+
     @ManyToOne
+    @MapsId("user")
     @JoinColumn(name = "user_id")
     private User user;
 
-    @Id
     @ManyToOne
+    @MapsId("movie")
     @JoinColumn(name = "movie_id")
     private Movie movie;
 
@@ -34,23 +36,27 @@ public class FavoriteMovie {
         }
     }
 
+    public FavoriteMovieId getId() {
+        return id;
+    }
+
     public User getUser() {
         return user;
-    }
-
-    public Movie getMovie() {
-        return movie;
-    }
-
-    public LocalDateTime getAddedAt() {
-        return addedAt;
     }
 
     public void setUser(User user) {
         this.user = user;
     }
 
+    public Movie getMovie() {
+        return movie;
+    }
+
     public void setMovie(Movie movie) {
         this.movie = movie;
+    }
+
+    public LocalDateTime getAddedAt() {
+        return addedAt;
     }
 }

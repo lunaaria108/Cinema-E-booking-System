@@ -1,11 +1,13 @@
 package com.csci.cinemabackend.model;
 
+import jakarta.persistence.Embeddable;
 import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Composite key for a user's favorite movie.
  */
+@Embeddable
 public class FavoriteMovieId implements Serializable {
 
     private Integer user;
@@ -40,13 +42,10 @@ public class FavoriteMovieId implements Serializable {
         if (this == object) {
             return true;
         }
-
         if (!(object instanceof FavoriteMovieId)) {
             return false;
         }
-
         FavoriteMovieId that = (FavoriteMovieId) object;
-
         return Objects.equals(user, that.user)
                 && Objects.equals(movie, that.movie);
     }
