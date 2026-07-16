@@ -53,6 +53,49 @@ export default function LoginModal({ onClose, onForgotPassword, onLoginSuccess =
         }
     };
     
+
+{/*const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+
+    const logInUser = {
+        firstname: formData.get("firstname"),
+        lastname: formData.get("lastname"),
+        username: formData.get("username"),
+        email: formData.get("email"),
+        phoneNumber: formData.get("phoneNumber"),
+        password: formData.get("password"),
+        confirmPassword: formData.get("confirmPassword"),
+    };
+
+    try {
+        const response = await fetch(
+            "http://localhost:8080/api/auth/register",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(user),
+            }
+        );
+
+        const responseText = await response.text();
+
+        if (response.ok) {
+            alert("Account created! Please check your email to verify it.");
+            event.currentTarget.reset();
+        } else {
+            alert(responseText || "Unable to create account.");
+        }
+    } catch (error) {
+        console.error("Registration request failed:", error);
+        alert("Unable to connect to the backend.");
+    }
+};*/}
+
+export default function LoginModal({ onClose, onForgotPassword }) {
     return (
          <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-1000" onClick={onClose}>
             <div className="relative bg-[#121212] border border-[#003D1A] rounded-xl p-6" onClick={(e) => e.stopPropagation()}>
