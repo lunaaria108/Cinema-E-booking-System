@@ -16,7 +16,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+
 /**
+ * 
  * Handles payment-card management and encryption.
  */
 @Service
@@ -30,14 +32,17 @@ public class PaymentCardService {
     private final UserRepository userRepository;
     private final SecretKeySpec encryptionKey;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final MailService mailService;
 
     public PaymentCardService(
             PaymentCardRepository paymentCardRepository,
             UserRepository userRepository,
+            MailService mailService,
             @Value("${card.encryption.key}") String encodedKey) {
 
         this.paymentCardRepository = paymentCardRepository;
         this.userRepository = userRepository;
+        this.mailService = mailService;
 
         byte[] keyBytes = Base64.getDecoder().decode(encodedKey);
 
@@ -106,7 +111,58 @@ public class PaymentCardService {
 
         return Optional.of(paymentCardRepository.save(paymentCard));
     }
+        public Optional<PaymentCard> updateCard(
+                Integer userId,
+                Integer cardId,
+                String cardholderName,
+                String cardNumber,
+                Integer expirationMonth,
+                Integer expirationYear,
+                String cvv,
+                String billingZip) {
 
+        Optional<User> optionalUser = userRepository.findById(userId);
+
+        if (optionalUser.isEmpty()) {
+                return Optional.empty();
+        }
+
+        Optional<PaymentCard> optionalCard =
+                paymentCardRepository.findById(cardId);
+
+        if (optionalCard.isEmpty()) {
+                return Optional.empty();
+        }
+
+        PaymentCard card = optionalCard.get();
+
+        // Make sure the card belongs to the user
+        if (!card.getUser().getUserId().equals(userId)) {
+                return Optional.empty();
+        }
+
+        card.setCardholderName(cardholderName.trim());
+        card.setCardNumber(cardNumber.trim());
+        card.setExpirationMonth(expirationMonth);
+        card.setExpirationYear(expirationYear);
+        card.setCvv(cvv.trim());
+        card.setBillingZip(billingZip.trim());
+
+        PaymentCard savedCard = paymentCardRepository.save(card);
+
+        User user = optionalUser.get();
+
+        mailService.send(
+                user.getEmail(),
+                "Your Cinema E-Booking payment card was updated",
+                "Hello " + user.getFirstName() + ",\n\n"
+                        + "One of your saved payment methods was updated successfully.\n\n"
+                        + "If you made this change, no further action is required.\n"
+                        + "If you did not make this change, please contact support immediately."
+        );
+
+        return Optional.of(savedCard);
+        }
     /**
      * Deletes a payment card only when it belongs to the specified user.
      */
