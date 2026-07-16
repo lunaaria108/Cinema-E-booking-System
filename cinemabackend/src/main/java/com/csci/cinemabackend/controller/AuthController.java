@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,13 @@ public class AuthController {
         this.authService = authService;
     }
 
+
+    @GetMapping("/is-admin")
+    public boolean isAdmin(@RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        return authService.isAdmin(token);
+    }
+    
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegistrationRequest request) {
         return ResponseEntity.ok(authService.register(request));

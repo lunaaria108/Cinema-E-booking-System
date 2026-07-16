@@ -217,8 +217,40 @@ public class UserController {
             );
         }
     }
+    @PutMapping("/{userId}/cards/{cardId}")
+    public ResponseEntity<?> updatePaymentCard(
+            @PathVariable Integer userId,
+            @PathVariable Integer cardId,
+            @RequestBody PaymentCardRequest request) {
 
-    /**
+        try {
+            Optional<PaymentCard> card =
+                    paymentCardService.updateCard(
+                            userId,
+                            cardId,
+                            request.getCardholderName(),
+                            request.getCardNumber(),
+                            request.getExpirationMonth(),
+                            request.getExpirationYear(),
+                            request.getCvv(),
+                            request.getBillingZip()
+                    );
+
+            if (card.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(card.get());
+
+        } catch (IllegalArgumentException |
+                IllegalStateException exception) {
+
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", exception.getMessage())
+            );
+        }
+    }
+        /**
      * Deletes a stored payment card.
      *
      * DELETE /api/users/{userId}/cards/{cardId}
