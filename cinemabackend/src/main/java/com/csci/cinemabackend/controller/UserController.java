@@ -79,7 +79,7 @@ public class UserController {
                 userId,
                 request.getUserName(),
                 request.getFirstName(),
-                request.getLastName()
+                request.getLastName(),
                 request.getPhoneNumber(),
                 request.getStreetAddress()
         );
