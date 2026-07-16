@@ -146,8 +146,12 @@ function HomePage() {
     }
   };
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (authData) => {
     setAuth(loadAuthState());
+
+    if (authData.isAdmin) {
+        navigate("/admin");
+    }
   };
 
   const handleLogout = async () => {

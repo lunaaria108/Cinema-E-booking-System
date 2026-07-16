@@ -52,13 +52,34 @@ export default function LoginModal({
                 return;
             }
 
-            saveAuthState(responseData);
+            const adminResponse = await fetch(
+                "http://localhost:8080/api/auth/is-admin",
+                {
+                    headers: {
+                    Authorization: `Bearer ${responseData.token}`,
+                    },
+                }
+                );
 
-            alert(responseData?.message || "Login successful.");
+                if (!adminResponse.ok) {
+                throw new Error("Unable to determine account type.");
+                }
 
-            onLoginSuccess(responseData);
+                const isAdmin = await adminResponse.json();
 
-            onClose();
+                saveAuthState({
+                ...responseData,
+                isAdmin,
+                });
+
+                alert(responseData.message || "Login successful.");
+
+                onLoginSuccess({
+                ...responseData,
+                isAdmin,
+                });
+
+                onClose();
         } catch (error) {
             console.error("Login request failed:", error);
             alert("Unable to connect to the backend.");
