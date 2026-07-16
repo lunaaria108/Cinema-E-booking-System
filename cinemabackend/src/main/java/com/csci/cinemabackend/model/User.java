@@ -32,6 +32,9 @@ public class User {
     @Column(name = "phone_number", nullable = false, length = 20)
     private String phoneNumber;
 
+    @Column(name = "street_address", nullable = false, length = 255)
+    private String streetAddress;
+
     /**
      * Stores the securely hashed password, never the plaintext password.
      */
@@ -90,6 +93,10 @@ public class User {
         return phoneNumber;
     }
 
+    public String getStreetAddress() {
+        return streetAddress;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -124,6 +131,10 @@ public class User {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public void setStreetAddress(String streetAddress) {
+        this.streetAddress = streetAddress;
     }
 
     public void setPassword(String password) {
