@@ -62,36 +62,20 @@ export default function SignUpPage() {
                     bg-black/90 p-8 shadow-xl flex justify-center items-center flex-col mt-10 mb-10"
                 >
                     <div className="flex flex-col items-center gap-4">
-                        <img
-                            src={logo}
-                            alt="Logo"
-                            className="h-16 w-16"
-                        />
+                        <img src={logo} alt="Logo" className="h-16 w-16"/>
 
                         <p className="text-2xl font-bold text-white">
                             Create an Account
                         </p>
                     </div>
 
-                    <form
-                        className="flex flex-col items-start justify-start gap-10 mt-10"
-                        onSubmit={handleSubmit}
-                    >
+                    <form className="flex flex-col items-start justify-start gap-10 mt-10" onSubmit={handleSubmit}>
                         <div className="flex items-center">
-                            <label
-                                htmlFor="firstname"
-                                className="w-24 text-[#D4AF37] text-left"
-                            >
+                            <label htmlFor="firstname" className="w-24 text-[#D4AF37] text-left">
                                 First Name:
                             </label>
 
-                            <input
-                                type="text"
-                                id="firstname"
-                                name="firstname"
-                                required
-                                className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"
-                            />
+                            <input type="text" id="firstname" name="firstname" required className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"/>
                         </div>
 
                         <div className="flex items-center">
