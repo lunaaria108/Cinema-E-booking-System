@@ -146,7 +146,7 @@ public class AuthService {
                 "Welcome " + user.getFirstName()
                         + ",\n\nUse this confirmation token to activate your account: "
                         + verificationToken
-                        + "\n\nOr open: http://localhost:8080/api/auth/confirm-email?token="
+                        + "\n\nOr open: http://localhost:5173/confirmation?token="
                         + verificationToken
         );
 
