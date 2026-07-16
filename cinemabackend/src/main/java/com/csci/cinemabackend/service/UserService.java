@@ -36,35 +36,42 @@ public class UserService {
      * The email, password, role, account status, and creation date
      * are not changed through profile editing.
      */
-     public Optional<User> updateProfile(
+    public Optional<User> updateProfile(
             Integer userId,
             String userName,
             String firstName,
             String lastName,
             String phoneNumber,
-            String streetAddress)
+            String streetAddress) {
 
         Optional<User> optionalUser = userRepository.findById(userId);
 
-   if (userName != null && !userName.isBlank()) {
-    user.setUserName(userName.trim());
-}
+        if (optionalUser.isEmpty()) {
+            return Optional.empty();
+        }
 
-if (firstName != null && !firstName.isBlank()) {
-    user.setFirstName(firstName.trim());
-}
+        User user = optionalUser.get();
 
-if (lastName != null && !lastName.isBlank()) {
-    user.setLastName(lastName.trim());
-}
+        if (userName != null && !userName.isBlank()) {
+            user.setUserName(userName.trim());
+        }
 
-if (phoneNumber != null && !phoneNumber.isBlank()) {
-    user.setPhoneNumber(phoneNumber.trim());
-}
+        if (firstName != null && !firstName.isBlank()) {
+            user.setFirstName(firstName.trim());
+        }
 
-if (streetAddress != null && !streetAddress.isBlank()) {
-    user.setStreetAddress(streetAddress.trim());
-}
+        if (lastName != null && !lastName.isBlank()) {
+            user.setLastName(lastName.trim());
+        }
+
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            user.setPhoneNumber(phoneNumber.trim());
+        }
+
+        if (streetAddress != null && !streetAddress.isBlank()) {
+            user.setStreetAddress(streetAddress.trim());
+        }
+
         User savedUser = userRepository.save(user);
 
         mailService.send(
