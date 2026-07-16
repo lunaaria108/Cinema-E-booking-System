@@ -1,5 +1,6 @@
 package com.csci.cinemabackend.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.csci.cinemabackend.auth.dto.AuthResponse;
 import com.csci.cinemabackend.auth.dto.ForgotPasswordRequest;
 import com.csci.cinemabackend.auth.dto.LoginRequest;
@@ -309,7 +310,8 @@ public class AuthService {
                 resetTokenValue
         );
     }
-
+    
+    @Transactional
     public AuthResponse resetPassword(
             ResetPasswordRequest request) {
 
