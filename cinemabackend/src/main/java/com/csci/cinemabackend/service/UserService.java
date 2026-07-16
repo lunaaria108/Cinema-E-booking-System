@@ -46,24 +46,25 @@ public class UserService {
 
         Optional<User> optionalUser = userRepository.findById(userId);
 
-        if (optionalUser.isEmpty()) {
-            return Optional.empty();
-        }
+   if (userName != null && !userName.isBlank()) {
+    user.setUserName(userName.trim());
+}
 
-        User user = optionalUser.get();
+if (firstName != null && !firstName.isBlank()) {
+    user.setFirstName(firstName.trim());
+}
 
-        if (userName != null && !userName.isBlank()) {
-            user.setUserName(userName.trim());
-        }
+if (lastName != null && !lastName.isBlank()) {
+    user.setLastName(lastName.trim());
+}
 
-        if (firstName != null && !firstName.isBlank()) {
-            user.setFirstName(firstName.trim());
-        }
+if (phoneNumber != null && !phoneNumber.isBlank()) {
+    user.setPhoneNumber(phoneNumber.trim());
+}
 
-        if (lastName != null && !lastName.isBlank()) {
-            user.setLastName(lastName.trim());
-        }
-
+if (streetAddress != null && !streetAddress.isBlank()) {
+    user.setStreetAddress(streetAddress.trim());
+}
         User savedUser = userRepository.save(user);
 
         mailService.send(
