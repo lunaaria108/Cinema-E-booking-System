@@ -17,6 +17,7 @@ const handleSubmit = async (event) => {
         username: formData.get("username"),
         email: formData.get("email"),
         phoneNumber: formData.get("phoneNumber"),
+        streetAddress: formData.get("streetAddress"),
         password: formData.get("password"),
         confirmPassword: formData.get("confirmPassword"),
     };
@@ -191,6 +192,24 @@ export default function SignUpPage() {
                                 type="tel"
                                 id="phoneNumber"
                                 name="phoneNumber"
+                                required
+                                className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"
+                            />
+                        </div>
+
+                        <div className="flex items-center">
+                            <label
+                                htmlFor="streetAddress"
+                                className="w-24 text-[#D4AF37] text-left"
+                            >
+                                Address:
+                            </label>
+
+                            <input
+                                type="text"
+                                id="streetAddress"
+                                name="streetAddress"
+                                maxLength={255}
                                 required
                                 className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"
                             />
