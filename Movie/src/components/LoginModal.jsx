@@ -1,6 +1,9 @@
 import logo from "../assets/logo.jpg";
+import { useNavigate } from "react-router-dom";
 
-export default function LoginModal({ onClose }) {
+export default function LoginModal({ onClose, onForgotPassword }) {
+    const navigate = useNavigate();
+    
     return (
          <div className="fixed inset-0 bg-black/90 flex justify-center items-center z-[1000]" onClick={onClose}>
             <div className="relative bg-[#121212] border border-[#003D1A] rounded-xl p-6" onClick={(e) => e.stopPropagation()}>
@@ -14,7 +17,7 @@ export default function LoginModal({ onClose }) {
                         </p>
                     </div>
 
-                    <form className ="flex flex-col items-start justify-start gap-10 mt-10">
+                    <form className ="flex flex-col items-center justify-start gap-10 mt-10">
                         <div className="flex items-center">
                             <label htmlFor="email" className="w-24 text-[#D4AF37] text-left">
                                 Email:
@@ -35,9 +38,9 @@ export default function LoginModal({ onClose }) {
                             Sign Up
                         </button>
 
-                        <a href="#" className="text-[#D4AF37] hover:underline">
+                        <button type="button" className="text-[#D4AF37] hover:underline" onClick={onForgotPassword}>
                             Forgot Password?
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
