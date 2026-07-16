@@ -23,13 +23,19 @@ export default function UserProfile() {
         promoOptIn: true,
     });
 
-    const [paymentCards, setPaymentCards] = useState([
-        {
-            id: 1,
-            last4: "4242",
-            exp: "12/28",
-        },
-    ]);
+    const [paymentCards, setPaymentCards] = useState([]);
+
+    const [showCardForm, setShowCardForm] = useState(false);
+    const [editingCardId, setEditingCardId] = useState(null);
+
+    const [cardForm, setCardForm] = useState({
+        cardholderName: "",
+        cardNumber: "",
+        expirationMonth: "",
+        expirationYear: "",
+        cvv: "",
+        billingZip: "",
+    });
 
     const [passwords, setPasswords] = useState({
         oldPassword: "",
@@ -79,6 +85,37 @@ export default function UserProfile() {
 
         loadProfile();
     }, [auth.userId]);
+
+    useEffect(() => {
+        if (!auth.userId) {
+            setPaymentCards([]);
+            return;
+        }
+
+        const loadPaymentCards = async () => {
+            try {
+            const response = await fetch(
+                `http://localhost:8080/api/users/${auth.userId}/cards`,
+                {
+                headers: {
+                    Authorization: `Bearer ${auth.token}`,
+                },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Unable to load cards: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setPaymentCards(data);
+            } catch (error) {
+            console.error("Unable to load payment cards:", error);
+            }
+        };
+
+        loadPaymentCards();
+    }, [auth.userId, auth.token]);
 
     const handleProfileChange = (event) => {
         const { name, value, type, checked } = event.target;
@@ -168,6 +205,80 @@ export default function UserProfile() {
         }
     };
 
+    const handleUpdatePassword = async () => {
+        if (!auth.userId) {
+            alert("You must be logged in to update your password.");
+            return;
+        }
+
+        if (
+            !passwords.oldPassword.trim() ||
+            !passwords.newPassword.trim() ||
+            !passwords.confirmPassword.trim()
+        ) {
+            alert("Please fill in all password fields.");
+            return;
+        }
+
+        if (passwords.newPassword !== passwords.confirmPassword) {
+            alert("New password and confirm password do not match.");
+            return;
+        }
+
+        if (passwords.newPassword.length < 8) {
+            alert("The new password must be at least 8 characters.");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+            `http://localhost:8080/api/users/${auth.userId}/password`,
+            {
+                method: "PUT",
+                headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
+                },
+                body: JSON.stringify({
+                oldPassword: passwords.oldPassword,
+                newPassword: passwords.newPassword,
+                }),
+            }
+            );
+
+            const responseText = await response.text();
+
+            let responseData = null;
+
+            if (responseText) {
+            try {
+                responseData = JSON.parse(responseText);
+            } catch {
+                responseData = {
+                message: responseText,
+                };
+            }
+            }
+
+            if (!response.ok) {
+            alert(responseData?.message || "Unable to update password.");
+            return;
+            }
+
+            alert(responseData?.message || "Password updated successfully.");
+
+            // Clear the fields after success
+            setPasswords({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+            });
+        } catch (error) {
+            console.error("Password update failed:", error);
+            alert("Unable to connect to the backend.");
+        }
+    };
+
     const handleLogout = async () => {
         if (auth.token) {
             try {
@@ -193,23 +304,136 @@ export default function UserProfile() {
         navigate("/");
     };
 
-    const handleAddCard = () => {
-        if (paymentCards.length < 3) {
-            setPaymentCards((currentCards) => [
-                ...currentCards,
-                {
-                    id: Date.now(),
-                    last4: "0000",
-                    exp: "00/00",
+   const handleAddCard = () => {
+        if (paymentCards.length >= 3) {
+            return;
+        }
+
+        setEditingCardId(null);
+
+        setCardForm({
+            cardNumber: "",
+            expirationDate: "",
+        });
+
+        setShowCardForm(true);
+    };
+
+    const handleEditCard = (card) => {
+        setEditingCardId(card.cardId);
+
+        setCardForm({
+            cardholderName: card.cardholderName || "",
+            cardNumber: card.cardNumber || "",
+            expirationMonth: card.expirationMonth || "",
+            expirationYear: card.expirationYear || "",
+            cvv: card.cvv || "",
+            billingZip: card.billingZip || "",
+        });
+
+        setShowCardForm(true);
+    };
+
+   const handleSaveCard = async () => {
+        const cleanedCardNumber = cardForm.cardNumber.replace(/\s/g, "");
+
+        if (
+            !cardForm.cardholderName.trim() ||
+            !cleanedCardNumber ||
+            !cardForm.expirationMonth ||
+            !cardForm.expirationYear ||
+            !cardForm.cvv.trim() ||
+            !cardForm.billingZip.trim()
+        ) {
+            alert("Please enter all card information.");
+            return;
+        }
+
+        const payload = {
+            cardholderName: cardForm.cardholderName.trim(),
+            cardNumber: cleanedCardNumber,
+            expirationMonth: Number(cardForm.expirationMonth),
+            expirationYear: Number(cardForm.expirationYear),
+            cvv: cardForm.cvv.trim(),
+            billingZip: cardForm.billingZip.trim(),
+        };
+
+        try {
+            const response = await fetch(
+            `http://localhost:8080/api/users/${auth.userId}/cards`,
+            {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${auth.token}`,
                 },
+                body: JSON.stringify(payload),
+            }
+            );
+
+            const responseText = await response.text();
+
+            let savedCard = null;
+
+            if (responseText) {
+            try {
+                savedCard = JSON.parse(responseText);
+            } catch {
+                throw new Error(responseText);
+            }
+            }
+
+            if (!response.ok) {
+            throw new Error(
+                savedCard?.message || "Unable to save payment card."
+            );
+            }
+
+            setPaymentCards((currentCards) => [
+            ...currentCards,
+            savedCard,
             ]);
+
+            setShowCardForm(false);
+            setEditingCardId(null);
+
+            setCardForm({
+            cardholderName: "",
+            cardNumber: "",
+            expirationMonth: "",
+            expirationYear: "",
+            cvv: "",
+            billingZip: "",
+            });
+        } catch (error) {
+            console.error("Saving card failed:", error);
+            alert(error.message);
         }
     };
 
-    const handleDeleteCard = (id) => {
-        setPaymentCards((currentCards) =>
-            currentCards.filter((card) => card.id !== id)
-        );
+    const handleDeleteCard = async (cardId) => {
+        try {
+            const response = await fetch(
+            `http://localhost:8080/api/users/${auth.userId}/cards/${cardId}`,
+            {
+                method: "DELETE",
+                headers: {
+                Authorization: `Bearer ${auth.token}`,
+                },
+            }
+            );
+
+            if (!response.ok) {
+            throw new Error(`Unable to delete card: ${response.status}`);
+            }
+
+            setPaymentCards((currentCards) =>
+            currentCards.filter((card) => card.cardId !== cardId)
+            );
+        } catch (error) {
+            console.error("Deleting card failed:", error);
+            alert(error.message);
+        }
     };
 
     if (isLoading) {
@@ -245,6 +469,7 @@ export default function UserProfile() {
             <NavBar
                 isLoggedIn={Boolean(auth.token)}
                 onLogout={handleLogout}
+                isProfilePage={true}
             />
 
             <div className="max-w-6xl mx-auto p-8 mt-6">
@@ -417,6 +642,7 @@ export default function UserProfile() {
                             <button
                                 type="button"
                                 className="bg-[#003D1A] text-[#D4AF37] py-2 rounded font-bold hover:bg-[#0a5229]"
+                                onClick={handleUpdatePassword}
                             >
                                 Update Password
                             </button>
@@ -486,43 +712,156 @@ export default function UserProfile() {
                         </div>
 
                         <div className="flex flex-col gap-3 mb-4">
-                            {paymentCards.map((card) => (
+                           {paymentCards.map((card) => (
                                 <div
-                                    key={card.id}
+                                    key={card.cardId}
                                     className="flex justify-between items-center bg-black p-3 rounded border border-[#003D1A]"
                                 >
                                     <div className="text-white">
-                                        <p>
-                                            💳 **** **** ****{" "}
-                                            {card.last4}
-                                        </p>
+                                    <p>
+                                        •••• •••• •••• {card.cardNumber?.slice(-4)}
+                                    </p>
 
-                                        <p className="text-sm text-gray-400">
-                                            Exp: {card.exp}
-                                        </p>
+                                    <p className="text-sm text-gray-400">
+                                        Exp: {card.expirationMonth}/{card.expirationYear}
+                                    </p>
                                     </div>
 
                                     <div className="flex gap-2">
-                                        <button
-                                            type="button"
-                                            className="text-[#D4AF37] hover:underline text-sm"
-                                        >
-                                            Edit
-                                        </button>
+                                    <button
+                                        type="button"
+                                        className="text-[#D4AF37] hover:underline text-sm"
+                                        onClick={() => handleEditCard(card)}
+                                    >
+                                        Edit
+                                    </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleDeleteCard(card.id)
-                                            }
-                                            className="text-red-400 hover:underline text-sm"
-                                        >
-                                            Delete
-                                        </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteCard(card.cardId)}
+                                        className="text-red-400 hover:underline text-sm"
+                                    >
+                                        Delete
+                                    </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
+
+                       {showCardForm && (
+                            <div className="bg-black p-4 rounded border border-[#003D1A] mb-4">
+                                <h3 className="text-[#D4AF37] font-bold mb-3">
+                                {editingCardId !== null
+                                    ? "Edit Payment Method"
+                                    : "Add Payment Method"}
+                                </h3>
+
+                                <div className="flex flex-col gap-3">
+                                <input
+                                    type="text"
+                                    placeholder="Cardholder Name"
+                                    value={cardForm.cardholderName}
+                                    onChange={(event) =>
+                                    setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        cardholderName: event.target.value,
+                                    }))
+                                    }
+                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                />
+
+                                <input
+                                    type="text"
+                                    placeholder="Card Number"
+                                    value={cardForm.cardNumber}
+                                    onChange={(event) =>
+                                    setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        cardNumber: event.target.value,
+                                    }))
+                                    }
+                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                />
+
+                                <div className="flex gap-3">
+                                    <input
+                                    type="number"
+                                    placeholder="Expiration Month"
+                                    min="1"
+                                    max="12"
+                                    value={cardForm.expirationMonth}
+                                    onChange={(event) =>
+                                        setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        expirationMonth: event.target.value,
+                                        }))
+                                    }
+                                    className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                    />
+
+                                    <input
+                                    type="number"
+                                    placeholder="Expiration Year"
+                                    value={cardForm.expirationYear}
+                                    onChange={(event) =>
+                                        setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        expirationYear: event.target.value,
+                                        }))
+                                    }
+                                    className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                    />
+                                </div>
+
+                                <input
+                                    type="password"
+                                    placeholder="CVV"
+                                    value={cardForm.cvv}
+                                    onChange={(event) =>
+                                    setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        cvv: event.target.value,
+                                    }))
+                                    }
+                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                />
+
+                                <input
+                                    type="text"
+                                    placeholder="Billing ZIP"
+                                    value={cardForm.billingZip}
+                                    onChange={(event) =>
+                                    setCardForm((currentForm) => ({
+                                        ...currentForm,
+                                        billingZip: event.target.value,
+                                    }))
+                                    }
+                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                />
+
+                                <div className="flex gap-3">
+                                    <button
+                                    type="button"
+                                    onClick={handleSaveCard}
+                                    className="bg-[#003D1A] text-[#D4AF37] px-4 py-2 rounded font-bold"
+                                    >
+                                    Save Card
+                                    </button>
+
+                                    <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCardForm(false);
+                                        setEditingCardId(null);
+                                    }}
+                                    className="text-gray-300 hover:underline"
+                                    >
+                                    Cancel
+                                    </button>
+                                </div>
+                                </div>
+                            </div>
+                        )}
 
                         <button
                             type="button"

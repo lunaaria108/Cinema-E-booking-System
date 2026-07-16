@@ -12,7 +12,8 @@ export default function NavBar({
     isAdmin = false, 
     isSignUpPage = false,
     onLogIn = () => {},
-    onLogout = () => {}
+    onLogout = () => {},
+    isProfilePage = false,
 }) {
     const navigate = useNavigate();
     
@@ -45,28 +46,56 @@ export default function NavBar({
                     <SearchBar onSearch={onSearch} />
 
                     <div className="flex items-center gap-4 border-l border-[#003D1A] pl-4 ml-2">
-                        {isLoggedIn ? (
-                            <>
-                                {isAdmin && (
-                                    <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={() => navigate("/admin")}>
-                                        Admin
-                                    </button>
-                                )}
-                                <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={() => navigate("/profile")}>
-                                    Profile
-                                </button>
-                                <button className="text-red-400 hover:text-red-300 transition-colors" onClick={onLogout}>
+                        {isLoggedIn && isProfilePage && (
+                                <button
+                                    className="text-red-400 hover:text-red-300 transition-colors"
+                                    onClick={onLogout}
+                                >
                                     Logout
                                 </button>
-                            </>
-                        ) : (
-                            <>
-                                <button className="text-[#D4AF37] hover:text-white transition-colors" onClick={onLogIn}>
+                                )}
+
+                                {isLoggedIn && !isProfilePage && (
+                                <>
+                                    {isAdmin && (
+                                    <button
+                                        className="text-[#D4AF37] hover:text-white transition-colors"
+                                        onClick={() => navigate("/admin")}
+                                    >
+                                        Admin
+                                    </button>
+                                    )}
+
+                                    <button
+                                    className="text-[#D4AF37] hover:text-white transition-colors"
+                                    onClick={() => navigate("/profile")}
+                                    >
+                                    Profile
+                                    </button>
+
+                                    <button
+                                    className="text-red-400 hover:text-red-300 transition-colors"
+                                    onClick={onLogout}
+                                    >
+                                    Logout
+                                    </button>
+                                </>
+                                )}
+
+                                {!isLoggedIn && (
+                                <>
+                                    <button
+                                    className="text-[#D4AF37] hover:text-white transition-colors"
+                                    onClick={onLogIn}
+                                    >
                                     Log In
-                                </button>
-                                {!isSignUpPage && (
-                                    <button className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229] transition-colors"
-                                     onClick={() => navigate("/signup")}>
+                                    </button>
+
+                                    {!isSignUpPage && (
+                                    <button
+                                        className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229]"
+                                        onClick={() => navigate("/signup")}
+                                    >
                                         Sign Up
                                     </button>
                                 )}

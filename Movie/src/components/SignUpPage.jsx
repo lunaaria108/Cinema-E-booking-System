@@ -4,54 +4,13 @@ import logo from "../assets/logo.jpg";
 import LoginModal from "./LoginModal";
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useNavigate } from "react-router-dom";
-
-const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-
-    const user = {
-        firstname: formData.get("firstname"),
-        lastname: formData.get("lastname"),
-        username: formData.get("username"),
-        email: formData.get("email"),
-        phoneNumber: formData.get("phoneNumber"),
-        streetAddress: formData.get("streetAddress"),
-        password: formData.get("password"),
-        confirmPassword: formData.get("confirmPassword"),
-    };
-
-    try {
-        const response = await fetch(
-            "http://localhost:8080/api/auth/register",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(user),
-            }
-        );
-
-        const responseText = await response.text();
-
-        if (response.ok) {
-            alert("Account created! Please check your email to verify it.");
-            form.reset();
-        } else {
-            alert(responseText || "Unable to create account.");
-        }
-    } catch (error) {
-        console.error("Registration request failed:", error);
-        alert("Unable to connect to the backend.");
-    }
-};
+import ConfirmationModal from "./ConfirmationModal";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
     const [auth, setAuth] = useState(() => loadAuthState());
     const [showLogIn, setShowLogIn] = useState(false);
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
     const handleLoginSuccess = () => {
         setAuth(loadAuthState());
@@ -78,6 +37,52 @@ export default function SignUpPage() {
             clearAuthState();
             setAuth(loadAuthState());
             navigate("/");
+        }
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+
+        const user = {
+        firstname: formData.get("firstname"),
+        lastname: formData.get("lastname"),
+        username: formData.get("username"),
+        email: formData.get("email"),
+        phoneNumber: formData.get("phoneNumber"),
+        streetAddress: formData.get("streetAddress"),
+        password: formData.get("password"),
+        confirmPassword: formData.get("confirmPassword"),
+        };
+
+        try {
+        const response = await fetch(
+            "http://localhost:8080/api/auth/register",
+            {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user),
+            }
+        );
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            alert(responseText || "Unable to create account.");
+            return;
+        }
+
+        form.reset();
+
+        // Opens the confirmation modal
+        setShowConfirmationModal(true);
+        } catch (error) {
+        console.error("Registration request failed:", error);
+        alert("Unable to connect to the backend.");
         }
     };
 
@@ -253,6 +258,10 @@ export default function SignUpPage() {
                     onClose={() => setShowLogIn(false)}
                     onLoginSuccess={handleLoginSuccess}
                 />
+            )}
+
+            {showConfirmationModal && (
+                <ConfirmationModal onClose={() => setShowConfirmationModal(false)} />
             )}
         </>
     );

@@ -19,6 +19,132 @@ function HomePage() {
   const [isFiltered, setIsFiltered] = useState(false);
   const [showLogIn, setShowLogIn] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+
+  useEffect(() => {
+    if (!auth.userId) {
+      setFavoriteMovies([]);
+      setLoadingFavorites(false);
+      return;
+    }
+
+    const loadFavoriteMovies = async () => {
+      try {
+        setLoadingFavorites(true);
+
+        const response = await fetch(
+          `http://localhost:8080/api/users/${auth.userId}/favorites`,
+          {
+            headers: {
+              Authorization: `Bearer ${auth.token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Unable to load favorites: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        const movies = data
+          .map((favorite) => favorite.movie)
+          .filter(Boolean);
+
+        setFavoriteMovies(movies);
+      } catch (error) {
+        console.error("Loading favorites failed:", error);
+        setFavoriteMovies([]);
+      } finally {
+        setLoadingFavorites(false);
+      }
+    };
+
+    loadFavoriteMovies();
+  }, [auth.userId, auth.token]);
+
+  const isMovieFavorite = (movieId) => {
+    return favoriteMovies.some(
+      (movie) => movie.movieId === movieId
+    );
+  };
+
+  const handleToggleFavorite = async (movie) => {
+    if (!auth.userId) {
+      alert("You must be logged in to favorite a movie.");
+      return;
+    }
+
+    const movieId = movie.movieId;
+
+    if (!movieId) {
+      console.error("Movie is missing movieId:", movie);
+      alert("Unable to identify this movie.");
+      return;
+    }
+
+    const currentlyFavorite = isMovieFavorite(movieId);
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/users/${auth.userId}/favorites/${movieId}`,
+        {
+          method: currentlyFavorite ? "DELETE" : "POST",
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const responseText = await response.text();
+
+        throw new Error(
+          responseText ||
+            `Unable to update favorite: ${response.status}`
+        );
+      }
+
+      if (currentlyFavorite) {
+        setFavoriteMovies((currentFavorites) =>
+          currentFavorites.filter(
+            (favoriteMovie) =>
+              favoriteMovie.movieId !== movieId
+          )
+        );
+
+        return;
+      }
+
+      const savedFavorite = await response.json();
+      const savedMovie = savedFavorite.movie;
+
+      if (!savedMovie) {
+        throw new Error(
+          "The backend did not return the favorited movie."
+        );
+      }
+
+      setFavoriteMovies((currentFavorites) => {
+        const alreadyExists = currentFavorites.some(
+          (favoriteMovie) =>
+            favoriteMovie.movieId === savedMovie.movieId
+        );
+
+        if (alreadyExists) {
+          return currentFavorites;
+        }
+
+        return [...currentFavorites, savedMovie];
+      });
+    } catch (error) {
+      console.error("Updating favorite failed:", error);
+      alert(error.message);
+    }
+  };
 
   const handleLoginSuccess = () => {
     setAuth(loadAuthState());
@@ -154,10 +280,30 @@ function HomePage() {
           </div>
         </section>
 
+         {/* FAVORITES */}
+          {!isSearching && auth.userId && (
+            <section className="movie-list">
+              <h2>Your Favorite Movies</h2>
+
+              {loadingFavorites ? (
+                <p>Loading favorites...</p>
+              ) : favoriteMovies.length === 0 ? (
+                <p>You haven't favorited any movies yet.</p>
+              ) : (
+                <MovieCarousel
+                  movies={favoriteMovies}
+                  onMovieClick={setSelectedMovie}
+                  onFavorite={handleToggleFavorite}
+                  isFavorite={isMovieFavorite}
+                />
+              )}
+            </section>
+          )}
+
         {!isSearching && (
           <section className="movie-list">
             <h2>Now Showing</h2>
-            <MovieCarousel movies={carouselMovies} onMovieClick={setSelectedMovie} />
+            <MovieCarousel movies={carouselMovies} onMovieClick={setSelectedMovie} onFavorite={handleToggleFavorite} isFavorite={isMovieFavorite} />
           </section>
         )}
       </main>

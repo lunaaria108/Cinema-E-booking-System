@@ -1,10 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-
 import BookingPage from "./components/BookingPage";
 import HomePage from "./components/HomePage";
 import UserProfile from "./components/UserProfile";
 import SignUpPage from "./components/SignUpPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
+import EmailConfirmation from "./components/EmailConfirmation";
+import AdminPage from "./components/AdminPage";
 
 export default function App() {
     return (
@@ -13,10 +14,9 @@ export default function App() {
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/profile" element={<UserProfile />} />
             <Route path="/signup" element={<SignUpPage />} />
-            <Route
-                path="/reset-password"
-                element={<ResetPasswordPage />}
-            />
+            <Route path="/reset-password" element={<ResetPasswordPage />}/>
+            <Route path="/confirmation" element={<EmailConfirmation />}/>
+            <Route path="/admin" element={<AdminPage />} />
         </Routes>
     );
 }
