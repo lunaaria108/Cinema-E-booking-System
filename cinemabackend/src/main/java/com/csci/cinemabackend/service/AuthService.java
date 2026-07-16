@@ -73,6 +73,7 @@ public class AuthService {
         user.setUserName(request.username().trim());
         user.setEmail(request.email().trim().toLowerCase());
         user.setPhoneNumber(request.phoneNumber().trim());
+        user.setStreetAddress(request.streetAddress().trim());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setIsAdmin(false);
         user.setIsActive(false);
