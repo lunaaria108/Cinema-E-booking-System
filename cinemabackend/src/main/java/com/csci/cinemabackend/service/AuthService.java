@@ -69,6 +69,21 @@ public class AuthService {
                 sessionExpirationHours;
     }
 
+    public boolean isAdmin(String token) {
+    UserSession session = userSessionRepository
+            .findByTokenAndRevokedFalse(token)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Invalid session token"));
+
+    if (session.getExpiresAt().isBefore(Instant.now())) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Session expired");
+    }
+    return session.getUser().getIsAdmin();
+}
+
     public AuthResponse register(RegistrationRequest request) {
         if (!request.password().equals(request.confirmPassword())) {
             throw new ResponseStatusException(
