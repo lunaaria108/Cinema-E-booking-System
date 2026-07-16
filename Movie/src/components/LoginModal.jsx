@@ -15,7 +15,7 @@ export default function LoginModal({
         const formData = new FormData(event.currentTarget);
 
         const payload = {
-            identifier: String(formData.get("email") || "").trim(),
+            identifier: String(formData.get("identifier") || "").trim(),
             password: String(formData.get("password") || ""),
         };
 
@@ -34,13 +34,16 @@ export default function LoginModal({
             );
 
             const responseText = await response.text();
+
             let responseData = null;
 
             if (responseText) {
                 try {
                     responseData = JSON.parse(responseText);
                 } catch {
-                    responseData = { message: responseText };
+                    responseData = {
+                        message: responseText,
+                    };
                 }
             }
 
@@ -50,8 +53,11 @@ export default function LoginModal({
             }
 
             saveAuthState(responseData);
+
             alert(responseData?.message || "Login successful.");
+
             onLoginSuccess(responseData);
+
             onClose();
         } catch (error) {
             console.error("Login request failed:", error);
@@ -63,22 +69,21 @@ export default function LoginModal({
 
     return (
         <div
-            className="fixed inset-0 bg-black/90 flex justify-center items-center z-1000"
+            className="fixed inset-0 bg-black/90 flex justify-center items-center z-[1000]"
             onClick={onClose}
         >
             <div
                 className="relative bg-[#121212] border border-[#003D1A] rounded-xl p-6"
-                onClick={(event) => event.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
             >
                 <button
-                    type="button"
                     className="absolute top-4 right-4 text-[#D4AF37] text-3xl hover:text-white transition-colors"
                     onClick={onClose}
                 >
                     ✕
                 </button>
 
-                <div className="flex flex-col items-center justify-center gap-5">
+                <div className="flex flex-col items-center gap-5">
                     <div className="flex flex-col items-center gap-4">
                         <img
                             src={logo}
@@ -92,22 +97,21 @@ export default function LoginModal({
                     </div>
 
                     <form
-                        id="login-form"
-                        className="flex flex-col items-center justify-start gap-10 mt-10"
+                        className="flex flex-col items-center gap-6 mt-8"
                         onSubmit={handleSubmit}
                     >
                         <div className="flex items-center">
                             <label
-                                htmlFor="email"
-                                className="w-24 text-[#D4AF37] text-left"
+                                htmlFor="identifier"
+                                className="w-28 text-[#D4AF37] text-left"
                             >
                                 Email or Username:
                             </label>
 
                             <input
                                 type="text"
-                                id="email"
-                                name="email"
+                                id="identifier"
+                                name="identifier"
                                 required
                                 className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2 text-white"
                             />
@@ -116,7 +120,7 @@ export default function LoginModal({
                         <div className="flex items-center">
                             <label
                                 htmlFor="password"
-                                className="w-24 text-[#D4AF37] text-left"
+                                className="w-28 text-[#D4AF37] text-left"
                             >
                                 Password:
                             </label>
@@ -129,26 +133,23 @@ export default function LoginModal({
                                 className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2 text-white"
                             />
                         </div>
-                    </form>
 
-                    <div className="flex flex-col m-6 gap-6">
                         <button
                             type="submit"
-                            form="login-form"
-                            className="w-full max-w-sm h-full max-h-12.5 bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                             disabled={isSubmitting}
+                            className="w-full bg-[#003D1A] text-[#D4AF37] px-4 py-2 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? "Logging In..." : "Log In"}
                         </button>
+                    </form>
 
-                        <button
-                            type="button"
-                            className="text-[#D4AF37] hover:underline"
-                            onClick={onForgotPassword}
-                        >
-                            Forgot Password?
-                        </button>
-                    </div>
+                    <button
+                        type="button"
+                        className="text-[#D4AF37] hover:underline mt-2"
+                        onClick={onForgotPassword}
+                    >
+                        Forgot Password?
+                    </button>
                 </div>
             </div>
         </div>
