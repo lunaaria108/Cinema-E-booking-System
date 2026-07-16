@@ -163,6 +163,7 @@ INSERT INTO Users
     first_name,
     last_name,
     phone_number,
+    street_address,
     password,
     is_admin,
     is_active
@@ -174,6 +175,7 @@ VALUES
     'James',
     'Reviewer',
     '7705550101',
+    '123 Main Street',
     'temporary-password',
     FALSE,
     TRUE
@@ -184,6 +186,7 @@ VALUES
     'Alex',
     'Reviewer',
     '7705550102',
+    '456 Oak Avenue',
     'temporary-password',
     FALSE,
     TRUE
@@ -194,6 +197,7 @@ VALUES
     'Emily',
     'Reviewer',
     '7705550103',
+    '789 Pine Road',
     'temporary-password',
     FALSE,
     TRUE
@@ -204,6 +208,7 @@ VALUES
     'Chris',
     'Reviewer',
     '7705550104',
+    '321 Maple Drive',
     'temporary-password',
     FALSE,
     TRUE
@@ -214,52 +219,7 @@ VALUES
     'Maria',
     'Reviewer',
     '7705550105',
-    'temporary-password',
-    FALSE,
-    TRUE
-);
-VALUES
-(
-    'james@example.com',
-    'james',
-    'James',
-    'Reviewer',
-    'temporary-password',
-    FALSE,
-    TRUE
-),
-(
-    'alex@example.com',
-    'alex',
-    'Alex',
-    'Reviewer',
-    'temporary-password',
-    FALSE,
-    TRUE
-),
-(
-    'emily@example.com',
-    'emily',
-    'Emily',
-    'Reviewer',
-    'temporary-password',
-    FALSE,
-    TRUE
-),
-(
-    'chris@example.com',
-    'chris',
-    'Chris',
-    'Reviewer',
-    'temporary-password',
-    FALSE,
-    TRUE
-),
-(
-    'maria@example.com',
-    'maria',
-    'Maria',
-    'Reviewer',
+    '654 Cedar Lane',
     'temporary-password',
     FALSE,
     TRUE
