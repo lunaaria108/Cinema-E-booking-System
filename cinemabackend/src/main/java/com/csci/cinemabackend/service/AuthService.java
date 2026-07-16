@@ -90,10 +90,10 @@ public class AuthService {
 
 mailService.send(
         user.getEmail(),
-        "Reset your Cinema Booking Service password",
-        "Use this password reset token: " + resetTokenValue
-                + "\n\nOr open: http://localhost:5173/reset-password?token="
-                + resetTokenValue
+        "Confirm your Cinema Booking Service account",
+        "Welcome " + user.getFirstName() + ",\n\nUse this confirmation token to activate your account: "
+                + verificationToken +
+                "\n\nOr open: ..."
 );
         return new AuthResponse(
                 "Registration successful. Please confirm your email to activate the account.",
