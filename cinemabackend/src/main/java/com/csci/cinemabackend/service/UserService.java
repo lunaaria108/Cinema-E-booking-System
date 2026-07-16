@@ -36,11 +36,13 @@ public class UserService {
      * The email, password, role, account status, and creation date
      * are not changed through profile editing.
      */
-    public Optional<User> updateProfile(
+     public Optional<User> updateProfile(
             Integer userId,
             String userName,
             String firstName,
-            String lastName) {
+            String lastName,
+            String phoneNumber,
+            String streetAddress)
 
         Optional<User> optionalUser = userRepository.findById(userId);
 
