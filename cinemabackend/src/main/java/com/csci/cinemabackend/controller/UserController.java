@@ -80,6 +80,8 @@ public class UserController {
                 request.getUserName(),
                 request.getFirstName(),
                 request.getLastName()
+                request.getPhoneNumber(),
+                request.getStreetAddress()
         );
 
         if (updatedUser.isEmpty()) {
