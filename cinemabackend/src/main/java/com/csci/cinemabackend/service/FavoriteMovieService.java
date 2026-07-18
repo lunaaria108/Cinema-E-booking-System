@@ -89,8 +89,10 @@ public class FavoriteMovieService {
             Integer movieId) {
 
         boolean exists =
-                favoriteMovieRepository
-                        .existsByUserUserIdAndMovieMovieId(userId, movieId);
+           favoriteMovieRepository.favoriteExists(
+        userId,
+        movieId
+);
 
         if (!exists) {
             return false;
