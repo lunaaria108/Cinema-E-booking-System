@@ -75,7 +75,7 @@ public class UserController {
             @PathVariable Integer userId,
             @RequestBody UpdateProfileRequest request) {
 
-   Optional<User> updatedUser = userService.updateProfile(
+       Optional<User> updatedUser = userService.updateProfile(
         userId,
         request.getUserName(),
         request.getFirstName(),

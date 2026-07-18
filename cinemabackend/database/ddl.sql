@@ -127,7 +127,7 @@ CREATE TABLE Showtime (
         REFERENCES Hall(hall_id) ON DELETE RESTRICT
 );
 
-=
+
 CREATE TABLE TicketPrice (
     ticket_price_id SERIAL PRIMARY KEY,
     ticket_type VARCHAR(10) NOT NULL UNIQUE

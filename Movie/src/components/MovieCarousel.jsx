@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import './MovieCarousel.css';
 
-function MovieCarousel({ movies, onMovieClick, onFavorite }) {
+function MovieCarousel({ movies = [],
+    onMovieClick,
+    onFavorite,
+    isFavorite,
+   }) {
   const [index, setIndex] = useState(0);
 
   const handleNext = () => setIndex((prev) => (prev + 1) % movies.length);
@@ -53,14 +57,19 @@ function MovieCarousel({ movies, onMovieClick, onFavorite }) {
                     if (onFavorite) onFavorite(movie);
                   }}
                 >
-                  <motion.button 
-                    className="heart-btn"
-                    whileHover={{ scale: 1.2 }}
-                    whileTap={{ scale: 0.8 }}
-                  >
-                    🤍
-                  </motion.button>
-                </div>
+                <motion.button
+                  type="button"
+                  className="heart-btn"
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.8 }}
+                  onClick={(event) => {
+                      event.stopPropagation();
+                      onFavorite?.(movie);
+                  }}
+                >
+                  {isFavorite?.(movie.movieId) ? "♥" : "♡"}
+              </motion.button>
+                              </div>
                 {/* --------------------------- */}
 
                 {movie.trailerImage ? (

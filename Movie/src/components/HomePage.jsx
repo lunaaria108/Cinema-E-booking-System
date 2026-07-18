@@ -7,6 +7,8 @@ import FilterModal from './FilterModal';
 import LoginModal from './LoginModal';
 import ResetModal from './ResetModal';
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
+import { useNavigate } from 'react-router-dom';
+import AlertModal from "./AlertModal";
 
 function HomePage() {
   const [auth, setAuth] = useState(() => loadAuthState());
@@ -21,6 +23,8 @@ function HomePage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const navigate = useNavigate();
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     if (!auth.userId) {
@@ -74,7 +78,7 @@ function HomePage() {
 
   const handleToggleFavorite = async (movie) => {
     if (!auth.userId) {
-      alert("You must be logged in to favorite a movie.");
+      setAlertMessage("You must be logged in to favorite a movie.");
       return;
     }
 
@@ -82,7 +86,7 @@ function HomePage() {
 
     if (!movieId) {
       console.error("Movie is missing movieId:", movie);
-      alert("Unable to identify this movie.");
+      setAlertMessage("Unable to identify this movie.");
       return;
     }
 
@@ -146,8 +150,8 @@ function HomePage() {
     }
   };
 
-  const handleLoginSuccess = () => {
-    setAuth(loadAuthState());
+  const handleLoginSuccess = (authData) => {
+    setAuth(authData);
   };
 
   const handleLogout = async () => {
@@ -216,6 +220,7 @@ function HomePage() {
   const handleBrowseMovies = () => {
     setIsFiltered(false);
     setIsSearching(false);
+    setView('featured');
 
     fetch("http://localhost:8080/api/movies/current")
         .then(res => res.json())
@@ -244,16 +249,24 @@ function HomePage() {
   if (!currentHero) {
     return (
       <div className="app-container">
-        <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
-        <p className="text-white p-10">Movie not found</p>
+        <NavBar
+                onSearch={handleSearch}
+                onFilter={() => setShowFilterModal(true)}
+                onBrowseMovies={handleBrowseMovies}
+                onLogin={() => setShowLogin(true)}
+                isLoggedIn={Boolean(auth.token)}
+                onLogout={handleLogout}
+        />
+        <p className="text-white p-10">No movies matched your search</p>
       </div>
     );
   }
 
   return (
     <div className="app-container">
-      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
-  {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
+      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} 
+      onLogout={handleLogout}/>
+
 
     {!isSearching && (
       <div className="flex justify-end items-center p-4">
@@ -312,6 +325,12 @@ function HomePage() {
       {showFilterModal && <FilterModal onClose={() => setShowFilterModal(false)} onApplyFilter={handleFilter} />}
       {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}}/>)}
       {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)} />)}
+      {alertMessage && (
+        <AlertModal
+          message={alertMessage}
+          onClose={() => setAlertMessage("")}
+        />
+      )}
     </div>
   );
 }

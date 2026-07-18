@@ -1,13 +1,17 @@
 import logo from "../assets/logo.jpg";
 import { useState } from "react";
 import { saveAuthState } from "../utils/authStorage";
+import { useNavigate } from "react-router-dom";
+import AlertModal from "./AlertModal";
 
 export default function LoginModal({
     onClose,
     onForgotPassword,
     onLoginSuccess = () => {},
 }) {
+    const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -35,6 +39,10 @@ export default function LoginModal({
 
             const responseText = await response.text();
 
+            console.log("Login status:", response.status);
+            console.log("Login response:", responseText);
+
+
             let responseData = null;
 
             if (responseText) {
@@ -48,17 +56,44 @@ export default function LoginModal({
             }
 
             if (!response.ok) {
-                alert(responseData?.message || "Unable to log in.");
+                setAlertMessage(responseData?.message || "Unable to log in.");
                 return;
             }
 
-            saveAuthState(responseData);
+            const adminResponse = await fetch(
+                "http://localhost:8080/api/auth/is-admin",
+                {
+                    headers: {
+                    Authorization: `Bearer ${responseData.sessionToken}`,
+                    },
+                }
+                );
 
-            alert(responseData?.message || "Login successful.");
+                if (!adminResponse.ok) {
+                throw new Error("Unable to determine account type.");
+                }
 
-            onLoginSuccess(responseData);
+                const adminData = await adminResponse.json();
 
-            onClose();
+                const isAdmin =
+                    typeof adminData === "boolean"
+                        ? adminData
+                        : adminData.isAdmin;
+
+                const authData = {
+                    ...responseData,
+                    isAdmin,
+                };
+
+                saveAuthState(authData);
+                onLoginSuccess(authData);
+                onClose();
+
+                window.location.reload();
+
+                if (isAdmin === true) {
+                    navigate("/admin");
+                }
         } catch (error) {
             console.error("Login request failed:", error);
             alert("Unable to connect to the backend.");
@@ -152,6 +187,13 @@ export default function LoginModal({
                     </button>
                 </div>
             </div>
+
+            {alertMessage && (
+                <AlertModal
+                message={alertMessage}
+                onClose={() => setAlertMessage("")}
+                />
+            )}
         </div>
     );
 }
