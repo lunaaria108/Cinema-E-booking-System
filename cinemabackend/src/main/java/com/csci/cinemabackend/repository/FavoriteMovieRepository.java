@@ -14,11 +14,16 @@ public interface FavoriteMovieRepository
 
     List<FavoriteMovie> findByUserUserId(Integer userId);
 
-    boolean existsByUserUserIdAndMovieMovieId(
-            Integer userId,
-            Integer movieId
-    );
-
+   @Query("""
+SELECT COUNT(f) > 0
+FROM FavoriteMovie f
+WHERE f.user.userId = :userId
+  AND f.movie.movieId = :movieId
+""")
+boolean favoriteExists(
+        @Param("userId") Integer userId,
+        @Param("movieId") Integer movieId
+);
     void deleteByUserUserIdAndMovieMovieId(
             Integer userId,
             Integer movieId
