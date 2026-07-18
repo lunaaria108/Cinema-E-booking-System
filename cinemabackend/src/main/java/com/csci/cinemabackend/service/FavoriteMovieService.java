@@ -53,24 +53,25 @@ public class FavoriteMovieService {
             return Optional.empty();
         }
 
-        boolean alreadyFavorite =
-                favoriteMovieRepository
-                        .existsByUserUserIdAndMovieMovieId(userId, movieId);
+       boolean alreadyFavorite =
+        favoriteMovieRepository.favoriteExists(
+                userId,
+                movieId
+        );
 
-        if (alreadyFavorite) {
-            return Optional.of(
-                    favoriteMovieRepository
-                            .findByUserUserId(userId)
-                            .stream()
-                            .filter(favorite ->
-                                    favorite.getMovie()
-                                            .getMovieId()
-                                            .equals(movieId))
-                            .findFirst()
-                            .orElseThrow()
-            );
-        }
-
+if (alreadyFavorite) {
+    return Optional.of(
+            favoriteMovieRepository
+                    .findByUserUserId(userId)
+                    .stream()
+                    .filter(favorite ->
+                            favorite.getMovie()
+                                    .getMovieId()
+                                    .equals(movieId))
+                    .findFirst()
+                    .orElseThrow()
+    );
+}
         FavoriteMovie favoriteMovie = new FavoriteMovie();
         favoriteMovie.setUser(user.get());
         favoriteMovie.setMovie(movie.get());
