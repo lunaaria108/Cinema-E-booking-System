@@ -164,42 +164,44 @@ public class AuthService {
         );
     }
 
-    public AuthResponse confirmEmail(String tokenValue) {
-        EmailVerificationToken token =
-                emailVerificationTokenRepository
-                        .findByToken(tokenValue)
-                        .orElseThrow(
-                                () -> new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Confirmation token not found"
-                                )
-                        );
+  @Transactional
+public AuthResponse confirmEmail(String tokenValue) {
+    EmailVerificationToken token =
+            emailVerificationTokenRepository
+                    .findByToken(tokenValue)
+                    .orElseThrow(
+                            () -> new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "Confirmation token not found"
+                            )
+                    );
 
-        if (token.getExpiresAt().isBefore(Instant.now())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Confirmation token has expired"
-            );
-        }
-
-        User user = token.getUser();
-        user.setIsActive(true);
-
-        userRepository.save(user);
-        emailVerificationTokenRepository.delete(token);
-
-        return new AuthResponse(
-                "Email confirmed. Account is now active.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                null,
-                null,
-                null
+    if (token.getExpiresAt().isBefore(Instant.now())) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Confirmation token has expired"
         );
     }
+
+    User user = token.getUser();
+
+    if (!Boolean.TRUE.equals(user.getIsActive())) {
+        user.setIsActive(true);
+        userRepository.save(user);
+    }
+
+    return new AuthResponse(
+            "Email confirmed. Account is now active.",
+            user.getUserId(),
+            user.getUserName(),
+            user.getEmail(),
+            user.getIsAdmin(),
+            true,
+            null,
+            null,
+            null
+    );
+}
 
     public AuthResponse login(LoginRequest request) {
         String identifier =
