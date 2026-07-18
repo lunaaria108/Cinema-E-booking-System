@@ -1,7 +1,7 @@
 import NavBar from "./Navbar";
 import LoginModal from "./LoginModal";
 import ResetModal from "./ResetModal";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   clearAuthState,
   loadAuthState,
@@ -17,12 +17,14 @@ export default function EmailConfirmation() {
     "Confirming your email..."
   );
 
-  useEffect(() => {
-    const confirmEmail = async () => {
-      const searchParams = new URLSearchParams(
-        window.location.search
-      );
+  const hasConfirmed = useRef(false);
 
+  useEffect(() => {
+    if (hasConfirmed.current) return;
+    hasConfirmed.current = true;
+
+    const confirmEmail = async () => {
+      const searchParams = new URLSearchParams(window.location.search);
       const token = searchParams.get("token");
 
       if (!token) {
@@ -41,13 +43,7 @@ export default function EmailConfirmation() {
           }
         );
 
-        let data = null;
-
-        try {
-          data = await response.json();
-        } catch {
-          data = null;
-        }
+        const data = await response.json();
 
         if (!response.ok) {
           throw new Error(
@@ -89,18 +85,15 @@ export default function EmailConfirmation() {
     }
 
     try {
-      await fetch(
-        "http://localhost:8080/api/auth/logout",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            token: auth.token,
-          }),
-        }
-      );
+      await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: auth.token,
+        }),
+      });
     } catch (error) {
       console.error("Logout request failed:", error);
     } finally {
@@ -134,7 +127,7 @@ export default function EmailConfirmation() {
             <button
               type="button"
               onClick={() => setShowLogIn(true)}
-              className="rounded bg-blue-600 px-4 py-2 text-white"
+              className="rounded bg-green-700 px-4 py-2 text-white hover:bg-green-800"
             >
               Log In
             </button>
