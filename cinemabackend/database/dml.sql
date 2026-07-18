@@ -178,7 +178,8 @@ VALUES
     '123 Main Street',
     'temporary-password',
     FALSE,
-    TRUE
+    TRUE,
+    FALSE
 ),
 (
     'alex@example.com',
@@ -189,7 +190,8 @@ VALUES
     '456 Oak Avenue',
     'temporary-password',
     FALSE,
-    TRUE
+    TRUE,
+    FALSE
 ),
 (
     'emily@example.com',
@@ -200,6 +202,7 @@ VALUES
     '789 Pine Road',
     'temporary-password',
     FALSE,
+    TRUE,
     TRUE
 ),
 (
@@ -211,6 +214,7 @@ VALUES
     '321 Maple Drive',
     'temporary-password',
     FALSE,
+    TRUE,
     TRUE
 ),
 (
@@ -222,6 +226,7 @@ VALUES
     '654 Cedar Lane',
     'temporary-password',
     FALSE,
+    TRUE,
     TRUE
 );
 
