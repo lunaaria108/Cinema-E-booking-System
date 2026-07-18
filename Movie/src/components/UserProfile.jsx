@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import AlertModal from "./AlertModal";
 
 import NavBar from "./NavBar";
 import {
@@ -46,6 +47,7 @@ export default function UserProfile() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     useEffect(() => {
         if (!auth.userId) {
@@ -82,7 +84,7 @@ export default function UserProfile() {
                 }));
             } catch (error) {
                 console.error("Profile request failed:", error);
-                alert("Unable to load your profile.");
+                setAlertMessage("Unable to load your profile.");
             } finally {
                 setIsLoading(false);
             }
@@ -181,7 +183,7 @@ export default function UserProfile() {
             }
 
             if (!response.ok) {
-                alert(
+                setAlertMessage(
                     responseData?.message ||
                         "Unable to update your profile."
                 );
@@ -210,12 +212,12 @@ export default function UserProfile() {
                     currentUser.streetAddress,
             }));
 
-            alert(
+            setAlertMessage(
                 "Profile updated successfully. A notification email has been sent."
             );
         } catch (error) {
             console.error("Profile update failed:", error);
-            alert("Unable to connect to the backend.");
+            setAlertMessage("Unable to connect to the backend.");
         } finally {
             setIsSavingProfile(false);
         }
@@ -223,7 +225,7 @@ export default function UserProfile() {
 
     const handleUpdatePassword = async () => {
         if (!auth.userId) {
-            alert(
+            setAlertMessage(
                 "You must be logged in to update your password."
             );
             return;
@@ -234,7 +236,7 @@ export default function UserProfile() {
             !passwords.newPassword.trim() ||
             !passwords.confirmPassword.trim()
         ) {
-            alert("Please fill in all password fields.");
+            setAlertMessage("Please fill in all password fields.");
             return;
         }
 
@@ -242,14 +244,14 @@ export default function UserProfile() {
             passwords.newPassword !==
             passwords.confirmPassword
         ) {
-            alert(
+            setAlertMessage(
                 "New password and confirm password do not match."
             );
             return;
         }
 
         if (passwords.newPassword.length < 8) {
-            alert(
+            setAlertMessage(
                 "The new password must be at least 8 characters."
             );
             return;
@@ -259,7 +261,7 @@ export default function UserProfile() {
             passwords.oldPassword ===
             passwords.newPassword
         ) {
-            alert(
+            setAlertMessage(
                 "The new password must be different from the current password."
             );
             return;
@@ -302,14 +304,14 @@ export default function UserProfile() {
             }
 
             if (!response.ok) {
-                alert(
+                setAlertMessage(
                     responseData?.message ||
                         "Unable to update password."
                 );
                 return;
             }
 
-            alert(
+            setAlertMessage(
                 responseData?.message ||
                     "Password changed successfully. Please log in again."
             );
@@ -328,7 +330,7 @@ export default function UserProfile() {
                 "Password update failed:",
                 error
             );
-            alert("Unable to connect to the backend.");
+            setAlertMessage("Unable to connect to the backend.");
         } finally {
             setIsUpdatingPassword(false);
         }
@@ -411,7 +413,7 @@ export default function UserProfile() {
             !cardForm.cvv.trim() ||
             !cardForm.billingZip.trim()
         ) {
-            alert("Please enter all card information.");
+            setAlertMessage("Please enter all card information.");
             return;
         }
 
@@ -485,7 +487,7 @@ export default function UserProfile() {
                 "Saving card failed:",
                 error
             );
-            alert(error.message);
+            setAlertMessage(error.message);
         }
     };
 
@@ -518,7 +520,7 @@ export default function UserProfile() {
                 "Deleting card failed:",
                 error
             );
-            alert(error.message);
+            setAlertMessage(error.message);
         }
     };
 
@@ -1097,6 +1099,12 @@ export default function UserProfile() {
                     </motion.div>
                 </div>
             </div>
+            {alertMessage && (
+                <AlertModal
+                message={alertMessage}
+                onClose={() => setAlertMessage("")}
+                />
+            )}
         </div>
     );
 }
