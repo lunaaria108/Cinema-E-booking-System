@@ -46,38 +46,40 @@ public class FavoriteMovieService {
             Integer userId,
             Integer movieId) {
 
-        Optional<User> user = userRepository.findById(userId);
-        Optional<Movie> movie = movieRepository.findById(movieId);
+Optional<User> user = userRepository.findById(userId);
+Optional<Movie> movie = movieRepository.findById(movieId);
 
-        if (user.isEmpty() || movie.isEmpty()) {
-            return Optional.empty();
-        }
+if (user.isEmpty() || movie.isEmpty()) {
+    return Optional.empty();
+}
 
-        boolean alreadyFavorite =
-                favoriteMovieRepository
-                        .existsByUserUserIdAndMovieMovieId(userId, movieId);
-
-        if (alreadyFavorite) {
-            return Optional.of(
-                    favoriteMovieRepository
-                            .findByUserUserId(userId)
-                            .stream()
-                            .filter(favorite ->
-                                    favorite.getMovie()
-                                            .getMovieId()
-                                            .equals(movieId))
-                            .findFirst()
-                            .orElseThrow()
-            );
-        }
-
-        FavoriteMovie favoriteMovie = new FavoriteMovie();
-        favoriteMovie.setUser(user.get());
-        favoriteMovie.setMovie(movie.get());
-
-        return Optional.of(
-                favoriteMovieRepository.save(favoriteMovie)
+boolean alreadyFavorite =
+        favoriteMovieRepository.favoriteExists(
+                userId,
+                movieId
         );
+
+if (alreadyFavorite) {
+    return Optional.of(
+            favoriteMovieRepository
+                    .findByUserUserId(userId)
+                    .stream()
+                    .filter(favorite ->
+                            favorite.getMovie()
+                                    .getMovieId()
+                                    .equals(movieId))
+                    .findFirst()
+                    .orElseThrow()
+    );
+}
+
+FavoriteMovie favoriteMovie = new FavoriteMovie();
+favoriteMovie.setUser(user.get());
+favoriteMovie.setMovie(movie.get());
+
+return Optional.of(
+        favoriteMovieRepository.save(favoriteMovie)
+);
     }
 
     /**
@@ -89,8 +91,10 @@ public class FavoriteMovieService {
             Integer movieId) {
 
         boolean exists =
-                favoriteMovieRepository
-                        .existsByUserUserIdAndMovieMovieId(userId, movieId);
+           favoriteMovieRepository.favoriteExists(
+        userId,
+        movieId
+);
 
         if (!exists) {
             return false;
