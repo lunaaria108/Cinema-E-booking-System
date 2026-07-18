@@ -1,4 +1,4 @@
-package com.csci.cinemabackend.auth.dto;
+package com.csci.cinemabackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
