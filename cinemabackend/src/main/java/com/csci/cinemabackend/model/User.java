@@ -35,6 +35,9 @@ public class User {
     @Column(name = "street_address", nullable = false, length = 255)
     private String streetAddress;
 
+    @Column(name = "promo_opt_in", nullable = false)
+    private Boolean promoOptIn = true;
+
     /**
      * Stores the securely hashed password, never the plaintext password.
      */
@@ -67,6 +70,10 @@ public class User {
         if (isActive == null) {
             isActive = false;
         }
+
+        if (promoOptIn == null) {
+            promoOptIn = true;
+        }
     }
 
     public Integer getUserId() {
@@ -95,6 +102,10 @@ public class User {
 
     public String getStreetAddress() {
         return streetAddress;
+    }
+
+    public Boolean getPromoOptIn() {
+        return promoOptIn;
     }
 
     public String getPassword() {
@@ -135,6 +146,10 @@ public class User {
 
     public void setStreetAddress(String streetAddress) {
         this.streetAddress = streetAddress;
+    }
+
+    public void setPromoOptIn(Boolean promoOptIn) {
+        this.promoOptIn = promoOptIn;
     }
 
     public void setPassword(String password) {
