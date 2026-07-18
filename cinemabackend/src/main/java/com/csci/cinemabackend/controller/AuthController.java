@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.csci.cinemabackend.auth.dto.ChangePasswordRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -65,4 +66,13 @@ public class AuthController {
     public ResponseEntity<AuthResponse> logout(@Valid @RequestBody LogoutRequest request) {
         return ResponseEntity.ok(authService.logout(request));
     }
+    @PostMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePassword(
+        @RequestParam Integer userId,
+        @Valid @RequestBody ChangePasswordRequest request) {
+
+        return ResponseEntity.ok(
+            authService.changePassword(userId, request)
+    );
+}
 }
