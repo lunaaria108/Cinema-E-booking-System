@@ -1,30 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import './HomePage.css';
-import MovieCarousel from './MovieCarousel';
-import MovieModal from './MovieModal';
-import NavBar from './NavBar';
-import FilterModal from './FilterModal';
-import LoginModal from './LoginModal';
-import ResetModal from './ResetModal';
-import { clearAuthState, loadAuthState } from "../utils/authStorage";
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import "./HomePage.css";
+import MovieCarousel from "./MovieCarousel";
+import MovieModal from "./MovieModal";
+import NavBar from "./NavBar";
+import FilterModal from "./FilterModal";
+import LoginModal from "./LoginModal";
+import ResetModal from "./ResetModal";
 import AlertModal from "./AlertModal";
+import {
+  clearAuthState,
+  loadAuthState,
+} from "../utils/authStorage";
 
 function HomePage() {
   const [auth, setAuth] = useState(() => loadAuthState());
-  const [view, setView] = useState('featured');
+
+  const [view, setView] = useState("featured");
   const [selectedMovie, setSelectedMovie] = useState(null);
+
   const [featuredMovies, setFeaturedMovies] = useState([]);
   const [comingSoonMovies, setComingSoonMovies] = useState([]);
+
+  const [isLoadingMovies, setIsLoadingMovies] = useState(true);
+  const [movieError, setMovieError] = useState("");
+
   const [isSearching, setIsSearching] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
+
   const [showLogIn, setShowLogIn] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+
   const [favoriteMovies, setFavoriteMovies] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(false);
-  const navigate = useNavigate();
+
   const [alertMessage, setAlertMessage] = useState("");
+
+  const fetchJson = async (url, options = {}) => {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const responseText = await response.text();
+
+      throw new Error(
+        responseText ||
+          `Request failed with status ${response.status}`
+      );
+    }
+
+    return response.json();
+  };
+
+  const loadMovies = async () => {
+    try {
+      setIsLoadingMovies(true);
+      setMovieError("");
+
+      const [currentMovies, comingSoon] = await Promise.all([
+        fetchJson("http://localhost:8080/api/movies/current"),
+        fetchJson(
+          "http://localhost:8080/api/movies/coming-soon"
+        ),
+      ]);
+
+      setFeaturedMovies(
+        Array.isArray(currentMovies) ? currentMovies : []
+      );
+
+      setComingSoonMovies(
+        Array.isArray(comingSoon) ? comingSoon : []
+      );
+    } catch (error) {
+      console.error("Loading movies failed:", error);
+      setMovieError("Unable to load movies.");
+      setFeaturedMovies([]);
+      setComingSoonMovies([]);
+    } finally {
+      setIsLoadingMovies(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMovies();
+  }, []);
 
   useEffect(() => {
     if (!auth.userId) {
@@ -37,7 +95,7 @@ function HomePage() {
       try {
         setLoadingFavorites(true);
 
-        const response = await fetch(
+        const data = await fetchJson(
           `http://localhost:8080/api/users/${auth.userId}/favorites`,
           {
             headers: {
@@ -46,17 +104,11 @@ function HomePage() {
           }
         );
 
-        if (!response.ok) {
-          throw new Error(
-            `Unable to load favorites: ${response.status}`
-          );
-        }
-
-        const data = await response.json();
-
-        const movies = data
-          .map((favorite) => favorite.movie)
-          .filter(Boolean);
+        const movies = Array.isArray(data)
+          ? data
+              .map((favorite) => favorite.movie)
+              .filter(Boolean)
+          : [];
 
         setFavoriteMovies(movies);
       } catch (error) {
@@ -77,15 +129,16 @@ function HomePage() {
   };
 
   const handleToggleFavorite = async (movie) => {
-    if (!auth.userId) {
-      setAlertMessage("You must be logged in to favorite a movie.");
+    if (!auth.userId || !auth.token) {
+      setAlertMessage(
+        "You must be logged in to favorite a movie."
+      );
       return;
     }
 
-    const movieId = movie.movieId;
+    const movieId = movie?.movieId;
 
     if (!movieId) {
-      console.error("Movie is missing movieId:", movie);
       setAlertMessage("Unable to identify this movie.");
       return;
     }
@@ -124,7 +177,7 @@ function HomePage() {
       }
 
       const savedFavorite = await response.json();
-      const savedMovie = savedFavorite.movie;
+      const savedMovie = savedFavorite?.movie;
 
       if (!savedMovie) {
         throw new Error(
@@ -146,12 +199,15 @@ function HomePage() {
       });
     } catch (error) {
       console.error("Updating favorite failed:", error);
-      alert(error.message);
+      setAlertMessage(
+        error.message || "Unable to update favorite."
+      );
     }
   };
 
   const handleLoginSuccess = (authData) => {
-    setAuth(authData);
+    setAuth(authData || loadAuthState());
+    setShowLogIn(false);
   };
 
   const handleLogout = async () => {
@@ -162,169 +218,291 @@ function HomePage() {
     }
 
     try {
-      await fetch('http://localhost:8080/api/auth/logout', {
-        method: 'POST',
+      await fetch("http://localhost:8080/api/auth/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ token: auth.token }),
+        body: JSON.stringify({
+          token: auth.token,
+        }),
       });
     } catch (error) {
-      console.error('Logout request failed:', error);
+      console.error("Logout request failed:", error);
     } finally {
       clearAuthState();
       setAuth(loadAuthState());
+      setFavoriteMovies([]);
     }
   };
 
-  const handleSearch = (searchTerm) => {
-    if (searchTerm.trim() === '') {
+  const handleSearch = async (searchTerm) => {
+    const trimmedSearchTerm = searchTerm.trim();
+
+    if (!trimmedSearchTerm) {
       setIsSearching(false);
-
-      fetch('http://localhost:8080/api/movies/current')
-        .then((response) => response.json())
-        .then((data) => setFeaturedMovies(data));
-
-      fetch("http://localhost:8080/api/movies/coming-soon")
-        .then((response) => response.json())
-        .then((data) => setComingSoonMovies(data));
-      
-        return;  
+      setIsFiltered(false);
+      setView("featured");
+      await loadMovies();
+      return;
     }
 
-    setIsSearching(true);
+    try {
+      setIsLoadingMovies(true);
+      setMovieError("");
+      setIsSearching(true);
 
-    fetch(`http://localhost:8080/api/movies/search?title=${encodeURIComponent(searchTerm)}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setFeaturedMovies(data);
-        setComingSoonMovies(data);
-      })
-      .catch((error) => console.error('Error fetching search results:', error));
+      const data = await fetchJson(
+        `http://localhost:8080/api/movies/search?title=${encodeURIComponent(
+          trimmedSearchTerm
+        )}`
+      );
+
+      const movies = Array.isArray(data) ? data : [];
+
+      setFeaturedMovies(movies);
+      setComingSoonMovies([]);
+    } catch (error) {
+      console.error("Movie search failed:", error);
+      setMovieError("Unable to search for movies.");
+      setFeaturedMovies([]);
+      setComingSoonMovies([]);
+    } finally {
+      setIsLoadingMovies(false);
+    }
   };
 
-  const handleFilter = (genre) => {
-    fetch(`http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(genre)}`)
-      .then((response) => response.json())
-      .then((data) => {
-        setFeaturedMovies(data);
-        setComingSoonMovies([]);
-        setIsSearching(true);
-        setShowFilterModal(false);
-        setIsFiltered(true);
-      })
-      .catch((error) => console.error("Error filtering movies:", error));
-      
+  const handleFilter = async (genre) => {
+    try {
+      setIsLoadingMovies(true);
+      setMovieError("");
+
+      const data = await fetchJson(
+        `http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(
+          genre
+        )}`
+      );
+
+      setFeaturedMovies(Array.isArray(data) ? data : []);
+      setComingSoonMovies([]);
+
+      setIsSearching(true);
+      setIsFiltered(true);
+      setShowFilterModal(false);
+    } catch (error) {
+      console.error("Filtering movies failed:", error);
+      setMovieError("Unable to filter movies.");
+      setFeaturedMovies([]);
+      setComingSoonMovies([]);
+    } finally {
+      setIsLoadingMovies(false);
+    }
   };
 
-  const handleBrowseMovies = () => {
+  const handleBrowseMovies = async () => {
     setIsFiltered(false);
     setIsSearching(false);
-    setView('featured');
-
-    fetch("http://localhost:8080/api/movies/current")
-        .then(res => res.json())
-        .then(data => setFeaturedMovies(data));
-
-    fetch("http://localhost:8080/api/movies/coming-soon")
-        .then(res => res.json())
-        .then(data => setComingSoonMovies(data));
+    setView("featured");
+    await loadMovies();
   };
 
-  useEffect(() => {
-    fetch('http://localhost:8080/api/movies/current')
-      .then((response) => response.json())
-      .then((data) => setFeaturedMovies(data))
-      .catch((error) => console.error('Error fetching featured movies:', error)); 
+  const displayedMovies =
+    view === "comingSoon"
+      ? comingSoonMovies
+      : featuredMovies;
 
-    fetch('http://localhost:8080/api/movies/coming-soon')
-      .then((response) => response.json())
-      .then((data) => setComingSoonMovies(data))
-      .catch((error) => console.error('Error fetching coming soon movies:', error));
-  }, []);
+  const currentHero =
+    displayedMovies[0] ||
+    featuredMovies[0] ||
+    comingSoonMovies[0] ||
+    null;
 
-  const currentHero = view === 'featured' ? featuredMovies[0] : comingSoonMovies[0];
-  const carouselMovies = [...featuredMovies, ...comingSoonMovies];
-
-  if (!currentHero) {
-    return (
-      <div className="app-container">
-        <NavBar
-                onSearch={handleSearch}
-                onFilter={() => setShowFilterModal(true)}
-                onBrowseMovies={handleBrowseMovies}
-                onLogin={() => setShowLogin(true)}
-                isLoggedIn={Boolean(auth.token)}
-                onLogout={handleLogout}
-        />
-        <p className="text-white p-10">No movies matched your search</p>
-      </div>
-    );
-  }
+  const carouselMovies = [
+    ...featuredMovies,
+    ...comingSoonMovies,
+  ];
 
   return (
     <div className="app-container">
-      <NavBar onSearch={handleSearch} onFilter={() => setShowFilterModal(true)} isFiltered={isFiltered}  onBrowseMovies={handleBrowseMovies} onLogIn={() => setShowLogIn(true)} isLoggedIn={Boolean(auth.token)} 
-      onLogout={handleLogout}/>
+      <NavBar
+        onSearch={handleSearch}
+        onFilter={() => setShowFilterModal(true)}
+        isFiltered={isFiltered}
+        onBrowseMovies={handleBrowseMovies}
+        onLogIn={() => setShowLogIn(true)}
+        isLoggedIn={Boolean(auth.token)}
+        isAdmin={Boolean(auth.isAdmin)}
+        onLogout={handleLogout}
+      />
 
+      {isLoadingMovies && (
+        <p className="p-10 text-white">Loading movies...</p>
+      )}
 
-    {!isSearching && (
-      <div className="flex justify-end items-center p-4">
-        <div className="toggle-bar">
-          <button onClick={() => setView('featured')} className={view === 'featured' ? 'active' : ''}>Featured</button>
-          <button onClick={() => setView('comingSoon')} className={view === 'comingSoon' ? 'active' : ''}>Coming Soon</button>
+      {!isLoadingMovies && movieError && (
+        <div className="p-10 text-white">
+          <p>{movieError}</p>
+
+          <button
+            type="button"
+            onClick={loadMovies}
+            className="mt-4 rounded border border-[#D4AF37] px-4 py-2 text-[#D4AF37]"
+          >
+            Try Again
+          </button>
         </div>
-      </div>
-    )}
+      )}
 
-      <main>
-        <section className="hero">
-          <div className="featured-card" onClick={() => setSelectedMovie(currentHero)}>
-            {currentHero.trailerImage ? (
-              <img className="hero-poster" src={currentHero.trailerImage} alt={`${currentHero.movieTitle} poster`} />
-            ) : (
-              <div className="poster-placeholder">Poster</div>
-            )}
-            <div className="details">
-              <h2>{currentHero.movieTitle}</h2>
-              <p className="rating">{currentHero.mpaaRating}</p>
-              <p>{currentHero.synopsis}</p>
-            </div>
-          </div>
-        </section>
-
-         {/* FAVORITES */}
-          {!isSearching && auth.userId && (
-            <section className="movie-list">
-              <h2>Your Favorite Movies</h2>
-
-              {loadingFavorites ? (
-                <p>Loading favorites...</p>
-              ) : favoriteMovies.length === 0 ? (
-                <p>You haven't favorited any movies yet.</p>
-              ) : (
-                <MovieCarousel
-                  movies={favoriteMovies}
-                  onMovieClick={setSelectedMovie}
-                  onFavorite={handleToggleFavorite}
-                  isFavorite={isMovieFavorite}
-                />
-              )}
-            </section>
-          )}
-
-        {!isSearching && (
-          <section className="movie-list">
-            <h2>Now Showing</h2>
-            <MovieCarousel movies={carouselMovies} onMovieClick={setSelectedMovie} onFavorite={handleToggleFavorite} isFavorite={isMovieFavorite} />
-          </section>
+      {!isLoadingMovies &&
+        !movieError &&
+        !currentHero && (
+          <p className="p-10 text-white">
+            No movies matched your search.
+          </p>
         )}
-      </main>
 
-      {selectedMovie && <MovieModal movie={selectedMovie} onClose={() => setSelectedMovie(null)} />}
-      {showFilterModal && <FilterModal onClose={() => setShowFilterModal(false)} onApplyFilter={handleFilter} />}
-      {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}}/>)}
-      {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)} />)}
+      {!isLoadingMovies &&
+        !movieError &&
+        currentHero && (
+          <>
+            {!isSearching && (
+              <div className="flex items-center justify-end p-4">
+                <div className="toggle-bar">
+                  <button
+                    type="button"
+                    onClick={() => setView("featured")}
+                    className={
+                      view === "featured" ? "active" : ""
+                    }
+                  >
+                    Featured
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setView("comingSoon")}
+                    className={
+                      view === "comingSoon" ? "active" : ""
+                    }
+                  >
+                    Coming Soon
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <main>
+              <section className="hero">
+                <div
+                  className="featured-card"
+                  onClick={() =>
+                    setSelectedMovie(currentHero)
+                  }
+                >
+                  {currentHero.trailerImage ? (
+                    <img
+                      className="hero-poster"
+                      src={currentHero.trailerImage}
+                      alt={`${currentHero.movieTitle} poster`}
+                    />
+                  ) : (
+                    <div className="poster-placeholder">
+                      Poster
+                    </div>
+                  )}
+
+                  <div className="details">
+                    <h2>{currentHero.movieTitle}</h2>
+                    <p className="rating">
+                      {currentHero.mpaaRating}
+                    </p>
+                    <p>{currentHero.synopsis}</p>
+                  </div>
+                </div>
+              </section>
+
+              {!isSearching && auth.userId && (
+                <section className="movie-list">
+                  <h2>Your Favorite Movies</h2>
+
+                  {loadingFavorites ? (
+                    <p>Loading favorites...</p>
+                  ) : favoriteMovies.length === 0 ? (
+                    <p>
+                      You haven't favorited any movies yet.
+                    </p>
+                  ) : (
+                    <MovieCarousel
+                      movies={favoriteMovies}
+                      onMovieClick={setSelectedMovie}
+                      onFavorite={handleToggleFavorite}
+                      isFavorite={isMovieFavorite}
+                    />
+                  )}
+                </section>
+              )}
+
+              {!isSearching && (
+                <section className="movie-list">
+                  <h2>Now Showing</h2>
+
+                  <MovieCarousel
+                    movies={carouselMovies}
+                    onMovieClick={setSelectedMovie}
+                    onFavorite={handleToggleFavorite}
+                    isFavorite={isMovieFavorite}
+                  />
+                </section>
+              )}
+
+              {isSearching &&
+                featuredMovies.length > 0 && (
+                  <section className="movie-list">
+                    <h2>Search Results</h2>
+
+                    <MovieCarousel
+                      movies={featuredMovies}
+                      onMovieClick={setSelectedMovie}
+                      onFavorite={handleToggleFavorite}
+                      isFavorite={isMovieFavorite}
+                    />
+                  </section>
+                )}
+            </main>
+          </>
+        )}
+
+      {selectedMovie && (
+        <MovieModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+        />
+      )}
+
+      {showFilterModal && (
+        <FilterModal
+          onClose={() => setShowFilterModal(false)}
+          onApplyFilter={handleFilter}
+        />
+      )}
+
+      {showLogIn && (
+        <LoginModal
+          onClose={() => setShowLogIn(false)}
+          onLoginSuccess={handleLoginSuccess}
+          onForgotPassword={() => {
+            setShowLogIn(false);
+            setShowResetModal(true);
+          }}
+        />
+      )}
+
+      {showResetModal && (
+        <ResetModal
+          onClose={() => setShowResetModal(false)}
+        />
+      )}
+
       {alertMessage && (
         <AlertModal
           message={alertMessage}
