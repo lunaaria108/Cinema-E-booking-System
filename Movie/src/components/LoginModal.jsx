@@ -73,12 +73,18 @@ export default function LoginModal({
                 throw new Error("Unable to determine account type.");
                 }
 
-                const adminData = await adminResponse.json();
+              const adminData = await adminResponse.json();
 
-                const isAdmin =
-                    typeof adminData === "boolean"
-                        ? adminData
-                        : adminData.isAdmin;
+console.log("Admin response:", adminData);
+console.log(
+  "isAdmin value:",
+  typeof adminData === "boolean" ? adminData : adminData.isAdmin
+);
+
+const isAdmin =
+    typeof adminData === "boolean"
+        ? adminData
+        : adminData.isAdmin;
 
                 const authData = {
                     ...responseData,
