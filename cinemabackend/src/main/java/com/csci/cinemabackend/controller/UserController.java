@@ -75,15 +75,15 @@ public class UserController {
             @PathVariable Integer userId,
             @RequestBody UpdateProfileRequest request) {
 
-        Optional<User> updatedUser = userService.updateProfile(
-                userId,
-                request.getUserName(),
-                request.getFirstName(),
-                request.getLastName(),
-                request.getPhoneNumber(),
-                request.getStreetAddress(),
-                request.getPromoOptIn():
-        );
+   Optional<User> updatedUser = userService.updateProfile(
+        userId,
+        request.getUserName(),
+        request.getFirstName(),
+        request.getLastName(),
+        request.getPhoneNumber(),
+        request.getStreetAddress(),
+        request.getPromoOptIn()
+);
 
         if (updatedUser.isEmpty()) {
             return ResponseEntity.notFound().build();
