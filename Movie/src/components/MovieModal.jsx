@@ -1,10 +1,14 @@
 import './MovieModal.css';
 import { useNavigate } from "react-router-dom";
 import { useState } from 'react';
+import { loadAuthState } from "../utils/authStorage";
+import AlertModal from "./AlertModal";
 
 function MovieModal({ movie, onClose }) {
   const navigate = useNavigate();
   const [selectedShowtime, setSelectedShowtime] = useState(null);
+  const auth = loadAuthState();
+  const [alertMessage, setAlertMessage] = useState("");
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -35,11 +39,34 @@ function MovieModal({ movie, onClose }) {
           </div>
         </div>
 
-        <button className="book-btn" onClick={() => !selectedShowtime ? alert('Please select a showtime before booking.') 
-          : navigate('/booking', { state: { movie, selectedShowtime } })}>
-          Book Now
-        </button>
+       <button className="book-btn" onClick={() => {
+          if (!auth?.userId) {
+              setAlertMessage("You must be signed in to book a movie.");
+              return;
+          }
+
+          if (!selectedShowtime) {
+              setAlertMessage("Please select a showtime before booking.");
+              return;
+          }
+
+          navigate("/booking", {
+              state: {
+                  movie,
+                  selectedShowtime,
+              },
+          });
+      }}>
+        Book Now
+      </button>
       </div>
+
+      {alertMessage && (
+        <AlertModal
+          message={alertMessage}
+          onClose={() => setAlertMessage("")}
+        />
+      )}
     </div>
   );
 }

@@ -21,25 +21,18 @@ export default function NavBar({
         <div className="bg-[radial-gradient(circle_at_top_right,#003D1A_0%,#000000_30%)]">
             <div className="flex justify-between items-center p-4"> 
                 
-                <div className="flex justify-start items-center gap-4 cursor-pointer" onClick={() => navigate("/")}>
+                <div className="flex justify-start items-center gap-4 cursor-pointer" onClick={() => {
+                    navigate("/");
+                    onBrowseMovies();
+                }}>
                     <img src={logo} alt="Logo" className="h-16 w-16" />
                     <p className="ml-4 font-bebas text-[#D8CC88] text-2xl font-bold">Cinema Booking Service</p>
                 </div>
 
                 <div className="flex justify-start items-center gap-4">
-                    {booking && (
-                        <button className="text-[#D8CC88] hover:underline" onClick={() => navigate("/")}>
-                            Browse Movies
-                        </button>
-                    )}
                     {!booking && (
                        <button className="text-[#D8CC88] hover:underline" onClick={onFilter}>
                             Filter
-                        </button>
-                    )}
-                    {isFiltered && (
-                        <button className="text-[#D8CC88] hover:underline" onClick={onBrowseMovies}>
-                            Browse Movies
                         </button>
                     )}
                     

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from './NavBar';
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
+import AlertModal from "./AlertModal";
 
 export default function BookingPage() {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function BookingPage() {
     const [showSeating, setShowSeating] = useState(false);
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [auth, setAuth] = useState(() => loadAuthState());
+    const [alertMessage, setAlertMessage] = useState("");
 
     const totalTickets = adultTickets + childTickets + seniorTickets + studentTickets;
 
@@ -30,13 +32,13 @@ export default function BookingPage() {
             if (selectedSeats.length < totalTickets) {
                 setSelectedSeats([...selectedSeats, seatId]);
             } else {
-                alert(`You have only selected ${totalTickets} ticket(s). Increase your ticket count to select more seats.`);
+                setAlertMessage(`You have only selected ${totalTickets} ticket(s). Increase your ticket count to select more seats.`);
             }
         }
     };
 
     const handleCheckout = () => {
-        alert(`Success! You bought ${totalTickets} ticket(s) for ${movie?.movieTitle} at ${selectedShowtime?.showTime}. Seats: ${selectedSeats.join(', ')}`);
+        setAlertMessage(`Success! You bought ${totalTickets} ticket(s) for ${movie?.movieTitle} at ${selectedShowtime?.showTime}. Seats: ${selectedSeats.join(', ')}`);
     };
 
     const handleLogout = async () => {
@@ -170,6 +172,13 @@ export default function BookingPage() {
                         </button>
                     </div>
                 </div>
+            )}
+
+            {alertMessage && (
+                <AlertModal
+                    message={alertMessage}
+                    onClose={() => setAlertMessage("")}
+                />
             )}
         </div>
     );

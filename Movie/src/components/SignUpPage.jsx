@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import NavBar from "./NavBar";
 import logo from "../assets/logo.jpg";
 import LoginModal from "./LoginModal";
+import ResetModal from './ResetModal';
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "./ConfirmationModal";
@@ -11,6 +12,7 @@ export default function SignUpPage() {
     const [auth, setAuth] = useState(() => loadAuthState());
     const [showLogIn, setShowLogIn] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
 
     const handleLoginSuccess = () => {
         setAuth(loadAuthState());
@@ -55,6 +57,7 @@ export default function SignUpPage() {
         streetAddress: formData.get("streetAddress"),
         password: formData.get("password"),
         confirmPassword: formData.get("confirmPassword"),
+        promoOptIn: formData.get("promoOptIn") === "on",
         };
 
         try {
@@ -95,6 +98,8 @@ export default function SignUpPage() {
                 isLoggedIn={Boolean(auth.token)}
                 onLogout={handleLogout}
             />
+            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
+            {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)}/>) }
 
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0b0b] px-4">
                 <div
@@ -240,6 +245,17 @@ export default function SignUpPage() {
                             />
                         </div>
 
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                name="promoOptIn"
+                                className="accent-[#003D1A]"
+                            />
+                            <label htmlFor="promoOptIn" className="ml-2 text-[#D4AF37]">
+                                I would like to receive promotional emails.
+                            </label>
+                        </div>
+
                         <div className="w-full flex justify-center items-center">
                             <button
                                 type="submit"
@@ -253,12 +269,8 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            {showLogIn && (
-                <LoginModal
-                    onClose={() => setShowLogIn(false)}
-                    onLoginSuccess={handleLoginSuccess}
-                />
-            )}
+            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
+            {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)}/>) }
 
             {showConfirmationModal && (
                 <ConfirmationModal onClose={() => setShowConfirmationModal(false)} />
