@@ -45,6 +45,7 @@ export default function UserProfile() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSavingProfile, setIsSavingProfile] = useState(false);
+    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     useEffect(() => {
         if (!auth.userId) {
@@ -74,6 +75,10 @@ export default function UserProfile() {
                     email: data.email || "",
                     phoneNumber: data.phoneNumber || "",
                     streetAddress: data.streetAddress || "",
+                    promoOptIn:
+                        data.promoOptIn !== undefined
+                            ? data.promoOptIn
+                            : currentUser.promoOptIn,
                 }));
             } catch (error) {
                 console.error("Profile request failed:", error);
@@ -94,23 +99,28 @@ export default function UserProfile() {
 
         const loadPaymentCards = async () => {
             try {
-            const response = await fetch(
-                `http://localhost:8080/api/users/${auth.userId}/cards`,
-                {
-                headers: {
-                    Authorization: `Bearer ${auth.token}`,
-                },
+                const response = await fetch(
+                    `http://localhost:8080/api/users/${auth.userId}/cards`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${auth.token}`,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Unable to load cards: ${response.status}`
+                    );
                 }
-            );
 
-            if (!response.ok) {
-                throw new Error(`Unable to load cards: ${response.status}`);
-            }
-
-            const data = await response.json();
-            setPaymentCards(data);
+                const data = await response.json();
+                setPaymentCards(data);
             } catch (error) {
-            console.error("Unable to load payment cards:", error);
+                console.error(
+                    "Unable to load payment cards:",
+                    error
+                );
             }
         };
 
@@ -128,7 +138,9 @@ export default function UserProfile() {
 
     const handleSaveProfile = async () => {
         if (!auth.userId) {
-            alert("You must be logged in to update your profile.");
+            alert(
+                "You must be logged in to update your profile."
+            );
             return;
         }
 
@@ -179,13 +191,17 @@ export default function UserProfile() {
             setUser((currentUser) => ({
                 ...currentUser,
                 userName:
-                    responseData?.userName || currentUser.userName,
+                    responseData?.userName ||
+                    currentUser.userName,
                 firstName:
-                    responseData?.firstName || currentUser.firstName,
+                    responseData?.firstName ||
+                    currentUser.firstName,
                 lastName:
-                    responseData?.lastName || currentUser.lastName,
+                    responseData?.lastName ||
+                    currentUser.lastName,
                 email:
-                    responseData?.email || currentUser.email,
+                    responseData?.email ||
+                    currentUser.email,
                 phoneNumber:
                     responseData?.phoneNumber ||
                     currentUser.phoneNumber,
@@ -207,7 +223,9 @@ export default function UserProfile() {
 
     const handleUpdatePassword = async () => {
         if (!auth.userId) {
-            alert("You must be logged in to update your password.");
+            alert(
+                "You must be logged in to update your password."
+            );
             return;
         }
 
@@ -220,30 +238,52 @@ export default function UserProfile() {
             return;
         }
 
-        if (passwords.newPassword !== passwords.confirmPassword) {
-            alert("New password and confirm password do not match.");
+        if (
+            passwords.newPassword !==
+            passwords.confirmPassword
+        ) {
+            alert(
+                "New password and confirm password do not match."
+            );
             return;
         }
 
         if (passwords.newPassword.length < 8) {
-            alert("The new password must be at least 8 characters.");
+            alert(
+                "The new password must be at least 8 characters."
+            );
+            return;
+        }
+
+        if (
+            passwords.oldPassword ===
+            passwords.newPassword
+        ) {
+            alert(
+                "The new password must be different from the current password."
+            );
             return;
         }
 
         try {
+            setIsUpdatingPassword(true);
+
             const response = await fetch(
-            `http://localhost:8080/api/users/${auth.userId}/password`,
-            {
-                method: "PUT",
-                headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-                },
-                body: JSON.stringify({
-                oldPassword: passwords.oldPassword,
-                newPassword: passwords.newPassword,
-                }),
-            }
+                `http://localhost:8080/api/auth/change-password?userId=${auth.userId}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        currentPassword:
+                            passwords.oldPassword,
+                        newPassword:
+                            passwords.newPassword,
+                        confirmPassword:
+                            passwords.confirmPassword,
+                    }),
+                }
             );
 
             const responseText = await response.text();
@@ -251,31 +291,46 @@ export default function UserProfile() {
             let responseData = null;
 
             if (responseText) {
-            try {
-                responseData = JSON.parse(responseText);
-            } catch {
-                responseData = {
-                message: responseText,
-                };
-            }
+                try {
+                    responseData =
+                        JSON.parse(responseText);
+                } catch {
+                    responseData = {
+                        message: responseText,
+                    };
+                }
             }
 
             if (!response.ok) {
-            alert(responseData?.message || "Unable to update password.");
-            return;
+                alert(
+                    responseData?.message ||
+                        "Unable to update password."
+                );
+                return;
             }
 
-            alert(responseData?.message || "Password updated successfully.");
+            alert(
+                responseData?.message ||
+                    "Password changed successfully. Please log in again."
+            );
 
-            // Clear the fields after success
             setPasswords({
-            oldPassword: "",
-            newPassword: "",
-            confirmPassword: "",
+                oldPassword: "",
+                newPassword: "",
+                confirmPassword: "",
             });
+
+            clearAuthState();
+            setAuth(loadAuthState());
+            navigate("/");
         } catch (error) {
-            console.error("Password update failed:", error);
+            console.error(
+                "Password update failed:",
+                error
+            );
             alert("Unable to connect to the backend.");
+        } finally {
+            setIsUpdatingPassword(false);
         }
     };
 
@@ -287,7 +342,8 @@ export default function UserProfile() {
                     {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json",
+                            "Content-Type":
+                                "application/json",
                         },
                         body: JSON.stringify({
                             token: auth.token,
@@ -295,7 +351,10 @@ export default function UserProfile() {
                     }
                 );
             } catch (error) {
-                console.error("Logout request failed:", error);
+                console.error(
+                    "Logout request failed:",
+                    error
+                );
             }
         }
 
@@ -304,7 +363,7 @@ export default function UserProfile() {
         navigate("/");
     };
 
-   const handleAddCard = () => {
+    const handleAddCard = () => {
         if (paymentCards.length >= 3) {
             return;
         }
@@ -312,8 +371,12 @@ export default function UserProfile() {
         setEditingCardId(null);
 
         setCardForm({
+            cardholderName: "",
             cardNumber: "",
-            expirationDate: "",
+            expirationMonth: "",
+            expirationYear: "",
+            cvv: "",
+            billingZip: "",
         });
 
         setShowCardForm(true);
@@ -325,8 +388,10 @@ export default function UserProfile() {
         setCardForm({
             cardholderName: card.cardholderName || "",
             cardNumber: card.cardNumber || "",
-            expirationMonth: card.expirationMonth || "",
-            expirationYear: card.expirationYear || "",
+            expirationMonth:
+                card.expirationMonth || "",
+            expirationYear:
+                card.expirationYear || "",
             cvv: card.cvv || "",
             billingZip: card.billingZip || "",
         });
@@ -334,8 +399,9 @@ export default function UserProfile() {
         setShowCardForm(true);
     };
 
-   const handleSaveCard = async () => {
-        const cleanedCardNumber = cardForm.cardNumber.replace(/\s/g, "");
+    const handleSaveCard = async () => {
+        const cleanedCardNumber =
+            cardForm.cardNumber.replace(/\s/g, "");
 
         if (
             !cardForm.cardholderName.trim() ||
@@ -350,25 +416,32 @@ export default function UserProfile() {
         }
 
         const payload = {
-            cardholderName: cardForm.cardholderName.trim(),
+            cardholderName:
+                cardForm.cardholderName.trim(),
             cardNumber: cleanedCardNumber,
-            expirationMonth: Number(cardForm.expirationMonth),
-            expirationYear: Number(cardForm.expirationYear),
+            expirationMonth: Number(
+                cardForm.expirationMonth
+            ),
+            expirationYear: Number(
+                cardForm.expirationYear
+            ),
             cvv: cardForm.cvv.trim(),
             billingZip: cardForm.billingZip.trim(),
         };
 
         try {
             const response = await fetch(
-            `http://localhost:8080/api/users/${auth.userId}/cards`,
-            {
-                method: "POST",
-                headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${auth.token}`,
-                },
-                body: JSON.stringify(payload),
-            }
+                `http://localhost:8080/api/users/${auth.userId}/cards`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+                        Authorization:
+                            `Bearer ${auth.token}`,
+                    },
+                    body: JSON.stringify(payload),
+                }
             );
 
             const responseText = await response.text();
@@ -376,37 +449,42 @@ export default function UserProfile() {
             let savedCard = null;
 
             if (responseText) {
-            try {
-                savedCard = JSON.parse(responseText);
-            } catch {
-                throw new Error(responseText);
-            }
+                try {
+                    savedCard =
+                        JSON.parse(responseText);
+                } catch {
+                    throw new Error(responseText);
+                }
             }
 
             if (!response.ok) {
-            throw new Error(
-                savedCard?.message || "Unable to save payment card."
-            );
+                throw new Error(
+                    savedCard?.message ||
+                        "Unable to save payment card."
+                );
             }
 
             setPaymentCards((currentCards) => [
-            ...currentCards,
-            savedCard,
+                ...currentCards,
+                savedCard,
             ]);
 
             setShowCardForm(false);
             setEditingCardId(null);
 
             setCardForm({
-            cardholderName: "",
-            cardNumber: "",
-            expirationMonth: "",
-            expirationYear: "",
-            cvv: "",
-            billingZip: "",
+                cardholderName: "",
+                cardNumber: "",
+                expirationMonth: "",
+                expirationYear: "",
+                cvv: "",
+                billingZip: "",
             });
         } catch (error) {
-            console.error("Saving card failed:", error);
+            console.error(
+                "Saving card failed:",
+                error
+            );
             alert(error.message);
         }
     };
@@ -414,24 +492,32 @@ export default function UserProfile() {
     const handleDeleteCard = async (cardId) => {
         try {
             const response = await fetch(
-            `http://localhost:8080/api/users/${auth.userId}/cards/${cardId}`,
-            {
-                method: "DELETE",
-                headers: {
-                Authorization: `Bearer ${auth.token}`,
-                },
-            }
+                `http://localhost:8080/api/users/${auth.userId}/cards/${cardId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization:
+                            `Bearer ${auth.token}`,
+                    },
+                }
             );
 
             if (!response.ok) {
-            throw new Error(`Unable to delete card: ${response.status}`);
+                throw new Error(
+                    `Unable to delete card: ${response.status}`
+                );
             }
 
             setPaymentCards((currentCards) =>
-            currentCards.filter((card) => card.cardId !== cardId)
+                currentCards.filter(
+                    (card) => card.cardId !== cardId
+                )
             );
         } catch (error) {
-            console.error("Deleting card failed:", error);
+            console.error(
+                "Deleting card failed:",
+                error
+            );
             alert(error.message);
         }
     };
@@ -444,7 +530,9 @@ export default function UserProfile() {
                     onLogout={handleLogout}
                 />
 
-                <p className="p-8">Loading profile...</p>
+                <p className="p-8">
+                    Loading profile...
+                </p>
             </div>
         );
     }
@@ -458,7 +546,10 @@ export default function UserProfile() {
                 />
 
                 <div className="p-8 text-center">
-                    <p>You must be logged in to view your profile.</p>
+                    <p>
+                        You must be logged in to view
+                        your profile.
+                    </p>
                 </div>
             </div>
         );
@@ -498,7 +589,9 @@ export default function UserProfile() {
                                 type="text"
                                 name="userName"
                                 value={user.userName}
-                                onChange={handleProfileChange}
+                                onChange={
+                                    handleProfileChange
+                                }
                                 className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                 placeholder="Username"
                             />
@@ -507,8 +600,12 @@ export default function UserProfile() {
                                 <input
                                     type="text"
                                     name="firstName"
-                                    value={user.firstName}
-                                    onChange={handleProfileChange}
+                                    value={
+                                        user.firstName
+                                    }
+                                    onChange={
+                                        handleProfileChange
+                                    }
                                     className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                     placeholder="First Name"
                                 />
@@ -516,15 +613,20 @@ export default function UserProfile() {
                                 <input
                                     type="text"
                                     name="lastName"
-                                    value={user.lastName}
-                                    onChange={handleProfileChange}
+                                    value={
+                                        user.lastName
+                                    }
+                                    onChange={
+                                        handleProfileChange
+                                    }
                                     className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                     placeholder="Last Name"
                                 />
                             </div>
 
                             <label className="text-gray-400 text-sm">
-                                Email Address (Cannot be changed)
+                                Email Address (Cannot be
+                                changed)
                             </label>
 
                             <input
@@ -538,7 +640,9 @@ export default function UserProfile() {
                                 type="tel"
                                 name="phoneNumber"
                                 value={user.phoneNumber}
-                                onChange={handleProfileChange}
+                                onChange={
+                                    handleProfileChange
+                                }
                                 className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                 placeholder="Phone Number"
                             />
@@ -547,8 +651,12 @@ export default function UserProfile() {
                                 <input
                                     type="checkbox"
                                     name="promoOptIn"
-                                    checked={user.promoOptIn}
-                                    onChange={handleProfileChange}
+                                    checked={
+                                        user.promoOptIn
+                                    }
+                                    onChange={
+                                        handleProfileChange
+                                    }
                                     className="accent-[#003D1A]"
                                 />
 
@@ -557,8 +665,12 @@ export default function UserProfile() {
 
                             <button
                                 type="button"
-                                onClick={handleSaveProfile}
-                                disabled={isSavingProfile}
+                                onClick={
+                                    handleSaveProfile
+                                }
+                                disabled={
+                                    isSavingProfile
+                                }
                                 className="bg-[#003D1A] text-[#D4AF37] py-2 rounded font-bold hover:bg-[#0a5229] mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {isSavingProfile
@@ -590,12 +702,15 @@ export default function UserProfile() {
                             <input
                                 type="password"
                                 placeholder="Current Password"
-                                value={passwords.oldPassword}
+                                value={
+                                    passwords.oldPassword
+                                }
                                 onChange={(event) =>
                                     setPasswords({
                                         ...passwords,
                                         oldPassword:
-                                            event.target.value,
+                                            event.target
+                                                .value,
                                     })
                                 }
                                 className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
@@ -604,12 +719,15 @@ export default function UserProfile() {
                             <input
                                 type="password"
                                 placeholder="New Password"
-                                value={passwords.newPassword}
+                                value={
+                                    passwords.newPassword
+                                }
                                 onChange={(event) =>
                                     setPasswords({
                                         ...passwords,
                                         newPassword:
-                                            event.target.value,
+                                            event.target
+                                                .value,
                                     })
                                 }
                                 className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
@@ -618,12 +736,15 @@ export default function UserProfile() {
                             <input
                                 type="password"
                                 placeholder="Confirm New Password"
-                                value={passwords.confirmPassword}
+                                value={
+                                    passwords.confirmPassword
+                                }
                                 onChange={(event) =>
                                     setPasswords({
                                         ...passwords,
                                         confirmPassword:
-                                            event.target.value,
+                                            event.target
+                                                .value,
                                     })
                                 }
                                 className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
@@ -631,10 +752,17 @@ export default function UserProfile() {
 
                             <button
                                 type="button"
-                                className="bg-[#003D1A] text-[#D4AF37] py-2 rounded font-bold hover:bg-[#0a5229]"
-                                onClick={handleUpdatePassword}
+                                className="bg-[#003D1A] text-[#D4AF37] py-2 rounded font-bold hover:bg-[#0a5229] disabled:opacity-60 disabled:cursor-not-allowed"
+                                onClick={
+                                    handleUpdatePassword
+                                }
+                                disabled={
+                                    isUpdatingPassword
+                                }
                             >
-                                Update Password
+                                {isUpdatingPassword
+                                    ? "Updating..."
+                                    : "Update Password"}
                             </button>
                         </div>
                     </motion.div>
@@ -660,7 +788,9 @@ export default function UserProfile() {
                         <textarea
                             name="streetAddress"
                             value={user.streetAddress}
-                            onChange={handleProfileChange}
+                            onChange={
+                                handleProfileChange
+                            }
                             rows="3"
                             maxLength={255}
                             className="w-full bg-black border border-[#003D1A] rounded p-2 text-white resize-none"
@@ -669,8 +799,12 @@ export default function UserProfile() {
 
                         <button
                             type="button"
-                            onClick={handleSaveProfile}
-                            disabled={isSavingProfile}
+                            onClick={
+                                handleSaveProfile
+                            }
+                            disabled={
+                                isSavingProfile
+                            }
                             className="w-full bg-[#003D1A] text-[#D4AF37] py-2 rounded font-bold hover:bg-[#0a5229] mt-4 disabled:opacity-60"
                         >
                             Save Address
@@ -697,158 +831,249 @@ export default function UserProfile() {
                             </h2>
 
                             <span className="text-sm text-gray-400">
-                                {paymentCards.length} / 3 Cards
+                                {paymentCards.length} / 3
+                                Cards
                             </span>
                         </div>
 
                         <div className="flex flex-col gap-3 mb-4">
-                           {paymentCards.map((card) => (
+                            {paymentCards.map((card) => (
                                 <div
                                     key={card.cardId}
                                     className="flex justify-between items-center bg-black p-3 rounded border border-[#003D1A]"
                                 >
                                     <div className="text-white">
-                                    <p>
-                                        •••• •••• •••• {card.cardNumber?.slice(-4)}
-                                    </p>
+                                        <p>
+                                            •••• •••• ••••{" "}
+                                            {card.cardNumber?.slice(
+                                                -4
+                                            )}
+                                        </p>
 
-                                    <p className="text-sm text-gray-400">
-                                        Exp: {card.expirationMonth}/{card.expirationYear}
-                                    </p>
+                                        <p className="text-sm text-gray-400">
+                                            Exp:{" "}
+                                            {
+                                                card.expirationMonth
+                                            }
+                                            /
+                                            {
+                                                card.expirationYear
+                                            }
+                                        </p>
                                     </div>
 
                                     <div className="flex gap-2">
-                                    <button
-                                        type="button"
-                                        className="text-[#D4AF37] hover:underline text-sm"
-                                        onClick={() => handleEditCard(card)}
-                                    >
-                                        Edit
-                                    </button>
+                                        <button
+                                            type="button"
+                                            className="text-[#D4AF37] hover:underline text-sm"
+                                            onClick={() =>
+                                                handleEditCard(
+                                                    card
+                                                )
+                                            }
+                                        >
+                                            Edit
+                                        </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => handleDeleteCard(card.cardId)}
-                                        className="text-red-400 hover:underline text-sm"
-                                    >
-                                        Delete
-                                    </button>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleDeleteCard(
+                                                    card.cardId
+                                                )
+                                            }
+                                            className="text-red-400 hover:underline text-sm"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                       {showCardForm && (
+                        {showCardForm && (
                             <div className="bg-black p-4 rounded border border-[#003D1A] mb-4">
                                 <h3 className="text-[#D4AF37] font-bold mb-3">
-                                {editingCardId !== null
-                                    ? "Edit Payment Method"
-                                    : "Add Payment Method"}
+                                    {editingCardId !==
+                                    null
+                                        ? "Edit Payment Method"
+                                        : "Add Payment Method"}
                                 </h3>
 
                                 <div className="flex flex-col gap-3">
-                                <input
-                                    type="text"
-                                    placeholder="Cardholder Name"
-                                    value={cardForm.cardholderName}
-                                    onChange={(event) =>
-                                    setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        cardholderName: event.target.value,
-                                    }))
-                                    }
-                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
-                                />
-
-                                <input
-                                    type="text"
-                                    placeholder="Card Number"
-                                    value={cardForm.cardNumber}
-                                    onChange={(event) =>
-                                    setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        cardNumber: event.target.value,
-                                    }))
-                                    }
-                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
-                                />
-
-                                <div className="flex gap-3">
                                     <input
-                                    type="number"
-                                    placeholder="Expiration Month"
-                                    min="1"
-                                    max="12"
-                                    value={cardForm.expirationMonth}
-                                    onChange={(event) =>
-                                        setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        expirationMonth: event.target.value,
-                                        }))
-                                    }
-                                    className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                        type="text"
+                                        placeholder="Cardholder Name"
+                                        value={
+                                            cardForm.cardholderName
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            setCardForm(
+                                                (
+                                                    currentForm
+                                                ) => ({
+                                                    ...currentForm,
+                                                    cardholderName:
+                                                        event
+                                                            .target
+                                                            .value,
+                                                })
+                                            )
+                                        }
+                                        className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                     />
 
                                     <input
-                                    type="number"
-                                    placeholder="Expiration Year"
-                                    value={cardForm.expirationYear}
-                                    onChange={(event) =>
-                                        setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        expirationYear: event.target.value,
-                                        }))
-                                    }
-                                    className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                        type="text"
+                                        placeholder="Card Number"
+                                        value={
+                                            cardForm.cardNumber
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            setCardForm(
+                                                (
+                                                    currentForm
+                                                ) => ({
+                                                    ...currentForm,
+                                                    cardNumber:
+                                                        event
+                                                            .target
+                                                            .value,
+                                                })
+                                            )
+                                        }
+                                        className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                     />
-                                </div>
 
-                                <input
-                                    type="password"
-                                    placeholder="CVV"
-                                    value={cardForm.cvv}
-                                    onChange={(event) =>
-                                    setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        cvv: event.target.value,
-                                    }))
-                                    }
-                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
-                                />
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="number"
+                                            placeholder="Expiration Month"
+                                            min="1"
+                                            max="12"
+                                            value={
+                                                cardForm.expirationMonth
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                setCardForm(
+                                                    (
+                                                        currentForm
+                                                    ) => ({
+                                                        ...currentForm,
+                                                        expirationMonth:
+                                                            event
+                                                                .target
+                                                                .value,
+                                                    })
+                                                )
+                                            }
+                                            className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                        />
 
-                                <input
-                                    type="text"
-                                    placeholder="Billing ZIP"
-                                    value={cardForm.billingZip}
-                                    onChange={(event) =>
-                                    setCardForm((currentForm) => ({
-                                        ...currentForm,
-                                        billingZip: event.target.value,
-                                    }))
-                                    }
-                                    className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
-                                />
+                                        <input
+                                            type="number"
+                                            placeholder="Expiration Year"
+                                            value={
+                                                cardForm.expirationYear
+                                            }
+                                            onChange={(
+                                                event
+                                            ) =>
+                                                setCardForm(
+                                                    (
+                                                        currentForm
+                                                    ) => ({
+                                                        ...currentForm,
+                                                        expirationYear:
+                                                            event
+                                                                .target
+                                                                .value,
+                                                    })
+                                                )
+                                            }
+                                            className="w-1/2 bg-black border border-[#003D1A] rounded p-2 text-white"
+                                        />
+                                    </div>
 
-                                <div className="flex gap-3">
-                                    <button
-                                    type="button"
-                                    onClick={handleSaveCard}
-                                    className="bg-[#003D1A] text-[#D4AF37] px-4 py-2 rounded font-bold"
-                                    >
-                                    Save Card
-                                    </button>
+                                    <input
+                                        type="password"
+                                        placeholder="CVV"
+                                        value={
+                                            cardForm.cvv
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            setCardForm(
+                                                (
+                                                    currentForm
+                                                ) => ({
+                                                    ...currentForm,
+                                                    cvv: event
+                                                        .target
+                                                        .value,
+                                                })
+                                            )
+                                        }
+                                        className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                    />
 
-                                    <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowCardForm(false);
-                                        setEditingCardId(null);
-                                    }}
-                                    className="text-gray-300 hover:underline"
-                                    >
-                                    Cancel
-                                    </button>
-                                </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Billing ZIP"
+                                        value={
+                                            cardForm.billingZip
+                                        }
+                                        onChange={(
+                                            event
+                                        ) =>
+                                            setCardForm(
+                                                (
+                                                    currentForm
+                                                ) => ({
+                                                    ...currentForm,
+                                                    billingZip:
+                                                        event
+                                                            .target
+                                                            .value,
+                                                })
+                                            )
+                                        }
+                                        className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                    />
+
+                                    <div className="flex gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={
+                                                handleSaveCard
+                                            }
+                                            className="bg-[#003D1A] text-[#D4AF37] px-4 py-2 rounded font-bold"
+                                        >
+                                            Save Card
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowCardForm(
+                                                    false
+                                                );
+                                                setEditingCardId(
+                                                    null
+                                                );
+                                            }}
+                                            className="text-gray-300 hover:underline"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -856,7 +1081,9 @@ export default function UserProfile() {
                         <button
                             type="button"
                             onClick={handleAddCard}
-                            disabled={paymentCards.length >= 3}
+                            disabled={
+                                paymentCards.length >= 3
+                            }
                             className={`w-full py-2 rounded font-bold border ${
                                 paymentCards.length >= 3
                                     ? "bg-gray-800 text-gray-500 border-gray-700 cursor-not-allowed"
