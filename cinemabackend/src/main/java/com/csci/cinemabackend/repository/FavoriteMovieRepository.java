@@ -3,6 +3,8 @@ package com.csci.cinemabackend.repository;
 import com.csci.cinemabackend.model.FavoriteMovie;
 import com.csci.cinemabackend.model.FavoriteMovieId;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
