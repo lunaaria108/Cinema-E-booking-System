@@ -82,6 +82,7 @@ public class UserController {
                 request.getLastName(),
                 request.getPhoneNumber(),
                 request.getStreetAddress()
+                request.getPromoOptIn()
         );
 
         if (updatedUser.isEmpty()) {

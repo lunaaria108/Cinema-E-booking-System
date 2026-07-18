@@ -10,7 +10,15 @@ public class UpdateProfileRequest {
     private String lastName;
     private String phoneNumber;
     private String streetAddress;
+    private Boolean promoOptIn;
 
+    public Boolean getPromoOptIn() {
+    return promoOptIn;
+}
+
+public void setPromoOptIn(Boolean promoOptIn) {
+    this.promoOptIn = promoOptIn;
+}
     public String getUserName() {
         return userName;
     }

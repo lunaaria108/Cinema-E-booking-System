@@ -152,6 +152,7 @@ export default function UserProfile() {
             lastName: user.lastName.trim(),
             phoneNumber: user.phoneNumber.trim(),
             streetAddress: user.streetAddress.trim(),
+            promoOptIn: user.promoOptIn,
         };
 
         try {

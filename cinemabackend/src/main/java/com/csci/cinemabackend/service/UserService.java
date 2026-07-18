@@ -36,53 +36,58 @@ public class UserService {
      * The email, password, role, account status, and creation date
      * are not changed through profile editing.
      */
-    public Optional<User> updateProfile(
-            Integer userId,
-            String userName,
-            String firstName,
-            String lastName,
-            String phoneNumber,
-            String streetAddress) {
+   public Optional<User> updateProfile(
+        Integer userId,
+        String userName,
+        String firstName,
+        String lastName,
+        String phoneNumber,
+        String streetAddress,
+        Boolean promoOptIn) {
 
-        Optional<User> optionalUser = userRepository.findById(userId);
+    Optional<User> optionalUser = userRepository.findById(userId);
 
-        if (optionalUser.isEmpty()) {
-            return Optional.empty();
-        }
+    if (optionalUser.isEmpty()) {
+        return Optional.empty();
+    }
 
-        User user = optionalUser.get();
+    User user = optionalUser.get();
 
-        if (userName != null && !userName.isBlank()) {
-            user.setUserName(userName.trim());
-        }
+    if (userName != null && !userName.isBlank()) {
+        user.setUserName(userName.trim());
+    }
 
-        if (firstName != null && !firstName.isBlank()) {
-            user.setFirstName(firstName.trim());
-        }
+    if (firstName != null && !firstName.isBlank()) {
+        user.setFirstName(firstName.trim());
+    }
 
-        if (lastName != null && !lastName.isBlank()) {
-            user.setLastName(lastName.trim());
-        }
+    if (lastName != null && !lastName.isBlank()) {
+        user.setLastName(lastName.trim());
+    }
 
-        if (phoneNumber != null && !phoneNumber.isBlank()) {
-            user.setPhoneNumber(phoneNumber.trim());
-        }
+    if (phoneNumber != null && !phoneNumber.isBlank()) {
+        user.setPhoneNumber(phoneNumber.trim());
+    }
 
-        if (streetAddress != null && !streetAddress.isBlank()) {
-            user.setStreetAddress(streetAddress.trim());
-        }
+    if (streetAddress != null && !streetAddress.isBlank()) {
+        user.setStreetAddress(streetAddress.trim());
+    }
 
-        User savedUser = userRepository.save(user);
+    if (promoOptIn != null) {
+        user.setPromoOptIn(promoOptIn);
+    }
 
-        mailService.send(
-                savedUser.getEmail(),
-                "Your Cinema E-Booking profile was updated",
-                "Hello " + savedUser.getFirstName() + ",\n\n"
-                        + "Your profile information was updated successfully.\n\n"
-                        + "If you made this change, no further action is required.\n"
-                        + "If you did not make this change, please contact support immediately."
-        );
+    User savedUser = userRepository.save(user);
 
-        return Optional.of(savedUser);
+    mailService.send(
+            savedUser.getEmail(),
+            "Your Cinema E-Booking profile was updated",
+            "Hello " + savedUser.getFirstName() + ",\n\n"
+                    + "Your profile information was updated successfully.\n\n"
+                    + "If you made this change, no further action is required.\n"
+                    + "If you did not make this change, please contact support immediately."
+    );
+
+    return Optional.of(savedUser);
     }
 }
