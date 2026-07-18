@@ -647,20 +647,6 @@ export default function UserProfile() {
                                 placeholder="Phone Number"
                             />
 
-                            <textarea
-                                name="streetAddress"
-                                value={
-                                    user.streetAddress
-                                }
-                                onChange={
-                                    handleProfileChange
-                                }
-                                rows="3"
-                                maxLength={255}
-                                className="w-full bg-black border border-[#003D1A] rounded p-2 text-white resize-none"
-                                placeholder="Street Address"
-                            />
-
                             <label className="flex items-center gap-2 mt-2 cursor-pointer">
                                 <input
                                     type="checkbox"
