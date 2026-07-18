@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import com.csci.cinemabackend.auth.dto.ChangePasswordRequest;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -395,6 +396,70 @@ public class AuthService {
         );
     }
 
+@Transactional
+public AuthResponse changePassword(
+        Integer userId,
+        ChangePasswordRequest request) {
+
+    User user = userRepository.findById(userId)
+            .orElseThrow(
+                    () -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "User not found"
+                    )
+            );
+
+    if (!passwordEncoder.matches(
+            request.currentPassword(),
+            user.getPassword())) {
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Current password is incorrect"
+        );
+    }
+
+    if (!request.newPassword()
+            .equals(request.confirmPassword())) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "New passwords do not match"
+        );
+    }
+
+    if (passwordEncoder.matches(
+            request.newPassword(),
+            user.getPassword())) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "New password must be different from the current password"
+        );
+    }
+
+    user.setPassword(
+            passwordEncoder.encode(request.newPassword())
+    );
+
+    userRepository.save(user);
+
+    userSessionRepository.deleteByUserUserId(
+            user.getUserId()
+    );
+
+    return new AuthResponse(
+            "Password changed successfully. Please log in again.",
+            user.getUserId(),
+            user.getUserName(),
+            user.getEmail(),
+            user.getIsAdmin(),
+            user.getIsActive(),
+            null,
+            null,
+            null
+    );
+}
     public AuthResponse logout(LogoutRequest request) {
         UserSession session =
                 userSessionRepository
