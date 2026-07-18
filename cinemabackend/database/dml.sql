@@ -166,7 +166,8 @@ INSERT INTO Users
     street_address,
     password,
     is_admin,
-    is_active
+    is_active,
+    promotion_opt_in
 )
 VALUES
 (
