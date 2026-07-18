@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.csci.cinemabackend.auth.dto.ChangePasswordRequest;
+import com.csci.cinemabackend.dto.ChangePasswordRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,13 +30,12 @@ public class AuthController {
         this.authService = authService;
     }
 
-
     @GetMapping("/is-admin")
     public boolean isAdmin(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         return authService.isAdmin(token);
     }
-    
+
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegistrationRequest request) {
         return ResponseEntity.ok(authService.register(request));
@@ -66,13 +65,13 @@ public class AuthController {
     public ResponseEntity<AuthResponse> logout(@Valid @RequestBody LogoutRequest request) {
         return ResponseEntity.ok(authService.logout(request));
     }
+
     @PostMapping("/change-password")
     public ResponseEntity<AuthResponse> changePassword(
-        @RequestParam Integer userId,
-        @Valid @RequestBody ChangePasswordRequest request) {
+            @RequestParam Integer userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
 
         return ResponseEntity.ok(
-            authService.changePassword(userId, request)
-    );
-}
+                authService.changePassword(userId, request));
+    }
 }

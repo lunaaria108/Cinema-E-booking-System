@@ -20,7 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import com.csci.cinemabackend.auth.dto.ChangePasswordRequest;
+import com.csci.cinemabackend.dto.ChangePasswordRequest;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -29,479 +29,408 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final UserSessionRepository userSessionRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
-    private final MailService mailService;
+        private final UserRepository userRepository;
+        private final EmailVerificationTokenRepository emailVerificationTokenRepository;
+        private final PasswordResetTokenRepository passwordResetTokenRepository;
+        private final UserSessionRepository userSessionRepository;
+        private final BCryptPasswordEncoder passwordEncoder;
+        private final MailService mailService;
 
-    private final long verificationExpirationHours;
-    private final long resetExpirationMinutes;
-    private final long sessionExpirationHours;
+        private final long verificationExpirationHours;
+        private final long resetExpirationMinutes;
+        private final long sessionExpirationHours;
 
-    public AuthService(
-            UserRepository userRepository,
-            EmailVerificationTokenRepository emailVerificationTokenRepository,
-            PasswordResetTokenRepository passwordResetTokenRepository,
-            UserSessionRepository userSessionRepository,
-            MailService mailService,
-            @Value("${app.auth.verification-expiration-hours:24}")
-            long verificationExpirationHours,
-            @Value("${app.auth.reset-expiration-minutes:30}")
-            long resetExpirationMinutes,
-            @Value("${app.auth.session-expiration-hours:8}")
-            long sessionExpirationHours) {
+        public AuthService(
+                        UserRepository userRepository,
+                        EmailVerificationTokenRepository emailVerificationTokenRepository,
+                        PasswordResetTokenRepository passwordResetTokenRepository,
+                        UserSessionRepository userSessionRepository,
+                        MailService mailService,
+                        @Value("${app.auth.verification-expiration-hours:24}") long verificationExpirationHours,
+                        @Value("${app.auth.reset-expiration-minutes:30}") long resetExpirationMinutes,
+                        @Value("${app.auth.session-expiration-hours:8}") long sessionExpirationHours) {
 
-        this.userRepository = userRepository;
-        this.emailVerificationTokenRepository =
-                emailVerificationTokenRepository;
-        this.passwordResetTokenRepository =
-                passwordResetTokenRepository;
-        this.userSessionRepository = userSessionRepository;
-        this.mailService = mailService;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+                this.userRepository = userRepository;
+                this.emailVerificationTokenRepository = emailVerificationTokenRepository;
+                this.passwordResetTokenRepository = passwordResetTokenRepository;
+                this.userSessionRepository = userSessionRepository;
+                this.mailService = mailService;
+                this.passwordEncoder = new BCryptPasswordEncoder();
 
-        this.verificationExpirationHours =
-                verificationExpirationHours;
-        this.resetExpirationMinutes =
-                resetExpirationMinutes;
-        this.sessionExpirationHours =
-                sessionExpirationHours;
-    }
-
-    public boolean isAdmin(String token) {
-    UserSession session = userSessionRepository
-            .findByTokenAndRevokedFalse(token)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Invalid session token"));
-
-    if (session.getExpiresAt().isBefore(Instant.now())) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Session expired");
-    }
-    return session.getUser().getIsAdmin();
-}
-
-    public AuthResponse register(RegistrationRequest request) {
-        if (!request.password().equals(request.confirmPassword())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Passwords do not match"
-            );
+                this.verificationExpirationHours = verificationExpirationHours;
+                this.resetExpirationMinutes = resetExpirationMinutes;
+                this.sessionExpirationHours = sessionExpirationHours;
         }
 
-        String normalizedEmail =
-                request.email().trim().toLowerCase();
-        String normalizedUsername =
-                request.username().trim();
+        public boolean isAdmin(String token) {
+                UserSession session = userSessionRepository
+                                .findByTokenAndRevokedFalse(token)
+                                .orElseThrow(() -> new ResponseStatusException(
+                                                HttpStatus.UNAUTHORIZED,
+                                                "Invalid session token"));
 
-        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)
-                || userRepository.existsByUserNameIgnoreCase(
-                        normalizedUsername)) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Email or username already exists"
-            );
-        }
-
-        User user = new User();
-        user.setFirstName(request.firstname().trim());
-        user.setLastName(request.lastname().trim());
-        user.setUserName(normalizedUsername);
-        user.setEmail(normalizedEmail);
-        user.setPhoneNumber(request.phoneNumber().trim());
-        user.setStreetAddress(request.streetAddress().trim());
-        user.setPassword(
-                passwordEncoder.encode(request.password())
-        );
-        user.setIsAdmin(false);
-        user.setIsActive(false);
-
-        user = userRepository.save(user);
-
-        String verificationToken =
-                UUID.randomUUID().toString();
-
-        EmailVerificationToken token =
-                new EmailVerificationToken();
-
-        token.setUser(user);
-        token.setToken(verificationToken);
-        token.setCreated(Instant.now());
-        token.setExpiresAt(
-                Instant.now().plus(
-                        verificationExpirationHours,
-                        ChronoUnit.HOURS
-                )
-        );
-
-        emailVerificationTokenRepository.save(token);
-
-        mailService.send(
-                user.getEmail(),
-                "Confirm your Cinema Booking Service account",
-                "Welcome " + user.getFirstName()
-                        + ",\n\nUse this confirmation token to activate your account: "
-                        + verificationToken
-                        + "\n\nOr open: http://localhost:5173/confirmation?token="
-                        + verificationToken
-        );
-
-        return new AuthResponse(
-                "Registration successful. Please confirm your email to activate the account.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                null,
-                verificationToken,
-                null
-        );
-    }
-
-  @Transactional
-public AuthResponse confirmEmail(String tokenValue) {
-    EmailVerificationToken token =
-            emailVerificationTokenRepository
-                    .findByToken(tokenValue)
-                    .orElseThrow(
-                            () -> new ResponseStatusException(
-                                    HttpStatus.NOT_FOUND,
-                                    "Confirmation token not found"
-                            )
-                    );
-
-    if (token.getExpiresAt().isBefore(Instant.now())) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Confirmation token has expired"
-        );
-    }
-
-    User user = token.getUser();
-
-    if (!Boolean.TRUE.equals(user.getIsActive())) {
-        user.setIsActive(true);
-        userRepository.save(user);
-    }
-
-    return new AuthResponse(
-            "Email confirmed. Account is now active.",
-            user.getUserId(),
-            user.getUserName(),
-            user.getEmail(),
-            user.getIsAdmin(),
-            true,
-            null,
-            null,
-            null
-    );
-}
-
-    public AuthResponse login(LoginRequest request) {
-        String identifier =
-                request.identifier().trim();
-
-        User user =
-                userRepository
-                        .findByEmailIgnoreCase(identifier)
-                        .or(() ->
-                                userRepository
-                                        .findByUserNameIgnoreCase(
-                                                identifier
-                                        )
-                        )
-                        .orElseThrow(
-                                () -> new ResponseStatusException(
+                if (session.getExpiresAt().isBefore(Instant.now())) {
+                        throw new ResponseStatusException(
                                         HttpStatus.UNAUTHORIZED,
-                                        "Invalid login credentials"
-                                )
-                        );
-
-        if (Boolean.FALSE.equals(user.getIsActive())) {
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Account is inactive. Please confirm your email."
-            );
+                                        "Session expired");
+                }
+                return session.getUser().getIsAdmin();
         }
 
-        if (!passwordEncoder.matches(
-                request.password(),
-                user.getPassword())) {
+        public AuthResponse register(RegistrationRequest request) {
+                if (!request.password().equals(request.confirmPassword())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Passwords do not match");
+                }
 
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Invalid login credentials"
-            );
+                String normalizedEmail = request.email().trim().toLowerCase();
+                String normalizedUsername = request.username().trim();
+
+                if (userRepository.existsByEmailIgnoreCase(normalizedEmail)
+                                || userRepository.existsByUserNameIgnoreCase(
+                                                normalizedUsername)) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.CONFLICT,
+                                        "Email or username already exists");
+                }
+
+                User user = new User();
+                user.setFirstName(request.firstname().trim());
+                user.setLastName(request.lastname().trim());
+                user.setUserName(normalizedUsername);
+                user.setEmail(normalizedEmail);
+                user.setPhoneNumber(request.phoneNumber().trim());
+                user.setStreetAddress(request.streetAddress().trim());
+                user.setPassword(
+                                passwordEncoder.encode(request.password()));
+                user.setIsAdmin(false);
+                user.setIsActive(false);
+
+                user = userRepository.save(user);
+
+                String verificationToken = UUID.randomUUID().toString();
+
+                EmailVerificationToken token = new EmailVerificationToken();
+
+                token.setUser(user);
+                token.setToken(verificationToken);
+                token.setCreated(Instant.now());
+                token.setExpiresAt(
+                                Instant.now().plus(
+                                                verificationExpirationHours,
+                                                ChronoUnit.HOURS));
+
+                emailVerificationTokenRepository.save(token);
+
+                mailService.send(
+                                user.getEmail(),
+                                "Confirm your Cinema Booking Service account",
+                                "Welcome " + user.getFirstName()
+                                                + ",\n\nUse this confirmation token to activate your account: "
+                                                + verificationToken
+                                                + "\n\nOr open: http://localhost:5173/confirmation?token="
+                                                + verificationToken);
+
+                return new AuthResponse(
+                                "Registration successful. Please confirm your email to activate the account.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                null,
+                                verificationToken,
+                                null);
         }
 
-        String sessionToken =
-                UUID.randomUUID().toString();
+        @Transactional
+        public AuthResponse confirmEmail(String tokenValue) {
+                EmailVerificationToken token = emailVerificationTokenRepository
+                                .findByToken(tokenValue)
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.NOT_FOUND,
+                                                                "Confirmation token not found"));
 
-        UserSession session =
-                new UserSession();
+                if (token.getExpiresAt().isBefore(Instant.now())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Confirmation token has expired");
+                }
 
-        session.setUser(user);
-        session.setToken(sessionToken);
-        session.setCreated(Instant.now());
-        session.setExpiresAt(
-                Instant.now().plus(
-                        sessionExpirationHours,
-                        ChronoUnit.HOURS
-                )
-        );
-        session.setRevoked(false);
+                User user = token.getUser();
 
-        userSessionRepository.save(session);
+                if (!Boolean.TRUE.equals(user.getIsActive())) {
+                        user.setIsActive(true);
+                        userRepository.save(user);
+                }
 
-        return new AuthResponse(
-                "Login successful.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                sessionToken,
-                null,
-                null
-        );
-    }
-
-    public AuthResponse forgotPassword(
-            ForgotPasswordRequest request) {
-
-        String normalizedEmail =
-                request.email().trim().toLowerCase();
-
-        User user =
-                userRepository
-                        .findByEmailIgnoreCase(normalizedEmail)
-                        .orElseThrow(
-                                () -> new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "User not found"
-                                )
-                        );
-
-        String resetTokenValue =
-                UUID.randomUUID().toString();
-
-        PasswordResetToken resetToken =
-                new PasswordResetToken();
-
-        resetToken.setUser(user);
-        resetToken.setToken(resetTokenValue);
-        resetToken.setCreated(Instant.now());
-        resetToken.setExpiresAt(
-                Instant.now().plus(
-                        resetExpirationMinutes,
-                        ChronoUnit.MINUTES
-                )
-        );
-        resetToken.setUsed(false);
-
-        passwordResetTokenRepository.save(resetToken);
-
-        mailService.send(
-                user.getEmail(),
-                "Reset your Cinema Booking Service password",
-                "Use this password reset token: "
-                        + resetTokenValue
-                        + "\n\nOr open: http://localhost:5173/reset-password?token="
-                        + resetTokenValue
-        );
-
-        return new AuthResponse(
-                "Password reset instructions sent.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                null,
-                null,
-                resetTokenValue
-        );
-    }
-    
-    @Transactional
-    public AuthResponse resetPassword(
-            ResetPasswordRequest request) {
-
-        if (!request.newPassword()
-                .equals(request.confirmPassword())) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Passwords do not match"
-            );
+                return new AuthResponse(
+                                "Email confirmed. Account is now active.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                true,
+                                null,
+                                null,
+                                null);
         }
 
-        PasswordResetToken resetToken =
-                passwordResetTokenRepository
-                        .findByToken(request.token())
-                        .orElseThrow(
-                                () -> new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Reset token not found"
-                                )
-                        );
+        public AuthResponse login(LoginRequest request) {
+                String identifier = request.identifier().trim();
 
-        if (Boolean.TRUE.equals(resetToken.getUsed())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Reset token has already been used"
-            );
+                User user = userRepository
+                                .findByEmailIgnoreCase(identifier)
+                                .or(() -> userRepository
+                                                .findByUserNameIgnoreCase(
+                                                                identifier))
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.UNAUTHORIZED,
+                                                                "Invalid login credentials"));
+
+                if (Boolean.FALSE.equals(user.getIsActive())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "Account is inactive. Please confirm your email.");
+                }
+
+                if (!passwordEncoder.matches(
+                                request.password(),
+                                user.getPassword())) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Invalid login credentials");
+                }
+
+                String sessionToken = UUID.randomUUID().toString();
+
+                UserSession session = new UserSession();
+
+                session.setUser(user);
+                session.setToken(sessionToken);
+                session.setCreated(Instant.now());
+                session.setExpiresAt(
+                                Instant.now().plus(
+                                                sessionExpirationHours,
+                                                ChronoUnit.HOURS));
+                session.setRevoked(false);
+
+                userSessionRepository.save(session);
+
+                return new AuthResponse(
+                                "Login successful.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                sessionToken,
+                                null,
+                                null);
         }
 
-        if (resetToken.getExpiresAt()
-                .isBefore(Instant.now())) {
+        public AuthResponse forgotPassword(
+                        ForgotPasswordRequest request) {
 
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Reset token has expired"
-            );
+                String normalizedEmail = request.email().trim().toLowerCase();
+
+                User user = userRepository
+                                .findByEmailIgnoreCase(normalizedEmail)
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.NOT_FOUND,
+                                                                "User not found"));
+
+                String resetTokenValue = UUID.randomUUID().toString();
+
+                PasswordResetToken resetToken = new PasswordResetToken();
+
+                resetToken.setUser(user);
+                resetToken.setToken(resetTokenValue);
+                resetToken.setCreated(Instant.now());
+                resetToken.setExpiresAt(
+                                Instant.now().plus(
+                                                resetExpirationMinutes,
+                                                ChronoUnit.MINUTES));
+                resetToken.setUsed(false);
+
+                passwordResetTokenRepository.save(resetToken);
+
+                mailService.send(
+                                user.getEmail(),
+                                "Reset your Cinema Booking Service password",
+                                "Use this password reset token: "
+                                                + resetTokenValue
+                                                + "\n\nOr open: http://localhost:5173/reset-password?token="
+                                                + resetTokenValue);
+
+                return new AuthResponse(
+                                "Password reset instructions sent.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                null,
+                                null,
+                                resetTokenValue);
         }
 
-        User user = resetToken.getUser();
+        @Transactional
+        public AuthResponse resetPassword(
+                        ResetPasswordRequest request) {
 
-        user.setPassword(
-                passwordEncoder.encode(
-                        request.newPassword()
-                )
-        );
+                if (!request.newPassword()
+                                .equals(request.confirmPassword())) {
 
-        userRepository.save(user);
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Passwords do not match");
+                }
 
-        resetToken.setUsed(true);
-        passwordResetTokenRepository.save(resetToken);
+                PasswordResetToken resetToken = passwordResetTokenRepository
+                                .findByToken(request.token())
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.NOT_FOUND,
+                                                                "Reset token not found"));
 
-        userSessionRepository.deleteByUserUserId(
-                user.getUserId()
-        );
+                if (Boolean.TRUE.equals(resetToken.getUsed())) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Reset token has already been used");
+                }
 
-        return new AuthResponse(
-                "Password updated successfully.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                null,
-                null,
-                null
-        );
-    }
+                if (resetToken.getExpiresAt()
+                                .isBefore(Instant.now())) {
 
-@Transactional
-public AuthResponse changePassword(
-        Integer userId,
-        ChangePasswordRequest request) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Reset token has expired");
+                }
 
-    User user = userRepository.findById(userId)
-            .orElseThrow(
-                    () -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "User not found"
-                    )
-            );
+                User user = resetToken.getUser();
 
-    if (!passwordEncoder.matches(
-            request.currentPassword(),
-            user.getPassword())) {
+                user.setPassword(
+                                passwordEncoder.encode(
+                                                request.newPassword()));
 
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Current password is incorrect"
-        );
-    }
+                userRepository.save(user);
 
-    if (!request.newPassword()
-            .equals(request.confirmPassword())) {
+                resetToken.setUsed(true);
+                passwordResetTokenRepository.save(resetToken);
 
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "New passwords do not match"
-        );
-    }
+                userSessionRepository.deleteByUserUserId(
+                                user.getUserId());
 
-    if (passwordEncoder.matches(
-            request.newPassword(),
-            user.getPassword())) {
-
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "New password must be different from the current password"
-        );
-    }
-
-    user.setPassword(
-            passwordEncoder.encode(request.newPassword())
-    );
-
-    userRepository.save(user);
-
-    userSessionRepository.deleteByUserUserId(
-            user.getUserId()
-    );
-
-    return new AuthResponse(
-            "Password changed successfully. Please log in again.",
-            user.getUserId(),
-            user.getUserName(),
-            user.getEmail(),
-            user.getIsAdmin(),
-            user.getIsActive(),
-            null,
-            null,
-            null
-    );
-}
-    public AuthResponse logout(LogoutRequest request) {
-        UserSession session =
-                userSessionRepository
-                        .findByTokenAndRevokedFalse(
-                                request.token()
-                        )
-                        .orElseThrow(
-                                () -> new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Session token not found"
-                                )
-                        );
-
-        if (session.getExpiresAt()
-                .isBefore(Instant.now())) {
-
-            session.setRevoked(true);
-            userSessionRepository.save(session);
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Session has expired"
-            );
+                return new AuthResponse(
+                                "Password updated successfully.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                null,
+                                null,
+                                null);
         }
 
-        session.setRevoked(true);
-        userSessionRepository.save(session);
+        @Transactional
+        public AuthResponse changePassword(
+                        Integer userId,
+                        ChangePasswordRequest request) {
 
-        User user = session.getUser();
+                User user = userRepository.findById(userId)
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.NOT_FOUND,
+                                                                "User not found"));
 
-        return new AuthResponse(
-                "Logout successful.",
-                user.getUserId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getIsAdmin(),
-                user.getIsActive(),
-                null,
-                null,
-                null
-        );
-    }
+                if (!passwordEncoder.matches(
+                                request.currentPassword(),
+                                user.getPassword())) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Current password is incorrect");
+                }
+
+                if (!request.newPassword()
+                                .equals(request.confirmPassword())) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "New passwords do not match");
+                }
+
+                if (passwordEncoder.matches(
+                                request.newPassword(),
+                                user.getPassword())) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "New password must be different from the current password");
+                }
+
+                user.setPassword(
+                                passwordEncoder.encode(request.newPassword()));
+
+                userRepository.save(user);
+
+                userSessionRepository.deleteByUserUserId(
+                                user.getUserId());
+
+                return new AuthResponse(
+                                "Password changed successfully. Please log in again.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                null,
+                                null,
+                                null);
+        }
+
+        public AuthResponse logout(LogoutRequest request) {
+                UserSession session = userSessionRepository
+                                .findByTokenAndRevokedFalse(
+                                                request.token())
+                                .orElseThrow(
+                                                () -> new ResponseStatusException(
+                                                                HttpStatus.NOT_FOUND,
+                                                                "Session token not found"));
+
+                if (session.getExpiresAt()
+                                .isBefore(Instant.now())) {
+
+                        session.setRevoked(true);
+                        userSessionRepository.save(session);
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Session has expired");
+                }
+
+                session.setRevoked(true);
+                userSessionRepository.save(session);
+
+                User user = session.getUser();
+
+                return new AuthResponse(
+                                "Logout successful.",
+                                user.getUserId(),
+                                user.getUserName(),
+                                user.getEmail(),
+                                user.getIsAdmin(),
+                                user.getIsActive(),
+                                null,
+                                null,
+                                null);
+        }
 }
