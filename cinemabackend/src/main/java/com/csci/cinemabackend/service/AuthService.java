@@ -107,7 +107,7 @@ public class AuthService {
                                 passwordEncoder.encode(request.password()));
                 user.setIsAdmin(false);
                 user.setIsActive(false);
-                user.setPromotionOptIn(request.promoOptIn());
+                uuser.setPromoOptIn(request.promoOptIn());
 
                 user = userRepository.save(user);
 
