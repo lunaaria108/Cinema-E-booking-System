@@ -17,25 +17,25 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   mail:
-    host: ${SMTP_HOST:localhost}
-    port: ${SMTP_PORT:1025}
-    username: ${SMTP_USERNAME:}
-    password: ${SMTP_PASSWORD:}
+    host: smtp.gmail.com
+    port: 587
+    username: jesscinemaapp@gmail.com
+    password: tjiyvqkboxtgjlyo
     properties:
       mail:
         smtp:
-          auth: false
+          auth: true
           starttls:
-            enable: false
+            enable: true
+            required: true
 
 app:
   mail:
-    from: ${APP_MAIL_FROM:no-reply@cinema.local}
+    from: jesscinemaapp@gmail.com
   auth:
     verification-expiration-hours: 24
     reset-expiration-minutes: 30
     session-expiration-hours: 8
-
 
 card:
   encryption:
