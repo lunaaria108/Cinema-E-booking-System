@@ -31,7 +31,7 @@ public record RegistrationRequest(
                 message = "Password must be at least 8 characters"
         )
         String password,
-
-        @NotBlank String confirmPassword
+        @NotBlank String confirmPassword,
+        Boolean promoOptIn
 ) {
 }

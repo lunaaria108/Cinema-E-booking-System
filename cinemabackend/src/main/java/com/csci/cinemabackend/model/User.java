@@ -36,7 +36,7 @@ public class User {
     private String streetAddress;
 
     @Column(name = "promotion_opt_in", nullable = false)
-    private Boolean promoOptIn = false;
+    private Boolean promoOptIn;
 
     /**
      * Stores the securely hashed password, never the plaintext password.
