@@ -6,10 +6,19 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record RegistrationRequest(
-        @NotBlank String firstname,
-        @NotBlank String lastname,
-        @NotBlank String username,
-        @NotBlank @Email String email,
+
+        @NotBlank
+        String firstname,
+
+        @NotBlank
+        String lastname,
+
+        @NotBlank
+        String username,
+
+        @NotBlank
+        @Email
+        String email,
 
         @NotBlank
         @Pattern(
@@ -18,19 +27,23 @@ public record RegistrationRequest(
         )
         String phoneNumber,
 
-        @NotBlank
         @Size(
                 max = 255,
                 message = "Street address is too long"
         )
         String streetAddress,
 
+        @NotBlank
         @Size(
                 min = 8,
                 message = "Password must be at least 8 characters"
         )
         String password,
-        @NotBlank String confirmPassword,
+
+        @NotBlank
+        String confirmPassword,
+
         Boolean promoOptIn
+
 ) {
 }
