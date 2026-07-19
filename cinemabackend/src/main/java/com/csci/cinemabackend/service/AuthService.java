@@ -97,17 +97,22 @@ public class AuthService {
                 }
 
                 User user = new User();
-                user.setFirstName(request.firstname().trim());
+             user.setFirstName(request.firstname().trim());
                 user.setLastName(request.lastname().trim());
                 user.setUserName(normalizedUsername);
                 user.setEmail(normalizedEmail);
                 user.setPhoneNumber(request.phoneNumber().trim());
-                user.setStreetAddress(request.streetAddress().trim());
-                user.setPassword(
-                                passwordEncoder.encode(request.password()));
-                user.setIsAdmin(false);
-                user.setIsActive(false);
-                user.setPromoOptIn(request.promoOptIn());
+
+        if (request.streetAddress() == null || request.streetAddress().isBlank()) {
+            user.setStreetAddress(null);
+        } else {
+            user.setStreetAddress(request.streetAddress().trim());
+        }
+
+user.setPassword(passwordEncoder.encode(request.password()));
+user.setIsAdmin(false);
+user.setIsActive(false);
+user.setPromoOptIn(request.promoOptIn());
 
                 user = userRepository.save(user);
 
