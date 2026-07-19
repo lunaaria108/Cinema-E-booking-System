@@ -204,7 +204,6 @@ export default function SignUpPage() {
                                 id="streetAddress"
                                 name="streetAddress"
                                 maxLength={255}
-                                required
                                 className="bg-[#0b0b0b] border border-[#D4AF37] rounded-md px-2 py-1 ml-2"
                             />
                         </div>
