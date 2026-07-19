@@ -3,24 +3,24 @@ import logo from "../assets/logo.jpg";
 import SearchBar from "./SearchBar";
 
 export default function NavBar({
-    booking = false, 
-    onSearch = () => {}, 
-    onFilter = () => {}, 
-    isFiltered = false, 
-    onBrowseMovies = () => {},
-    isLoggedIn = false, 
-    isAdmin = false, 
+    booking = false,
+    onSearch = () => { },
+    onFilter = () => { },
+    isFiltered = false,
+    onBrowseMovies = () => { },
+    isLoggedIn = false,
+    isAdmin = false,
     isSignUpPage = false,
-    onLogIn = () => {},
-    onLogout = () => {},
+    onLogIn = () => { },
+    onLogout = () => { },
     isProfilePage = false,
 }) {
     const navigate = useNavigate();
-    
-    return(
+
+    return (
         <div className="bg-[radial-gradient(circle_at_top_right,#003D1A_0%,#000000_30%)]">
-            <div className="flex justify-between items-center p-4"> 
-                
+            <div className="flex justify-between items-center p-4">
+
                 <div className="flex justify-start items-center gap-4 cursor-pointer" onClick={() => {
                     navigate("/");
                     onBrowseMovies();
@@ -31,60 +31,60 @@ export default function NavBar({
 
                 <div className="flex justify-start items-center gap-4">
                     {!booking && (
-                       <button className="text-[#D8CC88] hover:underline" onClick={onFilter}>
+                        <button className="text-[#D8CC88] hover:underline" onClick={onFilter}>
                             Filter
                         </button>
                     )}
-                    
+
                     <SearchBar onSearch={onSearch} />
 
                     <div className="flex items-center gap-4 border-l border-[#003D1A] pl-4 ml-2">
                         {isLoggedIn && isProfilePage && (
-                                <button
-                                    className="text-red-400 hover:text-red-300 transition-colors"
-                                    onClick={onLogout}
-                                >
-                                    Logout
-                                </button>
-                                )}
+                            <button
+                                className="text-red-400 hover:text-red-300 transition-colors"
+                                onClick={onLogout}
+                            >
+                                Logout
+                            </button>
+                        )}
 
-                                {isLoggedIn && !isProfilePage && (
-                                <>
-                                    {isAdmin && (
+                        {isLoggedIn && !isProfilePage && (
+                            <>
+                                {isAdmin && (
                                     <button
                                         className="text-[#D4AF37] hover:text-white transition-colors"
                                         onClick={() => navigate("/admin")}
                                     >
                                         Admin
                                     </button>
-                                    )}
-
-                                    <button
-                                    className="text-[#D4AF37] hover:text-white transition-colors"
-                                    onClick={() => navigate("/profile")}
-                                    >
-                                    Profile
-                                    </button>
-
-                                    <button
-                                    className="text-red-400 hover:text-red-300 transition-colors"
-                                    onClick={onLogout}
-                                    >
-                                    Logout
-                                    </button>
-                                </>
                                 )}
 
-                                {!isLoggedIn && (
-                                <>
-                                    <button
+                                <button
+                                    className="text-[#D4AF37] hover:text-white transition-colors"
+                                    onClick={() => navigate("/profile")}
+                                >
+                                    Profile
+                                </button>
+
+                                <button
+                                    className="text-red-400 hover:text-red-300 transition-colors"
+                                    onClick={onLogout}
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        )}
+
+                        {!isLoggedIn && (
+                            <>
+                                <button
                                     className="text-[#D4AF37] hover:text-white transition-colors"
                                     onClick={onLogIn}
-                                    >
+                                >
                                     Log In
-                                    </button>
+                                </button>
 
-                                    {!isSignUpPage && (
+                                {!isSignUpPage && (
                                     <button
                                         className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg border border-[#D4AF37] hover:bg-[#0a5229]"
                                         onClick={() => navigate("/signup")}
@@ -95,9 +95,9 @@ export default function NavBar({
                             </>
                         )}
                     </div>
-                    
+
                 </div>
             </div>
-        </div>       
+        </div>
     );
 }
