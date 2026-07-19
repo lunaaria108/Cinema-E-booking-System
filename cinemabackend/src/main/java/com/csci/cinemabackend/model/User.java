@@ -35,8 +35,8 @@ public class User {
     @Column(name = "street_address", nullable = false, length = 255)
     private String streetAddress;
 
-    @Column(name = "promo_opt_in", nullable = false)
-    private Boolean promoOptIn = true;
+    @Column(name = "promotion_opt_in", nullable = false)
+    private Boolean promoOptIn = false;
 
     /**
      * Stores the securely hashed password, never the plaintext password.
