@@ -40,11 +40,6 @@ function MovieModal({ movie, onClose }) {
         </div>
 
        <button className="book-btn" onClick={() => {
-          if (!auth?.userId) {
-              setAlertMessage("You must be signed in to book a movie.");
-              return;
-          }
-
           if (!selectedShowtime) {
               setAlertMessage("Please select a showtime before booking.");
               return;

@@ -279,6 +279,7 @@ export default function AdminPage() {
                 <NavBar
                     isLoggedIn={Boolean(auth.token)}
                     onLogout={handleLogout}
+                    isSignUpPage={true}
                 />
   
                 <div className="p-8 text-center">
@@ -290,7 +291,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white">
-      <NavBar booking={true} onBrowseMovies={handleBrowseMovies} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout} isProfilePage={true} />
+      <NavBar booking={true} onBrowseMovies={handleBrowseMovies} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout} isProfilePage={true} isSignUpPage={true}/>
 
       <div className="flex min-h-[calc(100vh-96px)]">
         <aside className="w-64 h-[calc(100vh-96px)] shrink-0 bg-black">

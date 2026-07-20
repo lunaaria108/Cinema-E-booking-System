@@ -109,8 +109,10 @@ export default function LoginModal({
             onLoginSuccess(authData);
             onClose();
 
-            if (isAdmin === true) {
+            if (isAdmin) {
                 navigate("/admin");
+            } else {
+                window.location.reload();
             }
         } catch (error) {
             console.error("Login request failed:", error);
