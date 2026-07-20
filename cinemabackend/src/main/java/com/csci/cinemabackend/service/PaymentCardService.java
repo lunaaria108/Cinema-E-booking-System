@@ -101,7 +101,13 @@ public class PaymentCardService {
 
         paymentCard.setUser(optionalUser.get());
         paymentCard.setCardholderName(cardholderName.trim());
-        paymentCard.setCardNumber(encrypt(cardNumber.trim()));
+        String rawCardNumber = cardNumber.replaceAll("\\s", "");
+
+        paymentCard.setLastFour(
+        rawCardNumber.substring(rawCardNumber.length() - 4)
+        );
+
+        paymentCard.setCardNumber(encrypt(rawCardNumber));
         paymentCard.setExpirationMonth(expirationMonth);
         paymentCard.setExpirationYear(expirationYear);
         paymentCard.setCvv(encrypt(cvv.trim()));
@@ -142,7 +148,13 @@ public class PaymentCardService {
         }
 
         card.setCardholderName(cardholderName.trim());
-        card.setCardNumber(cardNumber.trim());
+        String rawCardNumber = cardNumber.replaceAll("\\s", "");
+
+        card.setLastFour(
+        rawCardNumber.substring(rawCardNumber.length() - 4)
+        );
+
+        card.setCardNumber(encrypt(rawCardNumber));
         card.setExpirationMonth(expirationMonth);
         card.setExpirationYear(expirationYear);
         card.setCvv(cvv.trim());
