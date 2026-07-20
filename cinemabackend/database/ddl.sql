@@ -9,7 +9,6 @@ CREATE TABLE Users (
     street_address VARCHAR(255) --optional
         CHECK (street_address IS NULL OR street_address <> ''),
     password VARCHAR(255) NOT NULL,
-    address VARCHAR(255),
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     promotion_opt_in BOOLEAN NOT NULL DEFAULT FALSE,
