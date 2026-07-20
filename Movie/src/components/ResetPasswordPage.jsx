@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import AlertModal from "./AlertModal";
 
 export default function ResetPasswordPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const tokenFromUrl = searchParams.get("token") || "";
 
@@ -27,12 +29,17 @@ export default function ResetPasswordPage() {
         };
 
         if (!payload.token) {
-            alert("A reset token is required.");
+            setAlertMessage("A reset token is required.");
             return;
         }
 
         if (payload.newPassword !== payload.confirmPassword) {
-            alert("Passwords do not match.");
+            setAlertMessage("Passwords do not match.");
+            return;
+        }
+
+        if (payload.newPassword.length < 8) {
+            setAlertMessage("Password must be at least 8 characters long.");
             return;
         }
 
@@ -65,22 +72,20 @@ export default function ResetPasswordPage() {
             }
 
             if (!response.ok) {
-                alert(
+                setAlertMessage(
                     responseData?.message ||
                         "Unable to reset password."
                 );
                 return;
             }
 
-            alert(
+            setAlertMessage(
                 responseData?.message ||
                     "Password updated successfully."
             );
-
-            navigate("/");
         } catch (error) {
             console.error("Reset password request failed:", error);
-            alert("Unable to connect to the backend.");
+            setAlertMessage("Unable to connect to the backend.");
         } finally {
             setIsSubmitting(false);
         }
@@ -163,6 +168,17 @@ export default function ResetPasswordPage() {
                     </button>
                 </form>
             </div>
+            {alertMessage && (
+                <AlertModal
+                    message={alertMessage}
+                    onClose={() => {
+                        setAlertMessage("");
+                        if (alertMessage.includes("successfully")) {
+                            navigate("/");
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

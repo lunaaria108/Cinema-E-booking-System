@@ -6,6 +6,7 @@ import ResetModal from './ResetModal';
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useNavigate } from "react-router-dom";
 import ConfirmationModal from "./ConfirmationModal";
+import AlertModal from "./AlertModal";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function SignUpPage() {
     const [showLogIn, setShowLogIn] = useState(false);
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const handleLoginSuccess = () => {
         setAuth(loadAuthState());
@@ -60,6 +62,21 @@ export default function SignUpPage() {
         promoOptIn: formData.get("promoOptIn") === "on",
         };
 
+        if (!user.firstname || !user.lastname || !user.username || !user.email || !user.password) {
+            setAlertMessage("Please fill out all required fields.");
+            return;
+        }
+
+        if (user.password !== user.confirmPassword) {
+            setAlertMessage("Passwords do not match.");
+            return;
+        }
+
+        if (user.password.length < 8) {
+            setAlertMessage("Password must be at least 8 characters long.");
+            return;
+        }
+
         try {
         const response = await fetch(
             "http://localhost:8080/api/auth/register",
@@ -75,17 +92,16 @@ export default function SignUpPage() {
         const responseText = await response.text();
 
         if (!response.ok) {
-            alert(responseText || "Unable to create account.");
+            setAlertMessage(responseText || "Unable to create account.");
             return;
         }
 
         form.reset();
 
-        // Opens the confirmation modal
         setShowConfirmationModal(true);
         } catch (error) {
         console.error("Registration request failed:", error);
-        alert("Unable to connect to the backend.");
+        setAlertMessage("Unable to connect to the backend.");
         }
     };
 
@@ -98,7 +114,7 @@ export default function SignUpPage() {
                 isLoggedIn={Boolean(auth.token)}
                 onLogout={handleLogout}
             />
-            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
+            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false); setShowResetModal(true);}} onLoginSuccess={handleLoginSuccess}/>) }
             {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)}/>) }
 
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#0b0b0b] px-4">
@@ -161,7 +177,7 @@ export default function SignUpPage() {
                             <label
                                 htmlFor="email"
                                 className="w-24 text-[#D4AF37] text-left"
-                            >
+                                >
                                 Email:
                             </label>
 
@@ -268,11 +284,15 @@ export default function SignUpPage() {
                 </div>
             </div>
 
-            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false), setShowResetModal(true)}} onLoginSuccess={handleLoginSuccess}/>) }
-            {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)}/>) }
-
             {showConfirmationModal && (
                 <ConfirmationModal onClose={() => setShowConfirmationModal(false)} />
+            )}
+
+            {alertMessage && (
+                <AlertModal
+                    message={alertMessage}
+                    onClose={() => setAlertMessage("")}
+                />
             )}
         </>
     );

@@ -23,6 +23,15 @@ export default function LoginModal({
             password: String(formData.get("password") || ""),
         };
 
+        if (!payload.identifier) {
+            setAlertMessage("Please enter your email or username.");
+            return;
+        }
+        if (!payload.password) {
+            setAlertMessage("Please enter your password.");
+            return;
+        }
+
         try {
             setIsSubmitting(true);
 
@@ -57,8 +66,10 @@ export default function LoginModal({
             if (!response.ok) {
                 if (response.status === 403 || responseData?.message?.toLowerCase().includes("verif")) {
                     setAlertMessage("Account is not verified. Please check your email to verify your account.");
+                } else if (response.status === 401) {
+                    setAlertMessage("Incorrect email or password.");
                 } else {
-                    setAlertMessage(responseData?.message || "Unable to log in.");
+                    setAlertMessage(responseData?.message || "Unable to log in. Please try again.");
                 }
                 return;
             }
@@ -98,13 +109,12 @@ export default function LoginModal({
             onLoginSuccess(authData);
             onClose();
 
-
             if (isAdmin === true) {
                 navigate("/admin");
             }
         } catch (error) {
             console.error("Login request failed:", error);
-            alert("Unable to connect to the backend.");
+            setAlertMessage("Unable to connect to the backend.");
         } finally {
             setIsSubmitting(false);
         }

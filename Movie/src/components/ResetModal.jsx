@@ -1,13 +1,20 @@
 import { useState } from "react";
+import AlertModal from "./AlertModal";
 
 export default function ResetModal({ onClose }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const formData = new FormData(event.currentTarget);
         const email = String(formData.get("email") || "").trim();
+
+        if (!email) {
+            setAlertMessage("Please enter your email address.");
+            return;
+        }
 
         try {
             setIsSubmitting(true);
@@ -32,15 +39,14 @@ export default function ResetModal({ onClose }) {
             }
 
             if (!response.ok) {
-                alert(responseData?.message || "Unable to send reset instructions.");
+                setAlertMessage(responseData?.message || "Unable to send reset instructions.");
                 return;
             }
 
-            alert(responseData?.message || "Please check your email for password reset instructions.");
-            onClose();
+            setAlertMessage(responseData?.message || "Please check your email for password reset instructions.");
         } catch (error) {
             console.error("Forgot password request failed:", error);
-            alert("Unable to connect to the backend.");
+            setAlertMessage("Unable to connect to the backend.");
         } finally {
             setIsSubmitting(false);
         }
@@ -67,6 +73,17 @@ export default function ResetModal({ onClose }) {
                     </div>
                 </div>
             </div>
+            {alertMessage && (
+                <AlertModal
+                    message={alertMessage}
+                    onClose={() => {
+                        setAlertMessage("");
+                        if (alertMessage.includes("check your email")) {
+                            onClose();
+                        }
+                    }}
+                />
+            )}
         </div>        
     );
 }
