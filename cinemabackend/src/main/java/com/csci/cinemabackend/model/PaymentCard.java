@@ -44,6 +44,9 @@ public class PaymentCard {
     @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
+    @Column(name = "last_four", nullable = false, length = 4)
+    private String lastFour;
+
     public PaymentCard() {
     }
 
@@ -116,5 +119,13 @@ public class PaymentCard {
 
     public void setBillingZip(String billingZip) {
         this.billingZip = billingZip;
+    }
+
+    public String getLastFour() {
+        return lastFour;
+    }
+
+    public void setLastFour(String lastFour) {
+        this.lastFour = lastFour;
     }
 }
