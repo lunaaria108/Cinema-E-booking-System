@@ -42,7 +42,6 @@ export default function LoginModal({
             console.log("Login status:", response.status);
             console.log("Login response:", responseText);
 
-
             let responseData = null;
 
             if (responseText) {
@@ -56,7 +55,11 @@ export default function LoginModal({
             }
 
             if (!response.ok) {
-                setAlertMessage(responseData?.message || "Unable to log in.");
+                if (response.status === 403 || responseData?.message?.toLowerCase().includes("verif")) {
+                    setAlertMessage("Account is not verified. Please check your email to verify your account.");
+                } else {
+                    setAlertMessage(responseData?.message || "Unable to log in.");
+                }
                 return;
             }
 
@@ -67,39 +70,38 @@ export default function LoginModal({
                     Authorization: `Bearer ${responseData.sessionToken}`,
                     },
                 }
-                );
+            );
 
-                if (!adminResponse.ok) {
+            if (!adminResponse.ok) {
                 throw new Error("Unable to determine account type.");
-                }
+            }
 
-              const adminData = await adminResponse.json();
+            const adminData = await adminResponse.json();
 
-console.log("Admin response:", adminData);
-console.log(
-  "isAdmin value:",
-  typeof adminData === "boolean" ? adminData : adminData.isAdmin
-);
+            console.log("Admin response:", adminData);
+            console.log(
+                "isAdmin value:",
+                typeof adminData === "boolean" ? adminData : adminData.isAdmin
+            );
 
-const isAdmin =
-    typeof adminData === "boolean"
-        ? adminData
-        : adminData.isAdmin;
+            const isAdmin =
+                typeof adminData === "boolean"
+                    ? adminData
+                    : adminData.isAdmin;
 
-                const authData = {
-                    ...responseData,
-                    isAdmin,
-                };
+            const authData = {
+                ...responseData,
+                isAdmin,
+            };
 
-                saveAuthState(authData);
-                onLoginSuccess(authData);
-                onClose();
+            saveAuthState(authData);
+            onLoginSuccess(authData);
+            onClose();
 
-                window.location.reload();
 
-                if (isAdmin === true) {
-                    navigate("/admin");
-                }
+            if (isAdmin === true) {
+                navigate("/admin");
+            }
         } catch (error) {
             console.error("Login request failed:", error);
             alert("Unable to connect to the backend.");

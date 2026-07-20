@@ -36,7 +36,7 @@ export default function NavBar({
                         </button>
                     )}
 
-                    <SearchBar onSearch={onSearch} />
+                    {!isSignUpPage && <SearchBar onSearch={onSearch} />}
 
                     <div className="flex items-center gap-4 border-l border-[#003D1A] pl-4 ml-2">
                         {isLoggedIn && isProfilePage && (
