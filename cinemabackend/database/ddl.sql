@@ -53,6 +53,7 @@ CREATE TABLE PaymentCard (
     user_id INT NOT NULL,
     cardholder_name VARCHAR(100) NOT NULL,
     card_number VARCHAR(255) NOT NULL,
+    last_four CHAR(4) NOT NULL,
     expiration_month INT NOT NULL,
     expiration_year INT NOT NULL,
     cvv VARCHAR(255) NOT NULL,
