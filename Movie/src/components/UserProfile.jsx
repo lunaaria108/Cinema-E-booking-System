@@ -403,94 +403,89 @@ export default function UserProfile() {
     };
 
     const handleSaveCard = async () => {
-        const cleanedCardNumber =
-            cardForm.cardNumber.replace(/\s/g, "");
+    const cleanedCardNumber = cardForm.cardNumber.replace(/\s/g, "");
 
-        if (
-            !cardForm.cardholderName.trim() ||
-            !cleanedCardNumber ||
-            !cardForm.expirationMonth ||
-            !cardForm.expirationYear ||
-            !cardForm.cvv.trim() ||
-            !cardForm.billingZip.trim()
-        ) {
-            setAlertMessage("Please enter all card information.");
-            return;
-        }
+    if (
+      !cardForm.cardholderName.trim() ||
+      !cleanedCardNumber ||
+      !cardForm.expirationMonth ||
+      !cardForm.expirationYear ||
+      !cardForm.cvv.trim() ||
+      !cardForm.billingZip.trim()
+    ) {
+      setAlertMessage("Please enter all card information.");
+      return;
+    }
 
-        const payload = {
-            cardholderName:
-                cardForm.cardholderName.trim(),
-            cardNumber: cleanedCardNumber,
-            expirationMonth: Number(
-                cardForm.expirationMonth
-            ),
-            expirationYear: Number(
-                cardForm.expirationYear
-            ),
-            cvv: cardForm.cvv.trim(),
-            billingZip: cardForm.billingZip.trim(),
-        };
-
-        try {
-            const response = await fetch(
-                `http://localhost:8080/api/users/${auth.userId}/cards`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type":
-                            "application/json",
-                        Authorization:
-                            `Bearer ${auth.token}`,
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            const responseText = await response.text();
-
-            let savedCard = null;
-
-            if (responseText) {
-                try {
-                    savedCard =
-                        JSON.parse(responseText);
-                } catch {
-                    throw new Error(responseText);
-                }
-            }
-
-            if (!response.ok) {
-                throw new Error(
-                    savedCard?.message ||
-                        "Unable to save payment card."
-                );
-            }
-
-            setPaymentCards((currentCards) => [
-                ...currentCards,
-                savedCard,
-            ]);
-
-            setShowCardForm(false);
-            setEditingCardId(null);
-
-            setCardForm({
-                cardholderName: "",
-                cardNumber: "",
-                expirationMonth: "",
-                expirationYear: "",
-                cvv: "",
-                billingZip: "",
-            });
-        } catch (error) {
-            console.error(
-                "Saving card failed:",
-                error
-            );
-            setAlertMessage(error.message);
-        }
+    const payload = {
+      cardholderName: cardForm.cardholderName.trim(),
+      cardNumber: cleanedCardNumber,
+      expirationMonth: Number(cardForm.expirationMonth),
+      expirationYear: Number(cardForm.expirationYear),
+      cvv: cardForm.cvv.trim(),
+      billingZip: cardForm.billingZip.trim(),
     };
+
+    const isEditing = editingCardId !== null;
+    const url = isEditing
+      ? `http://localhost:8080/api/users/${auth.userId}/cards/${editingCardId}`
+      : `http://localhost:8080/api/users/${auth.userId}/cards`;
+    const method = isEditing ? "PUT" : "POST";
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const responseText = await response.text();
+
+      let savedCard = null;
+
+      if (responseText) {
+        try {
+          savedCard = JSON.parse(responseText);
+        } catch {
+          throw new Error(responseText);
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          savedCard?.message || "Unable to save payment card."
+        );
+      }
+
+      setPaymentCards((currentCards) => {
+        if (isEditing) {
+          return currentCards.map((card) =>
+            card.cardId === editingCardId ? savedCard : card
+          );
+        } else {
+          return [...currentCards, savedCard];
+        }
+      });
+
+      setShowCardForm(false);
+      setEditingCardId(null);
+
+      setCardForm({
+        cardholderName: "",
+        cardNumber: "",
+        expirationMonth: "",
+        expirationYear: "",
+        cvv: "",
+        billingZip: "",
+      });
+    } catch (error) {
+      console.error("Saving card failed:", error);
+      setAlertMessage(error.message);
+    }
+  };
 
     const handleDeleteCard = async (cardId) => {
         try {
