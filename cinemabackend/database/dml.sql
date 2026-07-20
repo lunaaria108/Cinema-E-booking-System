@@ -172,13 +172,13 @@ INSERT INTO Users
 VALUES
 (
     'james@example.com',
-    'james',
+    'admin',
     'James',
     'Reviewer',
     '7705550101',
     '123 Main Street',
-    'temporary-password',
-    FALSE,
+    '$2a$12$Vvj7IKTO6CZ29tJnJAuD..BYpRSk9rU22A9FNrkx4Rza4b7.etU5K',
+    TRUE,
     TRUE,
     FALSE
 ),
