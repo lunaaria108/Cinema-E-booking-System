@@ -48,6 +48,7 @@ export default function UserProfile() {
     const [isSavingProfile, setIsSavingProfile] = useState(false);
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+    const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
 
     useEffect(() => {
         if (!auth.userId) {
@@ -323,9 +324,6 @@ export default function UserProfile() {
                 confirmPassword: "",
             });
 
-            clearAuthState();
-            setAuth(loadAuthState());
-            navigate("/");
         } catch (error) {
             console.error(
                 "Password update failed:",
@@ -1095,8 +1093,19 @@ export default function UserProfile() {
             </div>
             {alertMessage && (
                 <AlertModal
-                message={alertMessage}
-                onClose={() => setAlertMessage("")}
+                    message={alertMessage}
+                    onClose={() => {
+                        const passwordChanged =
+                            alertMessage.includes("Password changed");
+
+                        setAlertMessage("");
+
+                        if (passwordChanged) {
+                            clearAuthState();
+                            setAuth(loadAuthState());
+                            navigate("/");
+                        }
+                    }}
                 />
             )}
         </div>

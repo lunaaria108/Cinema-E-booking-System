@@ -2,10 +2,8 @@ import NavBar from "./Navbar";
 import LoginModal from "./LoginModal";
 import ResetModal from "./ResetModal";
 import { useEffect, useRef, useState } from "react";
-import {
-  clearAuthState,
-  loadAuthState,
-} from "../utils/authStorage";
+import { clearAuthState, loadAuthState } from "../utils/authStorage";
+import { useNavigate } from "react-router-dom";
 
 export default function EmailConfirmation() {
   const [showLogIn, setShowLogIn] = useState(false);
@@ -13,9 +11,8 @@ export default function EmailConfirmation() {
   const [auth, setAuth] = useState(() => loadAuthState());
 
   const [status, setStatus] = useState("loading");
-  const [message, setMessage] = useState(
-    "Confirming your email..."
-  );
+  const [message, setMessage] = useState( "Confirming your email...");
+  const navigate = useNavigate();
 
   const hasConfirmed = useRef(false);
 
@@ -72,9 +69,15 @@ export default function EmailConfirmation() {
     confirmEmail();
   }, []);
 
-  const handleLoginSuccess = () => {
-    setAuth(loadAuthState());
+  const handleLoginSuccess = (authData) => {
+    setAuth(authData);
     setShowLogIn(false);
+
+    if (authData?.isAdmin) {
+        navigate("/admin");
+    } else {
+        navigate("/");
+    }
   };
 
   const handleLogout = async () => {
