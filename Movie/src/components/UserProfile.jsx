@@ -842,10 +842,8 @@ export default function UserProfile() {
                                 >
                                     <div className="text-white">
                                         <p>
-                                            •••• •••• ••••{" "}
-                                            {card.cardNumber?.slice(
-                                                -4
-                                            )}
+                                            {"•••• •••• •••• "}
+                                            {card.lastFour}
                                         </p>
 
                                         <p className="text-sm text-gray-400">
