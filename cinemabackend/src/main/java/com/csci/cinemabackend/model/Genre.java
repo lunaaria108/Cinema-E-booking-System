@@ -21,4 +21,16 @@ public class Genre {
 
     @OneToMany(mappedBy = "genre")
     private List<Movie> movies;
+
+    public Integer getGenreId() {
+        return genreId;
+    }
+
+    public String getGenreName() {
+        return genreName;
+    }
+
+    public void setGenreName(String genreName) {
+        this.genreName = genreName;
+    }
 }

@@ -25,21 +25,42 @@ public class Showtime {
 
     private LocalTime showTime;
 
+    @Column(name = "hall_id")
     private Integer hallNumber;
 
     public Integer getShowtimeId() {
         return showtimeId;
     }
 
+    public Movie getMovie() {
+        return movie;
+    }
+
+    public void setMovie(Movie movie) {
+        this.movie = movie;
+    }
+
     public LocalDate getShowDate() {
         return showDate;
+    }
+
+    public void setShowDate(LocalDate showDate) {
+        this.showDate = showDate;
     }
 
     public LocalTime getShowTime() {
         return showTime;
     }
 
+    public void setShowTime(LocalTime showTime) {
+        this.showTime = showTime;
+    }
+
     public Integer getHallNumber() {
         return hallNumber;
+    }
+
+    public void setHallNumber(Integer hallNumber) {
+        this.hallNumber = hallNumber;
     }
 }

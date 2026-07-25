@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface ShowtimeRepository extends JpaRepository<Showtime, Integer> {
     List<Showtime> findByMovieMovieId(Integer movieId);
 
+    boolean existsByHallNumberAndShowDateAndShowTime(Integer hallNumber, java.time.LocalDate showDate, java.time.LocalTime showTime);
+
 }

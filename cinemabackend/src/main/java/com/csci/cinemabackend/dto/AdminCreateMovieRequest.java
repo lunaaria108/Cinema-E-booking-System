@@ -1,68 +1,34 @@
-package com.csci.cinemabackend.model;
+package com.csci.cinemabackend.dto;
 
-import jakarta.persistence.*;
-import java.util.List;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "movie")
-/**
- * Represents a movie entity in the cinema booking system.
- */
-public class Movie {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer movieId;
-
+public class AdminCreateMovieRequest {
     private String movieTitle;
-
-    @ManyToOne
-    @JoinColumn(name = "genre_id")
-    private Genre genre;
-
+    private Integer genreId;
     private String director;
     private String producer;
-
-    @Column(columnDefinition = "TEXT")
     private String castMembers;
-
-    @Column(columnDefinition = "TEXT")
     private String synopsis;
-
     private String trailerImage;
     private String trailerVideo;
-
     private String mpaaRating;
-
     private LocalDate releaseDate;
-
     private String status;
 
-    @OneToMany(mappedBy = "movie")
-    private List<Review> reviews;
-
-    @OneToMany(mappedBy = "movie")
-    private List<Showtime> showtimes;
-
-    public Integer getMovieId() {
-        return movieId;
+    public String getMovieTitle() {
+        return movieTitle;
     }
 
     public void setMovieTitle(String movieTitle) {
         this.movieTitle = movieTitle;
     }
 
-    public String getMovieTitle() {
-        return movieTitle;
+    public Integer getGenreId() {
+        return genreId;
     }
 
-    public Genre getGenre() {
-        return genre;
-    }
-
-    public void setGenre(Genre genre) {
-        this.genre = genre;
+    public void setGenreId(Integer genreId) {
+        this.genreId = genreId;
     }
 
     public String getDirector() {
@@ -135,18 +101,5 @@ public class Movie {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public List<Showtime> getShowtimes() {
-        return showtimes;
-    }
-
-    @Override
-    public String toString() {
-        return "Movie{" +
-                "id=" + movieId +
-                ", title='" + movieTitle + '\'' +
-                ", status='" + status + '\'' +
-                '}';
     }
 }
