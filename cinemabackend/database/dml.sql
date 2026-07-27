@@ -306,3 +306,75 @@ INSERT INTO BookingFee
 )
 VALUES
 (2.50);
+
+
+
+INSERT INTO PaymentCard
+(
+    user_id,
+    cardholder_name,
+    card_number,
+    last_four,
+    expiration_month,
+    expiration_year,
+    cvv,
+    billing_zip
+)
+VALUES
+(
+    1,
+    'James Reviewer',
+    'mock-encrypted-card-number-4242',
+    '4242',
+    12,
+    2028,
+    'mock-encrypted-cvv',
+    '30301'
+);
+
+
+INSERT INTO Booking
+(
+    user_id,
+    showtime_id,
+    booking_date,
+    status,
+    total_price
+)
+VALUES
+(1, 1, NOW(), 'Pending', 26.50),
+(1, 2, NOW(), 'Paid', 11.00);
+
+
+INSERT INTO Ticket
+(
+    booking_id,
+    showtime_id,
+    seat_label,
+    ticket_type,
+    price
+)
+VALUES
+(1, 1, 'A1', 'Adult', 12.50),
+(1, 1, 'A2', 'Adult', 12.50),
+(2, 2, 'B5', 'Senior', 9.50);
+
+
+INSERT INTO Payment
+(
+    booking_id,
+    card_id,
+    payment_date,
+    amount,
+    payment_status,
+    payment_reference
+)
+VALUES
+(
+    2,
+    1,
+    NOW(),
+    11.00,
+    'Approved',
+    'mock-payment-reference-0001'
+);
