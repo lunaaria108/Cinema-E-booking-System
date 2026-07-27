@@ -15,6 +15,7 @@ export default function SignUpPage() {
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
     const [showResetModal, setShowResetModal] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleLoginSuccess = () => {
         setAuth(loadAuthState());
@@ -47,6 +48,10 @@ export default function SignUpPage() {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
+         if (isSubmitting) {
+            return;
+        }
+
         const form = event.currentTarget;
         const formData = new FormData(form);
 
@@ -78,30 +83,34 @@ export default function SignUpPage() {
         }
 
         try {
-        const response = await fetch(
-            "http://localhost:8080/api/auth/register",
-            {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(user),
+            setIsSubmitting(true);
+
+            const response = await fetch(
+                "http://localhost:8080/api/auth/register",
+                {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(user),
+                }
+            );
+
+            const responseText = await response.text();
+
+            if (!response.ok) {
+                setAlertMessage(responseText || "Unable to create account.");
+                return;
             }
-        );
 
-        const responseText = await response.text();
+            form.reset();
 
-        if (!response.ok) {
-            setAlertMessage(responseText || "Unable to create account.");
-            return;
-        }
-
-        form.reset();
-
-        setShowConfirmationModal(true);
+            setShowConfirmationModal(true);
         } catch (error) {
-        console.error("Registration request failed:", error);
-        setAlertMessage("Unable to connect to the backend.");
+            console.error("Registration request failed:", error);
+            setAlertMessage("Unable to connect to the backend.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -274,10 +283,16 @@ export default function SignUpPage() {
                         <div className="w-full flex justify-center items-center">
                             <button
                                 type="submit"
-                                className="bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg
-                                border border-[#D4AF37] hover:bg-[#0a5229] transition-colors"
+                                disabled={isSubmitting}
+                                className={`bg-[#003D1A] text-[#D4AF37] px-4 py-1.5 rounded-lg
+                                border border-[#D4AF37] transition-colors
+                                ${
+                                    isSubmitting
+                                        ? "cursor-not-allowed opacity-50"
+                                        : "hover:bg-[#0a5229]"
+                                }`}
                             >
-                                Sign Up
+                                {isSubmitting ? "Creating Account..." : "Sign Up"}
                             </button>
                         </div>
                     </form>
