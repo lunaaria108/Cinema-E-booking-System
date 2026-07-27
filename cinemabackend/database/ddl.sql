@@ -105,16 +105,6 @@ CREATE TABLE Hall (
     total_seats INT NOT NULL
 );
 
-CREATE TABLE Seat (
-    seat_id SERIAL PRIMARY KEY,
-    hall_id INT NOT NULL,
-    row_label VARCHAR(5) NOT NULL,
-    seat_number INT NOT NULL,
-    CONSTRAINT fk_seat_hall FOREIGN KEY (hall_id)
-        REFERENCES Hall(hall_id) ON DELETE CASCADE,
-    CONSTRAINT uq_seat_position UNIQUE (hall_id, row_label, seat_number)
-);
-
 
 CREATE TABLE Showtime (
     showtime_id SERIAL PRIMARY KEY,
@@ -177,7 +167,7 @@ CREATE TABLE Ticket (
     ticket_id SERIAL PRIMARY KEY,
     booking_id INT NOT NULL,
     showtime_id INT NOT NULL,
-    seat_id INT NOT NULL,
+    seat_label VARCHAR(10) NOT NULL,
     ticket_type VARCHAR(10) NOT NULL
         CHECK (ticket_type IN ('Adult', 'Senior', 'Child')),
     price DECIMAL(6,2) NOT NULL,
@@ -185,9 +175,7 @@ CREATE TABLE Ticket (
         REFERENCES Booking(booking_id) ON DELETE CASCADE,
     CONSTRAINT fk_ticket_showtime FOREIGN KEY (showtime_id)
         REFERENCES Showtime(showtime_id) ON DELETE RESTRICT,
-    CONSTRAINT fk_ticket_seat FOREIGN KEY (seat_id)
-        REFERENCES Seat(seat_id) ON DELETE RESTRICT,
-    CONSTRAINT uq_seat_per_showtime UNIQUE (showtime_id, seat_id)
+    CONSTRAINT uq_seat_per_showtime UNIQUE (showtime_id, seat_label)
 );
 
 
