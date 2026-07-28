@@ -53,7 +53,7 @@ public class PromotionController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Promotion> getPromotionById(
-            @PathVariable Long id
+            @PathVariable Integer id
     ) {
         Promotion promotion =
                 promotionService.getPromotionById(id);
@@ -67,7 +67,7 @@ public class PromotionController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<Promotion> updatePromotion(
-            @PathVariable Long id,
+            @PathVariable Integer id,
             @RequestBody Promotion promotion
     ) {
         Promotion updatedPromotion =
@@ -82,7 +82,7 @@ public class PromotionController {
      */
     @PutMapping("/{id}/toggle")
     public ResponseEntity<Promotion> togglePromotion(
-            @PathVariable Long id
+            @PathVariable Integer id
     ) {
         Promotion updatedPromotion =
                 promotionService.togglePromotion(id);
@@ -96,7 +96,7 @@ public class PromotionController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePromotion(
-            @PathVariable Long id
+            @PathVariable Integer id
     ) {
         promotionService.deletePromotion(id);
 
