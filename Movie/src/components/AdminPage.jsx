@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import NavBar from "./NavBar";
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useNavigate } from "react-router-dom";
+import AdminPromotions from "./AdminPromotions";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -670,17 +671,8 @@ export default function AdminPage() {
           </div>
         );
 
-      case "add-promotion":
-        return (
-          <div>
-            <h1 className="text-4xl font-bold text-white">
-              Add Promotion
-            </h1>
-
-            <p className="mt-4 text-gray-300">
-              Create a new promotional offer or discount code.
-            </p>
-          </div>
+  case "add-promotion":
+  return <AdminPromotions />;
         );
 
       case "delete-promotion":
