@@ -206,6 +206,16 @@ CREATE TABLE FavoriteMovie (
         REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
+CREATE TABLE Promotion (
+    promotion_id SERIAL PRIMARY KEY,
+    promo_code VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(500) NOT NULL,
+    discount_amount DECIMAL(10,2) NOT NULL,
+    is_percentage BOOLEAN NOT NULL,
+    expiration_date DATE NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created DATE NOT NULL
+);
 
 CREATE TABLE UserPreference (
     preference_id SERIAL PRIMARY KEY,
