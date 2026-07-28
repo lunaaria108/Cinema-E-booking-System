@@ -23,6 +23,7 @@ import com.csci.cinemabackend.model.User;
 import com.csci.cinemabackend.service.FavoriteMovieService;
 import com.csci.cinemabackend.service.PaymentCardService;
 import com.csci.cinemabackend.service.UserService;
+import com.csci.cinemabackend.dto.ChangeEmailRequest;
 
 /**
  * Handles user profile, favorite movie, and payment card requests.
@@ -83,16 +84,15 @@ public class UserController {
             @PathVariable Integer userId,
             @RequestBody UpdateProfileRequest request) {
 
-       Optional<User> updatedUser = userService.updateProfile(
-        userId,
-        request.getUserName(),
-        request.getFirstName(),
-        request.getLastName(),
-        request.getEmail(),
-        request.getPhoneNumber(),
-        request.getStreetAddress(),
-        request.getPromoOptIn()
-);
+        Optional<User> updatedUser = userService.updateProfile(
+                userId,
+                request.getUserName(),
+                request.getFirstName(),
+                request.getLastName(),
+                request.getEmail(),
+                request.getPhoneNumber(),
+                request.getStreetAddress(),
+                request.getPromoOptIn());
 
         if (updatedUser.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -120,8 +120,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        List<FavoriteMovie> favorites =
-                favoriteMovieService.getFavorites(userId);
+        List<FavoriteMovie> favorites = favoriteMovieService.getFavorites(userId);
 
         return ResponseEntity.ok(favorites);
     }
@@ -136,8 +135,7 @@ public class UserController {
             @PathVariable Integer userId,
             @PathVariable Integer movieId) {
 
-        Optional<FavoriteMovie> favorite =
-                favoriteMovieService.addFavorite(userId, movieId);
+        Optional<FavoriteMovie> favorite = favoriteMovieService.addFavorite(userId, movieId);
 
         if (favorite.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -156,8 +154,7 @@ public class UserController {
             @PathVariable Integer userId,
             @PathVariable Integer movieId) {
 
-        boolean removed =
-                favoriteMovieService.removeFavorite(userId, movieId);
+        boolean removed = favoriteMovieService.removeFavorite(userId, movieId);
 
         if (!removed) {
             return ResponseEntity.notFound().build();
@@ -185,8 +182,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
 
-        List<PaymentCard> cards =
-                paymentCardService.getCards(userId);
+        List<PaymentCard> cards = paymentCardService.getCards(userId);
 
         return ResponseEntity.ok(cards);
     }
@@ -202,16 +198,14 @@ public class UserController {
             @RequestBody PaymentCardRequest request) {
 
         try {
-            Optional<PaymentCard> card =
-                    paymentCardService.addCard(
-                            userId,
-                            request.getCardholderName(),
-                            request.getCardNumber(),
-                            request.getExpirationMonth(),
-                            request.getExpirationYear(),
-                            request.getCvv(),
-                            request.getBillingZip()
-                    );
+            Optional<PaymentCard> card = paymentCardService.addCard(
+                    userId,
+                    request.getCardholderName(),
+                    request.getCardNumber(),
+                    request.getExpirationMonth(),
+                    request.getExpirationYear(),
+                    request.getCvv(),
+                    request.getBillingZip());
 
             if (card.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -219,14 +213,13 @@ public class UserController {
 
             return ResponseEntity.ok(card.get());
 
-        } catch (IllegalArgumentException |
-                 IllegalStateException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
 
             return ResponseEntity.badRequest().body(
-                    Map.of("message", exception.getMessage())
-            );
+                    Map.of("message", exception.getMessage()));
         }
     }
+
     @PutMapping("/{userId}/cards/{cardId}")
     public ResponseEntity<?> updatePaymentCard(
             @PathVariable Integer userId,
@@ -234,17 +227,15 @@ public class UserController {
             @RequestBody PaymentCardRequest request) {
 
         try {
-            Optional<PaymentCard> card =
-                    paymentCardService.updateCard(
-                            userId,
-                            cardId,
-                            request.getCardholderName(),
-                            request.getCardNumber(),
-                            request.getExpirationMonth(),
-                            request.getExpirationYear(),
-                            request.getCvv(),
-                            request.getBillingZip()
-                    );
+            Optional<PaymentCard> card = paymentCardService.updateCard(
+                    userId,
+                    cardId,
+                    request.getCardholderName(),
+                    request.getCardNumber(),
+                    request.getExpirationMonth(),
+                    request.getExpirationYear(),
+                    request.getCvv(),
+                    request.getBillingZip());
 
             if (card.isEmpty()) {
                 return ResponseEntity.notFound().build();
@@ -252,15 +243,14 @@ public class UserController {
 
             return ResponseEntity.ok(card.get());
 
-        } catch (IllegalArgumentException |
-                IllegalStateException exception) {
+        } catch (IllegalArgumentException | IllegalStateException exception) {
 
             return ResponseEntity.badRequest().body(
-                    Map.of("message", exception.getMessage())
-            );
+                    Map.of("message", exception.getMessage()));
         }
     }
-        /**
+
+    /**
      * Deletes a stored payment card.
      *
      * DELETE /api/users/{userId}/cards/{cardId}
@@ -270,8 +260,7 @@ public class UserController {
             @PathVariable Integer userId,
             @PathVariable Integer cardId) {
 
-        boolean deleted =
-                paymentCardService.deleteCard(userId, cardId);
+        boolean deleted = paymentCardService.deleteCard(userId, cardId);
 
         if (!deleted) {
             return ResponseEntity.notFound().build();
@@ -279,4 +268,33 @@ public class UserController {
 
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * Email Change endpoint.
+     * Verifies user auth
+     * Verify correct password
+     * Check db to ensure email not in use
+     * save.
+     * generate new emailverification for user
+     * send email to the new address with verification token
+     */
+    @PostMapping("/{userId}/change-email")
+    public ResponseEntity<?> requestEmailChange(
+            @PathVariable Integer userId,
+            @RequestBody ChangeEmailRequest request) {
+        try {
+            userService.requestEmailChange(userId, request.getNewEmail(), request.getCurrentPassword());
+            return ResponseEntity.ok(Map.of("message", "Email change request sent successfully"));
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
+        } catch (org.springframework.web.server.ResponseStatusException exception) {
+            return ResponseEntity.status(exception.getStatusCode()).body(
+                    Map.of("message",
+                            exception.getReason()));
+        } catch (Exception exception) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("message", "An unexpected error occured: " + exception.getMessage()));
+        }
+    }
+
 }
