@@ -3,6 +3,7 @@ import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import LoginModal from "./LoginModal";
 
 export default function CheckoutPage(){
     const location = useLocation();
@@ -18,6 +19,15 @@ export default function CheckoutPage(){
     const [user, setUser] = useState({
         email: "",
     });
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const checkoutState = {
+        movie,
+        selectedShowtime,
+        selectedSeats,
+        totalTickets,
+        totalPrice,
+        tickets,
+    };
 
     const handleLogout = async () => {
         if (auth.token) {
@@ -39,6 +49,35 @@ export default function CheckoutPage(){
         navigate('/');
     };
 
+    const handleLoginSuccess = (authData) => {
+        setAuth(authData);
+        setShowLoginModal(false);
+    };
+
+    useEffect(() => {
+        const checkoutState = {
+            movie,
+            selectedShowtime,
+            selectedSeats,
+            totalTickets,
+            totalPrice,
+            tickets,
+        };
+
+        if (movie && selectedShowtime && selectedSeats.length > 0) {
+            sessionStorage.setItem(
+                "pendingCheckout",
+                JSON.stringify(checkoutState)
+            );
+        }
+    }, [
+        movie,
+        selectedShowtime,
+        selectedSeats,
+        totalTickets,
+        totalPrice,
+        tickets,
+    ]);
     useEffect(() => {
         if (!auth.userId) {
             return;
@@ -69,22 +108,11 @@ export default function CheckoutPage(){
         loadUser();
     }, [auth.userId]);
 
-    if (!auth.userId) {
-        return (
-            <div className="min-h-screen bg-[#0b0b0b] text-white">
-                <NavBar
-                    isLoggedIn={Boolean(auth.token)}
-                    onLogout={handleLogout}
-                />
-
-                <div className="p-8 text-center">
-                    <p>
-                        You must be logged in to checkout. 
-                    </p>
-                </div>
-            </div>
-        );
-    }
+    useEffect(() => {
+        if (!auth.token) {
+            setShowLoginModal(true);
+        }
+    }, [auth.token]);
 
     return(
         <div className="min-h-screen bg-[#0b0b0b] text-white">
@@ -157,6 +185,16 @@ export default function CheckoutPage(){
                     </button>
                 </div>
             </div>
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => setShowLoginModal(false)}
+                    onLoginSuccess={handleLoginSuccess}
+                    onForgotPassword={() => {
+                        setShowLoginModal(false);
+                        // open your reset modal here
+                    }}
+                />
+            )}
         </div>
     );    
 }
