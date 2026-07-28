@@ -26,33 +26,135 @@ public class PromotionService {
         this.mailService = mailService;
     }
 
+    /*
+     * Create and save a new promotion.
+     */
     public Promotion createPromotion(Promotion promotion) {
         validatePromotion(promotion);
 
-        promotion.setPromoCode(
-                promotion.getPromoCode().trim().toUpperCase()
-        );
+        String normalizedCode =
+                promotion.getPromoCode().trim().toUpperCase();
 
-        Promotion savedPromotion = promotionRepository.save(promotion);
+        promotion.setPromoCode(normalizedCode);
+        promotion.setDescription(promotion.getDescription().trim());
+
+        Promotion savedPromotion =
+                promotionRepository.save(promotion);
 
         sendPromotionEmails(savedPromotion);
 
         return savedPromotion;
     }
 
+    /*
+     * Return all promotions.
+     */
+    public List<Promotion> getAllPromotions() {
+        return promotionRepository.findAll();
+    }
+
+    /*
+     * Return one promotion or throw an error when it does not exist.
+     */
+    public Promotion getPromotionById(Long id) {
+        return promotionRepository.findById(id)
+                .orElseThrow(
+                        () -> new IllegalArgumentException(
+                                "Promotion not found with ID: " + id
+                        )
+                );
+    }
+
+    /*
+     * Update the editable information for a promotion.
+     */
+    public Promotion updatePromotion(
+            Long id,
+            Promotion promotionDetails
+    ) {
+        Promotion existingPromotion =
+                getPromotionById(id);
+
+        validatePromotion(promotionDetails);
+
+        existingPromotion.setPromoCode(
+                promotionDetails.getPromoCode()
+                        .trim()
+                        .toUpperCase()
+        );
+
+        existingPromotion.setDescription(
+                promotionDetails.getDescription().trim()
+        );
+
+        existingPromotion.setDiscountAmount(
+                promotionDetails.getDiscountAmount()
+        );
+
+        existingPromotion.setIsPercentage(
+                promotionDetails.getIsPercentage()
+        );
+
+        existingPromotion.setExpirationDate(
+                promotionDetails.getExpirationDate()
+        );
+
+        existingPromotion.setIsActive(
+                promotionDetails.getIsActive()
+        );
+
+        return promotionRepository.save(existingPromotion);
+    }
+
+    /*
+     * Switch a promotion between active and inactive.
+     */
+    public Promotion togglePromotion(Long id) {
+        Promotion promotion =
+                getPromotionById(id);
+
+        Boolean currentStatus =
+                promotion.getIsActive();
+
+        promotion.setIsActive(
+                !Boolean.TRUE.equals(currentStatus)
+        );
+
+        return promotionRepository.save(promotion);
+    }
+
+    /*
+     * Delete an existing promotion.
+     */
+    public void deletePromotion(Long id) {
+        Promotion promotion =
+                getPromotionById(id);
+
+        promotionRepository.delete(promotion);
+    }
+
+    /*
+     * Validate promotion information before saving.
+     */
     private void validatePromotion(Promotion promotion) {
         if (promotion == null) {
-            throw new IllegalArgumentException("Promotion is required.");
+            throw new IllegalArgumentException(
+                    "Promotion is required."
+            );
         }
 
         if (promotion.getPromoCode() == null
                 || promotion.getPromoCode().trim().isEmpty()) {
-            throw new IllegalArgumentException("Promotion code is required.");
+            throw new IllegalArgumentException(
+                    "Promotion code is required."
+            );
         }
 
         if (promotion.getDescription() == null
                 || promotion.getDescription().trim().isEmpty()) {
-            throw new IllegalArgumentException("Promotion description is required.");
+            throw new IllegalArgumentException(
+                    "Promotion description is required."
+            );
         }
 
         if (promotion.getDiscountAmount() == null
@@ -70,39 +172,59 @@ public class PromotionService {
         }
 
         if (promotion.getExpirationDate() == null) {
-            throw new IllegalArgumentException("Expiration date is required.");
+            throw new IllegalArgumentException(
+                    "Expiration date is required."
+            );
         }
 
-        if (promotion.getExpirationDate().isBefore(LocalDate.now())) {
+        if (promotion.getExpirationDate()
+                .isBefore(LocalDate.now())) {
             throw new IllegalArgumentException(
                     "Expiration date cannot be in the past."
             );
         }
     }
 
+    /*
+     * Email the promotion to users who opted in.
+     */
     private void sendPromotionEmails(Promotion promotion) {
-        List<User> subscribedUsers = userRepository.findByPromoOptInTrue();
+        List<User> subscribedUsers =
+                userRepository.findByPromoOptInTrue();
 
         String discountText;
 
-        if (Boolean.TRUE.equals(promotion.getIsPercentage())) {
-            discountText = promotion.getDiscountAmount() + "% off";
+        if (Boolean.TRUE.equals(
+                promotion.getIsPercentage()
+        )) {
+            discountText =
+                    promotion.getDiscountAmount() + "% off";
         } else {
-            discountText = "$" + promotion.getDiscountAmount() + " off";
+            discountText =
+                    "$" + promotion.getDiscountAmount() + " off";
         }
 
-        String subject = "Cinema Promotion: " + promotion.getPromoCode();
+        String subject =
+                "Cinema Promotion: "
+                        + promotion.getPromoCode();
 
         for (User user : subscribedUsers) {
             String body =
                     "Hello " + user.getFirstName() + ",\n\n"
                     + promotion.getDescription() + "\n\n"
-                    + "Promotion code: " + promotion.getPromoCode() + "\n"
-                    + "Discount: " + discountText + "\n"
-                    + "Expiration date: " + promotion.getExpirationDate() + "\n\n"
+                    + "Promotion code: "
+                    + promotion.getPromoCode() + "\n"
+                    + "Discount: "
+                    + discountText + "\n"
+                    + "Expiration date: "
+                    + promotion.getExpirationDate() + "\n\n"
                     + "Thank you for choosing our cinema.";
 
-            mailService.send(user.getEmail(), subject, body);
+            mailService.send(
+                    user.getEmail(),
+                    subject,
+                    body
+            );
         }
     }
 }
