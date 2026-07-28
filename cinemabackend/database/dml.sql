@@ -332,6 +332,26 @@ VALUES
     '30301'
 );
 
+INSERT INTO Promotion
+(
+    promo_code,
+    description,
+    discount_amount,
+    is_percentage,
+    expiration_date,
+    is_active,
+    created
+)
+VALUES
+(
+    'SUMMER20',
+    'Get 20% off any movie ticket this summer.',
+    20,
+    TRUE,
+    '2026-08-31',
+    TRUE,
+    CURRENT_DATE
+);
 
 INSERT INTO Booking
 (
