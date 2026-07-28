@@ -2,27 +2,55 @@ package com.csci.cinemabackend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+/**
+ * Represents a promotion created by an administrator.
+ * Promotions can be emailed to users who have opted in
+ * to receive promotional emails.
+ */
 @Entity
+@Table(name = "promotion")
 public class Promotion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "promotion_id")
     private Integer promotionId;
 
+    @Column(name = "promo_code", nullable = false, unique = true, length = 50)
     private String promoCode;
 
+    @Column(name = "description", nullable = false, length = 500)
+    private String description;
+
+    @Column(name = "discount_amount", nullable = false)
     private Double discountAmount;
 
+    @Column(name = "is_percentage", nullable = false)
     private Boolean isPercentage;
 
+    @Column(name = "expiration_date", nullable = false)
     private LocalDate expirationDate;
 
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "created", nullable = false, updatable = false)
     private LocalDate created;
+
+    public Promotion() {
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (created == null) {
+            created = LocalDate.now();
+        }
+
+        if (isActive == null) {
+            isActive = true;
+        }
+    }
 
     public Integer getPromotionId() {
         return promotionId;
@@ -34,6 +62,14 @@ public class Promotion {
 
     public void setPromoCode(String promoCode) {
         this.promoCode = promoCode;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Double getDiscountAmount() {
@@ -70,9 +106,5 @@ public class Promotion {
 
     public LocalDate getCreated() {
         return created;
-    }
-
-    public void setCreated(LocalDate created) {
-        this.created = created;
     }
 }
