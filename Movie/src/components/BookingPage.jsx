@@ -20,7 +20,41 @@ export default function BookingPage() {
     const [auth, setAuth] = useState(() => loadAuthState());
     const [alertMessage, setAlertMessage] = useState("");
 
+    const tickets = [];
+
+    for (let i = 0; i < adultTickets; i++) {
+        tickets.push({
+            type: "Adult",
+            price: 10
+        });
+    }
+
+    for (let i = 0; i < childTickets; i++) {
+        tickets.push({
+            type: "Child",
+            price: 5
+        });
+    }
+
+    for (let i = 0; i < seniorTickets; i++) {
+        tickets.push({
+            type: "Senior",
+            price: 7
+        });
+    }
+
+    for (let i = 0; i < studentTickets; i++) {
+        tickets.push({
+            type: "Student",
+            price: 0
+        });
+    }
+
     const totalTickets = adultTickets + childTickets + seniorTickets + studentTickets;
+    const totalPrice = tickets.reduce(
+        (sum, ticket) => sum + ticket.price,
+        0
+    );
 
     const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
     const seatsPerRow = 8;
@@ -166,9 +200,20 @@ export default function BookingPage() {
                         <button 
                             className="bg-[#003D1A] text-[#D4AF37] border border-[#D4AF37] py-3 px-12 rounded-xl font-bold text-xl hover:bg-[#0a5229] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={selectedSeats.length !== totalTickets}
-                            onClick={handleCheckout}
+                            onClick={() => {
+                                navigate("/checkout", {
+                                    state: {
+                                        movie,
+                                        selectedShowtime,
+                                        selectedSeats,
+                                        totalTickets,
+                                        totalPrice,
+                                        tickets
+                                    },
+                                });
+                            }}
                         >
-                            Buy Tickets
+                            Proceed to Checkout
                         </button>
                     </div>
                 </div>
