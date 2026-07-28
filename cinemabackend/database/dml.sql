@@ -32,7 +32,7 @@ VALUES
     'Tom Hanks, Tim Allen, Greta Lee',
     'The toys return for a new adventure as technology changes playtime.',
     'https://upload.wikimedia.org/wikipedia/en/1/13/Toy_Story.jpg',
-    'https://www.youtube.com/embed/v-PjgYDrg70',
+    'https://www.youtube.com/embed/c51ND9Hdbw0',
     'PG',
     '2026-06-19',
     'Currently Running'
@@ -45,7 +45,7 @@ VALUES
     'Hugh Jackman, Jodie Comer, Bill Skarsgard',
     'Robin Hood faces his past after a life of crime and battle.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtVu8pkhXxVwzcANXqEV6sni6bttQMDtRdHjIvNWnvWmzY9TpdD2EB-akCmuanNluHm9Rm&s=10',
-    'https://www.youtube.com/embed/zwPn9ZnbCo0',
+    'https://www.youtube.com/embed/tlSDDuWxO_0',
     'R',
     '2026-06-19',
     'Currently Running'
@@ -58,7 +58,7 @@ VALUES
     'Milly Alcock, Matthias Schoenaerts, Eve Ridley',
     'Supergirl faces a dangerous journey across the galaxy.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvhrwjrm0h8DC-UFCCN63eU6iI57Gga7N3T69LhaPpdR2jiMmOHjhUAuqlRKqWykYK0fI4&s=10',
-    'https://www.youtube.com/embed/uhUht6vAsMY',
+    'https://www.youtube.com/embed/s1-pfiVMKAs',
     'PG-13',
     '2026-06-26',
     'Currently Running'
@@ -71,7 +71,7 @@ VALUES
     'Johnny Knoxville, Steve-O, Chris Pontius',
     'The Jackass crew returns for another round of wild stunts and comedy.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbYrNLfK_8u0-Yh5muli1fCVBOYZwsMcIphv5k8j74GDmgXQkiEpx776TKlorK9uWLH1-RCDDkhEQYV3jGUv0sBhvTW1fst81pbIoKt3g&s',
-    'https://www.youtube.com/embed/FNq-QT2Jpng',
+    'https://www.youtube.com/embed/sNwzFhGwA94',
     'R',
     '2026-06-26',
     'Currently Running'
@@ -84,7 +84,7 @@ VALUES
     'Josh O Connor, Eve Hewson, Emily Blunt, Colin Firth',
     'A science fiction story centered around a major world-changing discovery.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTLhmAPwRryN9Lcr-RlV0Y4jY7q-1Zgs9Trd0Ni5zT9QBO8VNRCIpTuMExko19KAbMGX97T&s=10',
-    'https://www.youtube.com/embed/TcMBFSGVi1c',
+    'https://www.youtube.com/embed/SCYT8vb2siQ',
     'PG-13',
     '2026-06-12',
     'Currently Running'
@@ -97,7 +97,7 @@ VALUES
     'TBD',
     'A new animated adventure from the world of Minions.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDMajmWqWp9L7uOGjGnN_AO-5zZVzerdqCKH0F3zHV63xkDhL20ze6pPaX9PNvre-4n-WBdw&s=10',
-    'https://www.youtube.com/embed/qQlr9-rF32A',
+    'https://www.youtube.com/embed/ZSdOwt-G49w',
     'PG',
     '2026-07-01',
     'Coming Soon'
@@ -110,7 +110,7 @@ VALUES
     'TBD',
     'A historical drama about the early life of George Washington.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSnRonnlZ_44WMfOkzCM7-b5xMf7i-wGCYNLZW6nwt7Rktyqleruu35MTtBwqBJOoAYv3c0&s=10',
-    'https://www.youtube.com/embed/TcMBFSGVi1c',
+    'https://www.youtube.com/embed/LJek-kc384w',
     'PG-13',
     '2026-07-03',
     'Coming Soon'
@@ -122,8 +122,8 @@ VALUES
     'Disney',
     'Catherine Laga''aia, Dwayne Johnson',
     'A live-action retelling of Moana''s ocean adventure.',
-    'https://upload.wikimedia.org/wikipedia/en/2/26/Moana_Teaser_Poster.jpg',
-    'https://www.youtube.com/embed/LKFuXETZUsI',
+    'https://upload.wikimedia.org/wikipedia/en/c/c1/Moana_%282026_film%29_poster.jpg',
+    'https://www.youtube.com/embed/n7f6hlKsxxo',
     'PG',
     '2026-07-10',
     'Coming Soon'
@@ -136,7 +136,7 @@ VALUES
     'TBD',
     'A new terrifying chapter in the Evil Dead horror franchise.',
     'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEM1El_x90LqgO0_YG2acsJCJVjFNHnD2D2JsqSeyb7_cNanE8CvoYin86Ze_FH9o4oNi4&s=10',
-    'https://www.youtube.com/embed/BqQNO7BzN08',
+    'https://www.youtube.com/embed/TnHby2cxJzs',
     'R',
     '2026-07-10',
     'Coming Soon'
@@ -149,7 +149,7 @@ VALUES
     'Matt Damon, Tom Holland, Zendaya',
     'A mythic action epic based on Homer''s legendary journey.',
     'https://www.movieposters.com/cdn/shop/files/odyssey_ver2_1024x1024.jpg?v=1767639159',
-    'https://www.youtube.com/embed/TcMBFSGVi1c',
+    'https://www.youtube.com/embed/Mzw2ttJD2qQ',
     'R',
     '2026-07-17',
     'Coming Soon'
@@ -332,6 +332,26 @@ VALUES
     '30301'
 );
 
+INSERT INTO Promotion
+(
+    promo_code,
+    description,
+    discount_amount,
+    is_percentage,
+    expiration_date,
+    is_active,
+    created
+)
+VALUES
+(
+    'SUMMER20',
+    'Get 20% off any movie ticket this summer.',
+    20,
+    TRUE,
+    '2026-08-31',
+    TRUE,
+    CURRENT_DATE
+);
 
 INSERT INTO Booking
 (

@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 /**
- * Represents a showtime entity in the cinema booking system.
+ * 
+ * Showtime
  */
 public class Showtime {
 
