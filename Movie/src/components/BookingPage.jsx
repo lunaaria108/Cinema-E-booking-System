@@ -97,7 +97,10 @@ export default function BookingPage() {
 
     return(
         <div className="min-h-screen pb-20">
-            <NavBar booking={true} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout}/>
+            <NavBar
+                isLoggedIn={Boolean(auth.token)}
+                onLogout={handleLogout}
+            />
 
             <div className="bg-[#000000] h-37.5 flex justify-evenly items-center text-white">
                 <img className="h-30 rounded object-cover" src={movie?.trailerImage} alt={`${movie?.movieTitle} poster`} />
