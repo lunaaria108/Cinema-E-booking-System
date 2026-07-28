@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.jpg";
 import SearchBar from "./SearchBar";
 
@@ -16,6 +16,9 @@ export default function NavBar({
     isProfilePage = false,
 }) {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const isHomePage = location.pathname === "/";
 
     return (
         <div className="bg-[radial-gradient(circle_at_top_right,#003D1A_0%,#000000_30%)]">
@@ -30,13 +33,18 @@ export default function NavBar({
                 </div>
 
                 <div className="flex justify-start items-center gap-4">
-                    {!booking && (
-                        <button className="text-[#D8CC88] hover:underline" onClick={onFilter}>
+                    {isHomePage && (
+                        <button
+                            className="text-[#D8CC88] hover:underline"
+                            onClick={onFilter}
+                        >
                             Filter
                         </button>
                     )}
 
-                    {!isSignUpPage && <SearchBar onSearch={onSearch} />}
+                    {isHomePage && (
+                        <SearchBar onSearch={onSearch} />
+                    )}
 
                     <div className="flex items-center gap-4 border-l border-[#003D1A] pl-4 ml-2">
                         {isLoggedIn && isProfilePage && (

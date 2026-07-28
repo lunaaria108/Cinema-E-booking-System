@@ -89,9 +89,8 @@ export default function CheckoutPage(){
     return(
         <div className="min-h-screen bg-[#0b0b0b] text-white">
             <NavBar
-            isLoggedIn={Boolean(auth.token)}
-            onLogout={handleLogout}
-            isProfilePage={true}
+                isLoggedIn={Boolean(auth.token)}
+                onLogout={handleLogout}
             />
 
             <div className="bg-[#000000] h-37.5 flex justify-evenly items-center text-white">
@@ -139,8 +138,20 @@ export default function CheckoutPage(){
                     </div>
 
                     <button
-                        className="bg-[#003D1A] text-[#D4AF37] border border-[#D4AF37] py-3 px-12 rounded-xl font-bold 
-                        text-xl hover:bg-[#0a5229] transition-colors disabled:opacity-50 disabled:cursor-not-allowed m-6"
+                    onClick={() => 
+                        navigate("/payment", {
+                            state: {
+                                movie,
+                                selectedShowtime,
+                                selectedSeats,
+                                totalTickets,
+                                totalPrice,
+                                tickets,
+                            },
+                        })
+                    }
+                    className="bg-[#003D1A] text-[#D4AF37] border border-[#D4AF37] py-3 px-12 rounded-xl font-bold 
+                    text-xl hover:bg-[#0a5229] transition-colors disabled:opacity-50 disabled:cursor-not-allowed m-6"
                     >
                         Proceed to Payment
                     </button>
