@@ -673,7 +673,7 @@ export default function AdminPage() {
 
   case "add-promotion":
   return <AdminPromotions />;
-        );
+        
 
       case "delete-promotion":
         return (
