@@ -140,6 +140,16 @@ export default function UserProfile() {
     };
 
     const handleSaveProfile = async () => {
+        if (!user.email.trim()) {
+            setAlertMessage("Please enter an email address.");
+            return;
+        }
+
+        if (!user.email.includes("@")) {
+            setAlertMessage("Please enter a valid email address.");
+            return;
+        }
+        
         if (!auth.userId) {
             alert(
                 "You must be logged in to update your profile."
@@ -151,6 +161,7 @@ export default function UserProfile() {
             userName: user.userName.trim(),
             firstName: user.firstName.trim(),
             lastName: user.lastName.trim(),
+            email: user.email.trim(),
             phoneNumber: user.phoneNumber.trim(),
             streetAddress: user.streetAddress.trim(),
             promoOptIn: user.promoOptIn,
@@ -620,16 +631,13 @@ export default function UserProfile() {
                                 />
                             </div>
 
-                            <label className="text-gray-400 text-sm">
-                                Email Address (Cannot be
-                                changed)
-                            </label>
-
                             <input
                                 type="email"
+                                name="email"
                                 value={user.email}
-                                readOnly
-                                className="w-full bg-gray-900 border border-gray-700 text-gray-500 rounded p-2 cursor-not-allowed"
+                                onChange={handleProfileChange}
+                                className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
+                                placeholder="Email Address"
                             />
 
                             <input

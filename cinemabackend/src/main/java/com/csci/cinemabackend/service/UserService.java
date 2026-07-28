@@ -1,10 +1,11 @@
 package com.csci.cinemabackend.service;
 
-import com.csci.cinemabackend.model.User;
-import com.csci.cinemabackend.repository.UserRepository;
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import com.csci.cinemabackend.model.User;
+import com.csci.cinemabackend.repository.UserRepository;
 
 /**
  * Handles user profile management.
@@ -41,6 +42,7 @@ public class UserService {
         String userName,
         String firstName,
         String lastName,
+        String email,
         String phoneNumber,
         String streetAddress,
         Boolean promoOptIn) {
@@ -63,6 +65,10 @@ public class UserService {
 
     if (lastName != null && !lastName.isBlank()) {
         user.setLastName(lastName.trim());
+    }
+
+    if (email != null && !email.isBlank()) {
+        user.setEmail(email.trim());
     }
 
     if (phoneNumber != null && !phoneNumber.isBlank()) {

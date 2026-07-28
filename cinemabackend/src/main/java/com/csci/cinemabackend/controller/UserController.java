@@ -1,5 +1,20 @@
 package com.csci.cinemabackend.controller;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.csci.cinemabackend.dto.PaymentCardRequest;
 import com.csci.cinemabackend.dto.UpdateProfileRequest;
 import com.csci.cinemabackend.model.FavoriteMovie;
@@ -8,13 +23,6 @@ import com.csci.cinemabackend.model.User;
 import com.csci.cinemabackend.service.FavoriteMovieService;
 import com.csci.cinemabackend.service.PaymentCardService;
 import com.csci.cinemabackend.service.UserService;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Handles user profile, favorite movie, and payment card requests.
@@ -80,6 +88,7 @@ public class UserController {
         request.getUserName(),
         request.getFirstName(),
         request.getLastName(),
+        request.getEmail(),
         request.getPhoneNumber(),
         request.getStreetAddress(),
         request.getPromoOptIn()

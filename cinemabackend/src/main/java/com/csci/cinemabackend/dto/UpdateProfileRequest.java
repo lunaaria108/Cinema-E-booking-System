@@ -8,6 +8,7 @@ public class UpdateProfileRequest {
     private String userName;
     private String firstName;
     private String lastName;
+    private String email;
     private String phoneNumber;
     private String streetAddress;
     private Boolean promoOptIn;
@@ -41,6 +42,14 @@ public void setPromoOptIn(Boolean promoOptIn) {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPhoneNumber() {

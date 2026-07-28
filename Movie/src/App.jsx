@@ -6,6 +6,7 @@ import SignUpPage from "./components/SignUpPage";
 import ResetPasswordPage from "./components/ResetPasswordPage";
 import EmailConfirmation from "./components/EmailConfirmation";
 import AdminPage from "./components/AdminPage";
+import CheckoutPage from "./components/CheckoutPage";
 import AdminPromotions from "./components/AdminPromotions";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />}/>
             <Route path="/confirmation" element={<EmailConfirmation />}/>
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/admin/promotions" element={<AdminPromotions />} />
         </Routes>
     );
