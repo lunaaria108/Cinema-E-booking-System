@@ -133,18 +133,6 @@ CREATE TABLE BookingFee (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-
-CREATE TABLE Promotion (
-    promotion_id SERIAL PRIMARY KEY,
-    promo_code VARCHAR(30) NOT NULL UNIQUE,
-    discount_amount DECIMAL(6,2) NOT NULL,
-    is_percentage BOOLEAN NOT NULL DEFAULT FALSE,
-    expiration_date DATE NOT NULL,
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
-
 CREATE TABLE Booking (
     booking_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
