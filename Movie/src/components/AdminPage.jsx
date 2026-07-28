@@ -309,10 +309,6 @@ export default function AdminPage() {
           id: "add-promotion",
           label: "Add Promotion",
         },
-        {
-          id: "delete-promotion",
-          label: "Delete Promotion",
-        },
       ],
     },
   ];
@@ -664,10 +660,6 @@ export default function AdminPage() {
 
   case "add-promotion":
   return <AdminPromotions />;
-        
-
-      case "delete-promotion":
-  return <ManagePromotions />;
 
       default:
         return (
@@ -717,7 +709,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#0b0b0b] text-white">
       <NavBar booking={true} onBrowseMovies={handleBrowseMovies} isLoggedIn={Boolean(auth.token)} onLogout={handleLogout} isProfilePage={true} isSignUpPage={true}/>
 
-      <div className="flex min-h-[calc(100vh-96px)]">
+      <div className="flex min-h-[calc(100vh-96px)] w-full overflow-hidden">
         <aside className="w-64 h-[calc(100vh-96px)] shrink-0 bg-black">
           <h2 className="border-b border-[#003D1A] px-6 py-6 text-2xl font-bold text-white">
             Admin Panel
@@ -783,7 +775,7 @@ export default function AdminPage() {
           </nav>
         </aside>
 
-        <main className="flex-1">
+        <main className="min-w-0 flex-1 overflow-x-hidden">
           <div className="m-8 min-h-[calc(100%-4rem)] rounded-xl border border-[#003D1A] bg-[#121212] p-8">
             {adminError && (
               <p className="mb-4 rounded border border-red-700 bg-red-950 p-3 text-red-200">
