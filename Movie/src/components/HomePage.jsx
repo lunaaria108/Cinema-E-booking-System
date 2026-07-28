@@ -319,7 +319,6 @@ function HomePage() {
 
   const carouselMovies = [
     ...featuredMovies,
-    ...comingSoonMovies,
   ];
 
   return (
@@ -444,30 +443,24 @@ function HomePage() {
 
               {!isSearching && (
                 <section className="movie-list">
-                  <h2>Now Showing</h2>
+                  <h2>
+                    {view === "comingSoon" ? "Coming Soon" : "Now Showing"}
+                  </h2>
 
-                  <MovieCarousel
-                    movies={carouselMovies}
-                    onMovieClick={setSelectedMovie}
-                    onFavorite={handleToggleFavorite}
-                    isFavorite={isMovieFavorite}
-                  />
-                </section>
-              )}
-
-              {isSearching &&
-                featuredMovies.length > 0 && (
-                  <section className="movie-list">
-                    <h2>Search Results</h2>
-
+                  {!isFiltered && (
                     <MovieCarousel
-                      movies={featuredMovies}
+                      movies={
+                        view === "comingSoon"
+                          ? comingSoonMovies
+                          : featuredMovies
+                      }
                       onMovieClick={setSelectedMovie}
                       onFavorite={handleToggleFavorite}
                       isFavorite={isMovieFavorite}
                     />
-                  </section>
-                )}
+                  )}
+                </section>
+              )}
             </main>
           </>
         )}

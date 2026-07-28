@@ -27,6 +27,17 @@ function MovieModal({ movie, onClose }) {
           </div>
         </div>
 
+        <div className="flex flex-col items-center m-6 gap-4">
+          <h3>Trailer</h3>
+          <iframe
+            className="aspect-video w-full max-w-3xl rounded-lg"
+            src={movie.trailerVideo}
+            title={`${movie.movieTitle} trailer`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+
         <div className="showtimes-section">
           <h3>Show Times</h3>
           <div className="showtimes">
