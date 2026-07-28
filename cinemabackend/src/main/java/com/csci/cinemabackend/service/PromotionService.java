@@ -56,7 +56,7 @@ public class PromotionService {
     /*
      * Return one promotion or throw an error when it does not exist.
      */
-    public Promotion getPromotionById(Long id) {
+    public Promotion getPromotionById(Integer id) {
         return promotionRepository.findById(id)
                 .orElseThrow(
                         () -> new IllegalArgumentException(
@@ -69,7 +69,7 @@ public class PromotionService {
      * Update the editable information for a promotion.
      */
     public Promotion updatePromotion(
-            Long id,
+            Integer id,
             Promotion promotionDetails
     ) {
         Promotion existingPromotion =
@@ -109,7 +109,7 @@ public class PromotionService {
     /*
      * Switch a promotion between active and inactive.
      */
-    public Promotion togglePromotion(Long id) {
+    public Promotion togglePromotion(Integer id) {
         Promotion promotion =
                 getPromotionById(id);
 
@@ -126,7 +126,7 @@ public class PromotionService {
     /*
      * Delete an existing promotion.
      */
-    public void deletePromotion(Long id) {
+    public void deletePromotion(Integer id) {
         Promotion promotion =
                 getPromotionById(id);
 
