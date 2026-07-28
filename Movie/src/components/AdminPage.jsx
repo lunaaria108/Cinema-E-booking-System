@@ -3,6 +3,7 @@ import NavBar from "./NavBar";
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useNavigate } from "react-router-dom";
 import AdminPromotions from "./AdminPromotions";
+import ManagePromotions from "./ManagePromotions";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -659,34 +660,14 @@ export default function AdminPage() {
         );
 
       case "manage-promotions":
-        return (
-          <div>
-            <h1 className="text-4xl font-bold text-white">
-              Manage Promotions
-            </h1>
-
-            <p className="mt-4 text-gray-300">
-              View, edit, activate, or deactivate promotions.
-            </p>
-          </div>
-        );
+  return <ManagePromotions />;
 
   case "add-promotion":
   return <AdminPromotions />;
         
 
       case "delete-promotion":
-        return (
-          <div>
-            <h1 className="text-4xl font-bold text-white">
-              Delete Promotion
-            </h1>
-
-            <p className="mt-4 text-gray-300">
-              Remove an existing promotion.
-            </p>
-          </div>
-        );
+  return <ManagePromotions />;
 
       default:
         return (
