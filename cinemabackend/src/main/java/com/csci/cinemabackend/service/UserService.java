@@ -29,7 +29,6 @@ public class UserService {
 
     public UserService(
             EmailVerificationTokenRepository tokenRepository,
-            BCryptPasswordEncoder passwordEncoder,
             UserRepository userRepository,
             MailService mailService) {
 
