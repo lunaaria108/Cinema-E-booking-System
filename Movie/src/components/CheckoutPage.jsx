@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import LoginModal from "./LoginModal";
+import AlertModal from "./AlertModal";
 
 export default function CheckoutPage(){
     const location = useLocation();
@@ -20,6 +21,7 @@ export default function CheckoutPage(){
         email: "",
     });
     const [showLoginModal, setShowLoginModal] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
     const checkoutState = {
         movie,
         selectedShowtime,
@@ -54,6 +56,85 @@ export default function CheckoutPage(){
         setShowLoginModal(false);
     };
 
+    const handleProceedToPayment = async () => {
+        if (!auth.token) {
+            setShowLoginModal(true);
+            return;
+        }
+
+        try {
+            const checkoutPayload = {
+                userId: auth.userId,
+                showtimeId: selectedShowtime.showtimeId,
+                seats: selectedSeats.map((seat, index) => ({
+                    seatLabel:
+                        typeof seat === "object"
+                            ? seat.seatLabel
+                            : seat,
+
+                    ticketType:
+                        tickets[index]?.type,
+                })),
+            };
+
+            const response = await fetch(
+                "http://localhost:8080/api/checkout/confirm",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization:
+                            `Bearer ${auth.token}`,
+                    },
+                    body: JSON.stringify(checkoutPayload),
+                }
+            );
+
+            const responseText = await response.text();
+
+            let responseData = null;
+
+            if (responseText) {
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = {
+                        message: responseText,
+                    };
+                }
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    responseData?.message ||
+                        "Unable to create booking."
+                );
+            }
+
+            navigate("/payment", {
+                state: {
+                    bookingId: responseData.bookingId,
+                    movie,
+                    selectedShowtime,
+                    selectedSeats,
+                    totalTickets,
+                    totalPrice,
+                    tickets,
+                },
+            });
+        } catch (error) {
+            console.error(
+                "Unable to confirm checkout:",
+                error
+            );
+
+            setAlertMessage(
+                error.message ||
+                    "Unable to confirm checkout."
+            );
+        }
+    };
+
     useEffect(() => {
         const checkoutState = {
             movie,
@@ -85,8 +166,15 @@ export default function CheckoutPage(){
 
         const loadUser = async () => {
             try {
-                const response = await fetch(
-                    `http://localhost:8080/api/users/${auth.userId}`
+               const response = await fetch(
+                    `http://localhost:8080/api/users/${auth.userId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization:
+                                `Bearer ${auth.token}`,
+                        },
+                    }
                 );
 
                 if (!response.ok) {
@@ -107,12 +195,6 @@ export default function CheckoutPage(){
 
         loadUser();
     }, [auth.userId]);
-
-    useEffect(() => {
-        if (!auth.token) {
-            setShowLoginModal(true);
-        }
-    }, [auth.token]);
 
     return(
         <div className="min-h-screen bg-[#0b0b0b] text-white">
@@ -166,18 +248,7 @@ export default function CheckoutPage(){
                     </div>
 
                     <button
-                    onClick={() => 
-                        navigate("/payment", {
-                            state: {
-                                movie,
-                                selectedShowtime,
-                                selectedSeats,
-                                totalTickets,
-                                totalPrice,
-                                tickets,
-                            },
-                        })
-                    }
+                    onClick={handleProceedToPayment}
                     className="bg-[#003D1A] text-[#D4AF37] border border-[#D4AF37] py-3 px-12 rounded-xl font-bold 
                     text-xl hover:bg-[#0a5229] transition-colors disabled:opacity-50 disabled:cursor-not-allowed m-6"
                     >
@@ -191,8 +262,14 @@ export default function CheckoutPage(){
                     onLoginSuccess={handleLoginSuccess}
                     onForgotPassword={() => {
                         setShowLoginModal(false);
-                        // open your reset modal here
                     }}
+                />
+            )}
+
+            {alertMessage && (
+                <AlertModal
+                    message={alertMessage}
+                    onClose={() => setAlertMessage("")}
                 />
             )}
         </div>
