@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-
 @Service
 public class BookingFinalizationService {
 
@@ -33,7 +32,10 @@ public class BookingFinalizationService {
             String paymentReference) {
 
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Booking not found"
+                ));
 
         Payment payment = new Payment();
         payment.setBooking(booking);
@@ -50,6 +52,7 @@ public class BookingFinalizationService {
         }
 
         bookingRepository.save(booking);
+
         return paymentRepository.save(payment);
     }
 }
