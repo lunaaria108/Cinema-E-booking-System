@@ -23,13 +23,15 @@ public class PaymentService {
     private final BookingFinalizationService bookingFinalizationService;
     private final BookingConfirmationService bookingConfirmationService;
     private final PaymentRepository paymentRepository;
+    private final PaymentStrategy paymentStrategy;
 
     public PaymentService(
             BookingRepository bookingRepository,
             PaymentCardRepository paymentCardRepository,
             BookingFinalizationService bookingFinalizationService,
             BookingConfirmationService bookingConfirmationService,
-            PaymentRepository paymentRepository) {
+            PaymentRepository paymentRepository,
+            PaymentStrategy paymentStrategy) {
 
         this.bookingRepository = bookingRepository;
         this.paymentCardRepository = paymentCardRepository;
@@ -38,11 +40,19 @@ public class PaymentService {
         this.bookingConfirmationService =
                 bookingConfirmationService;
         this.paymentRepository = paymentRepository;
+        this.paymentStrategy = paymentStrategy;
     }
 
     public PaymentResponse pay(
             Integer bookingId,
             PaymentRequest request) {
+
+        if (request == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Payment request is required"
+            );
+        }
 
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -60,8 +70,8 @@ public class PaymentService {
         }
 
         PaymentCard savedCard = null;
-        String cardNumberForMockCheck;
-        String cvvForMockCheck = request.getCvv();
+        String cardNumberForPayment;
+        String cvvForPayment;
 
         if (request.getCardId() != null) {
             savedCard = paymentCardRepository
@@ -74,8 +84,15 @@ public class PaymentService {
                             "Payment card not found for this user"
                     ));
 
-            cardNumberForMockCheck =
-                    "**** " + savedCard.getLastFour();
+            /*
+             * The mock strategy only needs the final digits to apply
+             * its simulated approval or decline rule.
+             */
+            cardNumberForPayment =
+                    savedCard.getLastFour();
+
+            cvvForPayment =
+                    savedCard.getCvv();
         } else {
             requiredText(
                     request.getCardholderName(),
@@ -87,28 +104,42 @@ public class PaymentService {
                     "Card number is required"
             );
 
-            if (!cardNumber
-                    .replaceAll("\\s", "")
-                    .matches("\\d{13,19}")) {
+            String digitsOnly =
+                    cardNumber.replaceAll("\\s", "");
 
+            if (!digitsOnly.matches("\\d{13,19}")) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Card number must contain between 13 and 19 digits"
                 );
             }
 
-            requiredText(
-                    cvvForMockCheck,
+            validateExpirationDate(
+                    request.getExpirationMonth(),
+                    request.getExpirationYear()
+            );
+
+            String cvv = requiredText(
+                    request.getCvv(),
                     "CVV is required"
             );
 
-            cardNumberForMockCheck = cardNumber;
+            if (!cvv.matches("\\d{3,4}")) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "CVV must contain 3 or 4 digits"
+                );
+            }
+
+            cardNumberForPayment = digitsOnly;
+            cvvForPayment = cvv;
         }
 
-        boolean approved = mockGatewayCharge(
-                cardNumberForMockCheck,
-                cvvForMockCheck
-        );
+        boolean approved =
+                paymentStrategy.processPayment(
+                        cardNumberForPayment,
+                        cvvForPayment
+                );
 
         String paymentReference =
                 UUID.randomUUID().toString();
@@ -180,20 +211,9 @@ public class PaymentService {
                         )
                 );
 
-        String normalizedStatus = requiredText(
-                paymentStatus,
-                "Payment status is required"
+        String normalizedStatus = normalizePaymentStatus(
+                paymentStatus
         );
-
-        if (!normalizedStatus.equals("Approved")
-                && !normalizedStatus.equals("Declined")
-                && !normalizedStatus.equals("Refunded")) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Payment status must be Approved, Declined, or Refunded"
-            );
-        }
 
         payment.setPaymentStatus(normalizedStatus);
 
@@ -216,18 +236,63 @@ public class PaymentService {
         paymentRepository.delete(payment);
     }
 
-    private boolean mockGatewayCharge(
-            String cardNumber,
-            String cvv) {
+    private String normalizePaymentStatus(
+            String paymentStatus) {
 
-        String digitsOnly =
-                cardNumber.replaceAll("\\D", "");
+        String normalizedStatus = requiredText(
+                paymentStatus,
+                "Payment status is required"
+        );
 
-        if (digitsOnly.endsWith("0000")) {
-            return false;
+        if (normalizedStatus.equalsIgnoreCase("Approved")) {
+            return "Approved";
         }
 
-        return !"000".equals(cvv);
+        if (normalizedStatus.equalsIgnoreCase("Declined")) {
+            return "Declined";
+        }
+
+        if (normalizedStatus.equalsIgnoreCase("Refunded")) {
+            return "Refunded";
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Payment status must be Approved, Declined, or Refunded"
+        );
+    }
+
+    private void validateExpirationDate(
+            Integer expirationMonth,
+            Integer expirationYear) {
+
+        if (expirationMonth == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Expiration month is required"
+            );
+        }
+
+        if (expirationMonth < 1 || expirationMonth > 12) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Expiration month must be between 1 and 12"
+            );
+        }
+
+        if (expirationYear == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Expiration year is required"
+            );
+        }
+
+        if (expirationYear < 2000) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Expiration year is invalid"
+            );
+        }
     }
 
     private String requiredText(
