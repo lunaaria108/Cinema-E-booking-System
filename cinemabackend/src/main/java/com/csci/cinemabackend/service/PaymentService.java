@@ -21,6 +21,7 @@ public class PaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentCardRepository paymentCardRepository;
     private final BookingFinalizationService bookingFinalizationService;
+    private final PaymentRepository paymentRepository;
     private final BookingConfirmationService bookingConfirmationService;
     private final PaymentRepository paymentRepository;
     private final PaymentStrategy paymentStrategy;
@@ -29,6 +30,12 @@ public class PaymentService {
             BookingRepository bookingRepository,
             PaymentCardRepository paymentCardRepository,
             BookingFinalizationService bookingFinalizationService,
+            PaymentRepository paymentRepository) {
+
+        this.bookingRepository = bookingRepository;
+        this.paymentCardRepository = paymentCardRepository;
+        this.bookingFinalizationService = bookingFinalizationService;
+        this.paymentRepository = paymentRepository;
             BookingConfirmationService bookingConfirmationService,
             PaymentRepository paymentRepository,
             PaymentStrategy paymentStrategy) {
@@ -84,6 +91,9 @@ public class PaymentService {
                             "Payment card not found for this user"
                     ));
 
+            cardNumberForMockCheck =
+                    "**** " + savedCard.getLastFour();
+
             /*
              * The mock strategy only needs the final digits to apply
              * its simulated approval or decline rule.
@@ -104,6 +114,10 @@ public class PaymentService {
                     "Card number is required"
             );
 
+            if (!cardNumber
+                    .replaceAll("\\s", "")
+                    .matches("\\d{13,19}")) {
+
             String digitsOnly =
                     cardNumber.replaceAll("\\s", "");
 
@@ -114,6 +128,9 @@ public class PaymentService {
                 );
             }
 
+            requiredText(
+                    cvvForMockCheck,
+                    "CVV is required"
             validateExpirationDate(
                     request.getExpirationMonth(),
                     request.getExpirationYear()
@@ -134,6 +151,14 @@ public class PaymentService {
             cardNumberForPayment = digitsOnly;
             cvvForPayment = cvv;
         }
+
+        boolean approved = mockGatewayCharge(
+                cardNumberForMockCheck,
+                cvvForMockCheck
+        );
+
+        String paymentReference =
+                UUID.randomUUID().toString();
 
         boolean approved =
                 paymentStrategy.processPayment(
@@ -169,6 +194,8 @@ public class PaymentService {
     }
 
     public PaymentResponse getPaymentById(
+            Integer paymentId
+    ) {
             Integer paymentId) {
 
         Payment payment = paymentRepository
@@ -184,6 +211,8 @@ public class PaymentService {
     }
 
     public PaymentResponse getPaymentByBookingId(
+            Integer bookingId
+    ) {
             Integer bookingId) {
 
         Payment payment = paymentRepository
