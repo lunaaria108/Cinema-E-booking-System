@@ -7,12 +7,13 @@ import com.csci.cinemabackend.model.Payment;
 import com.csci.cinemabackend.model.PaymentCard;
 import com.csci.cinemabackend.repository.BookingRepository;
 import com.csci.cinemabackend.repository.PaymentCardRepository;
+import com.csci.cinemabackend.repository.PaymentRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.UUID;
-
 
 @Service
 public class PaymentService {
@@ -20,25 +21,34 @@ public class PaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentCardRepository paymentCardRepository;
     private final BookingFinalizationService bookingFinalizationService;
+    private final PaymentRepository paymentRepository;
 
     public PaymentService(
             BookingRepository bookingRepository,
             PaymentCardRepository paymentCardRepository,
-            BookingFinalizationService bookingFinalizationService) {
+            BookingFinalizationService bookingFinalizationService,
+            PaymentRepository paymentRepository) {
 
         this.bookingRepository = bookingRepository;
         this.paymentCardRepository = paymentCardRepository;
         this.bookingFinalizationService = bookingFinalizationService;
+        this.paymentRepository = paymentRepository;
     }
 
     public PaymentResponse pay(Integer bookingId, PaymentRequest request) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Booking not found"
+                ));
 
         if (!"Pending".equals(booking.getStatus())) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
-                    "Booking is not awaiting payment (status: " + booking.getStatus() + ")");
+                    "Booking is not awaiting payment (status: "
+                            + booking.getStatus()
+                            + ")"
+            );
         }
 
         PaymentCard savedCard = null;
@@ -46,38 +56,158 @@ public class PaymentService {
         String cvvForMockCheck = request.getCvv();
 
         if (request.getCardId() != null) {
-            savedCard = paymentCardRepository.findByCardIdAndUserUserId(
-                            request.getCardId(), booking.getUser().getUserId())
+            savedCard = paymentCardRepository
+                    .findByCardIdAndUserUserId(
+                            request.getCardId(),
+                            booking.getUser().getUserId()
+                    )
                     .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.NOT_FOUND, "Payment card not found for this user"));
+                            HttpStatus.NOT_FOUND,
+                            "Payment card not found for this user"
+                    ));
 
-            cardNumberForMockCheck = "**** " + savedCard.getLastFour();
+            cardNumberForMockCheck =
+                    "**** " + savedCard.getLastFour();
         } else {
-            requiredText(request.getCardholderName(), "Cardholder name is required");
-            String cardNumber = requiredText(request.getCardNumber(), "Card number is required");
+            requiredText(
+                    request.getCardholderName(),
+                    "Cardholder name is required"
+            );
 
-            if (!cardNumber.replaceAll("\\s", "").matches("\\d{13,19}")) {
+            String cardNumber = requiredText(
+                    request.getCardNumber(),
+                    "Card number is required"
+            );
+
+            if (!cardNumber
+                    .replaceAll("\\s", "")
+                    .matches("\\d{13,19}")) {
+
                 throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Card number must contain between 13 and 19 digits");
+                        HttpStatus.BAD_REQUEST,
+                        "Card number must contain between 13 and 19 digits"
+                );
             }
 
-            requiredText(cvvForMockCheck, "CVV is required");
+            requiredText(
+                    cvvForMockCheck,
+                    "CVV is required"
+            );
 
             cardNumberForMockCheck = cardNumber;
         }
 
-        //call the gateway. No DB transaction/locks held here.
-        boolean approved = mockGatewayCharge(cardNumberForMockCheck, cvvForMockCheck);
-        String paymentReference = UUID.randomUUID().toString();
+        boolean approved = mockGatewayCharge(
+                cardNumberForMockCheck,
+                cvvForMockCheck
+        );
 
-        // short transaction after the gateway responds.
-        Payment payment = bookingFinalizationService.finalize(bookingId, approved, savedCard, paymentReference);
+        String paymentReference =
+                UUID.randomUUID().toString();
+
+        Payment payment =
+                bookingFinalizationService.finalize(
+                        bookingId,
+                        approved,
+                        savedCard,
+                        paymentReference
+                );
 
         return new PaymentResponse(payment);
     }
 
-    private boolean mockGatewayCharge(String cardNumber, String cvv) {
-        String digitsOnly = cardNumber.replaceAll("\\D", "");
+    public List<PaymentResponse> getAllPayments() {
+        return paymentRepository.findAll()
+                .stream()
+                .map(PaymentResponse::new)
+                .toList();
+    }
+
+    public PaymentResponse getPaymentById(
+            Integer paymentId
+    ) {
+        Payment payment = paymentRepository
+                .findById(paymentId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Payment not found"
+                        )
+                );
+
+        return new PaymentResponse(payment);
+    }
+
+    public PaymentResponse getPaymentByBookingId(
+            Integer bookingId
+    ) {
+        Payment payment = paymentRepository
+                .findByBookingBookingId(bookingId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Payment not found for booking"
+                        )
+                );
+
+        return new PaymentResponse(payment);
+    }
+
+    public PaymentResponse updatePaymentStatus(
+            Integer paymentId,
+            String paymentStatus
+    ) {
+        Payment payment = paymentRepository
+                .findById(paymentId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Payment not found"
+                        )
+                );
+
+        String normalizedStatus = requiredText(
+                paymentStatus,
+                "Payment status is required"
+        );
+
+        if (!normalizedStatus.equals("Approved")
+                && !normalizedStatus.equals("Declined")
+                && !normalizedStatus.equals("Refunded")) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Payment status must be Approved, Declined, or Refunded"
+            );
+        }
+
+        payment.setPaymentStatus(normalizedStatus);
+
+        Payment updatedPayment =
+                paymentRepository.save(payment);
+
+        return new PaymentResponse(updatedPayment);
+    }
+
+    public void deletePayment(Integer paymentId) {
+        Payment payment = paymentRepository
+                .findById(paymentId)
+                .orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Payment not found"
+                        )
+                );
+
+        paymentRepository.delete(payment);
+    }
+
+    private boolean mockGatewayCharge(
+            String cardNumber,
+            String cvv
+    ) {
+        String digitsOnly =
+                cardNumber.replaceAll("\\D", "");
 
         if (digitsOnly.endsWith("0000")) {
             return false;
@@ -86,9 +216,15 @@ public class PaymentService {
         return !"000".equals(cvv);
     }
 
-    private String requiredText(String value, String errorMessage) {
+    private String requiredText(
+            String value,
+            String errorMessage
+    ) {
         if (value == null || value.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    errorMessage
+            );
         }
 
         return value.trim();
