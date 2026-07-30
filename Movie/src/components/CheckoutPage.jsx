@@ -123,7 +123,7 @@ export default function CheckoutPage(){
                     selectedShowtime,
                     selectedSeats,
                     totalTickets,
-                    totalPrice,
+                    totalPrice: responseData.totalPrice,
                     tickets,
                 },
             });
