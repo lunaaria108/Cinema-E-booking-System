@@ -99,11 +99,7 @@ export default function SignUpPage() {
             const responseText = await response.text();
 
             if (!response.ok) {
-                if (response.status === 409) {
-                    setAlertMessage("An account with this email already exists.");
-                } else {
-                    setAlertMessage(responseText || "Unable to create account.");
-                }
+                setAlertMessage(responseText || "Unable to create account.");
                 return;
             }
 

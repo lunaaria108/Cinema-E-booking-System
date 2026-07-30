@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import NavBar from './NavBar';
 import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import AlertModal from "./AlertModal";
-import LoginModal from "./LoginModal";
-import ResetModal from "./ResetModal";
 
 export default function BookingPage() {
     const navigate = useNavigate();
@@ -21,14 +19,8 @@ export default function BookingPage() {
     const [selectedSeats, setSelectedSeats] = useState([]);
     const [auth, setAuth] = useState(() => loadAuthState());
     const [alertMessage, setAlertMessage] = useState("");
-    const [showLogIn, setShowLogIn] = useState(false);
-    const [showResetModal, setShowResetModal] = useState(false);
 
     const tickets = [];
-
-    const handleLoginSuccess = () => {
-        setAuth(loadAuthState());
-    };
 
     for (let i = 0; i < adultTickets; i++) {
         tickets.push({
@@ -108,12 +100,7 @@ export default function BookingPage() {
             <NavBar
                 isLoggedIn={Boolean(auth.token)}
                 onLogout={handleLogout}
-                onLogIn={() => setShowLogIn(true)}
-                isLoggedIn={Boolean(auth.token)}
-                onLogout={handleLogout}
             />
-            {showLogIn && (<LoginModal onClose={() => setShowLogIn(false)} onForgotPassword={() => {setShowLogIn(false); setShowResetModal(true);}} onLoginSuccess={handleLoginSuccess}/>) }
-            {showResetModal && (<ResetModal onClose={() => setShowResetModal(false)}/>) }
 
             <div className="bg-[#000000] h-37.5 flex justify-evenly items-center text-white">
                 <img className="h-30 rounded object-cover" src={movie?.trailerImage} alt={`${movie?.movieTitle} poster`} />
