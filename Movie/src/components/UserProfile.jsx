@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import AlertModal from "./AlertModal";
-import logo from "../assets/logo.jpg";
 
 import NavBar from "./NavBar";
 import {
@@ -50,41 +49,6 @@ export default function UserProfile() {
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
-    const [orderHistory] = useState([
-        {
-            bookingId: 1042,
-            movieTitle: "The Dark Knight",
-            showDate: "July 18, 2026",
-            showTime: "7:30 PM",
-            theater: "Theater 4",
-            seats: ["D5", "D6"],
-            ticketCount: 2,
-            totalPrice: 27.98,
-            status: "Completed",
-        },
-        {
-            bookingId: 1037,
-            movieTitle: "Interstellar",
-            showDate: "July 10, 2026",
-            showTime: "6:15 PM",
-            theater: "Theater 2",
-            seats: ["F8"],
-            ticketCount: 1,
-            totalPrice: 13.99,
-            status: "Completed",
-        },
-        {
-            bookingId: 1029,
-            movieTitle: "Spider-Man: Across the Spider-Verse",
-            showDate: "June 28, 2026",
-            showTime: "8:00 PM",
-            theater: "Theater 6",
-            seats: ["C3", "C4", "C5"],
-            ticketCount: 3,
-            totalPrice: 39.97,
-            status: "Cancelled",
-        },
-    ]);
 
     useEffect(() => {
         if (!auth.userId) {
@@ -175,7 +139,17 @@ export default function UserProfile() {
         }));
     };
 
-    const handleSaveProfile = async () => {     
+    const handleSaveProfile = async () => {
+        if (!user.email.trim()) {
+            setAlertMessage("Please enter an email address.");
+            return;
+        }
+
+        if (!user.email.includes("@")) {
+            setAlertMessage("Please enter a valid email address.");
+            return;
+        }
+        
         if (!auth.userId) {
             alert(
                 "You must be logged in to update your profile."
@@ -187,6 +161,7 @@ export default function UserProfile() {
             userName: user.userName.trim(),
             firstName: user.firstName.trim(),
             lastName: user.lastName.trim(),
+            email: user.email.trim(),
             phoneNumber: user.phoneNumber.trim(),
             streetAddress: user.streetAddress.trim(),
             promoOptIn: user.promoOptIn,
@@ -660,8 +635,8 @@ export default function UserProfile() {
                                 type="email"
                                 name="email"
                                 value={user.email}
-                                readOnly
-                                className="w-full bg-gray-900 border border-gray-700 rounded p-2 text-gray-400 cursor-not-allowed"
+                                onChange={handleProfileChange}
+                                className="w-full bg-black border border-[#003D1A] rounded p-2 text-white"
                                 placeholder="Email Address"
                             />
 
@@ -1121,124 +1096,6 @@ export default function UserProfile() {
                                 ? "Maximum Cards Reached"
                                 : "+ Add New Card"}
                         </button>
-                    </motion.div>
-
-                    <motion.div
-                        className="bg-[#121212] p-6 rounded-xl border border-[#003D1A] lg:col-span-2"
-                        initial={{
-                            opacity: 0,
-                            y: 20,
-                        }}
-                        animate={{
-                            opacity: 1,
-                            y: 0,
-                        }}
-                        transition={{
-                            delay: 0.4,
-                        }}
-                    >
-                        <div className="flex justify-between items-center mb-5">
-                            <h2 className="text-2xl text-[#D4AF37]">
-                                Order History
-                            </h2>
-
-                            <span className="text-sm text-gray-400">
-                                {orderHistory.length} Orders
-                            </span>
-                        </div>
-
-                        {orderHistory.length === 0 ? (
-                            <div className="bg-black border border-[#003D1A] rounded-lg p-6 text-center">
-                                <p className="text-gray-400">
-                                    You have not placed any orders yet.
-                                </p>
-
-                                <button
-                                    type="button"
-                                    onClick={() => navigate("/")}
-                                    className="mt-4 bg-[#003D1A] text-[#D4AF37] px-5 py-2 rounded font-bold hover:bg-[#0a5229]"
-                                >
-                                    Browse Movies
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-4">
-                                {orderHistory.map((order) => (
-                                    <div
-                                        key={order.bookingId}
-                                        className="bg-black border border-[#003D1A] rounded-lg p-4"
-                                    >
-                                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-                                            <div className="flex flex-col items-start">
-                                                <div className="flex items-center gap-3 mb-2">
-                                                    <h3 className="text-xl font-bold text-white">
-                                                        {order.movieTitle}
-                                                    </h3>
-
-                                                    <span
-                                                        className={`text-xs font-bold px-2 py-1 rounded ${
-                                                            order.status === "Completed"
-                                                                ? "bg-green-900 text-green-300"
-                                                                : order.status === "Cancelled"
-                                                                ? "bg-red-900 text-red-300"
-                                                                : "bg-yellow-900 text-yellow-300"
-                                                        }`}
-                                                    >
-                                                        {order.status}
-                                                    </span>
-                                                </div>
-
-                                                <p className="text-sm text-gray-400">
-                                                    Order #{order.bookingId}
-                                                </p>
-
-                                                <p className="mt-3 text-gray-200">
-                                                    {order.showDate} at{" "}
-                                                    {order.showTime}
-                                                </p>
-
-                                                <p className="text-gray-400">
-                                                    {order.theater}
-                                                </p>
-
-                                                <p className="text-gray-400">
-                                                    Seats: {order.seats.join(", ")}
-                                                </p>
-
-                                                <p className="text-gray-400">
-                                                    {order.ticketCount}{" "}
-                                                    {order.ticketCount === 1
-                                                        ? "Ticket"
-                                                        : "Tickets"}
-                                                </p>
-                                            </div>
-
-                                            <div className="md:text-right">
-                                                <p className="text-sm text-gray-400">
-                                                    Total
-                                                </p>
-
-                                                <p className="text-2xl font-bold text-[#D4AF37]">
-                                                    ${order.totalPrice.toFixed(2)}
-                                                </p>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setAlertMessage(
-                                                            `Viewing details for order #${order.bookingId}.`
-                                                        )
-                                                    }
-                                                    className="mt-3 text-[#D4AF37] border border-[#D4AF37] px-4 py-2 rounded text-sm hover:bg-[#003D1A]"
-                                                >
-                                                    View Details
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
                     </motion.div>
                 </div>
             </div>
