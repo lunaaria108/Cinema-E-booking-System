@@ -32,10 +32,14 @@ spring:
 app:
   mail:
     from: jesscinemaapp@gmail.com
+
   auth:
     verification-expiration-hours: 24
     reset-expiration-minutes: 30
     session-expiration-hours: 8
+
+  tax:
+    rate: 0.07
 
 card:
   encryption:
