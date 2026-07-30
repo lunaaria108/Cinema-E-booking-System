@@ -54,6 +54,9 @@ public class User {
     @Column(name = "created", nullable = false, updatable = false)
     private LocalDateTime created;
 
+    @Column(name = "pending_email", nullable = true, length = 100)
+    private String pendingEmail;
+
     public User() {
     }
 
@@ -124,6 +127,10 @@ public class User {
         return created;
     }
 
+    public String getPendingEmail() {
+        return pendingEmail;
+    }
+
     public void setEmail(String email) {
         this.email = email;
     }
@@ -162,5 +169,9 @@ public class User {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public void setPendingEmail(String email) {
+        this.pendingEmail = email;
     }
 }
