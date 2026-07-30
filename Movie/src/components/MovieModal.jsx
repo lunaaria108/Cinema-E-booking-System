@@ -9,13 +9,6 @@ function MovieModal({ movie, onClose }) {
   const [selectedShowtime, setSelectedShowtime] = useState(null);
   const auth = loadAuthState();
   const [alertMessage, setAlertMessage] = useState("");
-  const [selectedDate, setSelectedDate] = useState(null);
-
-  const showDates = [
-    ...new Set(
-      (movie.showtimes || []).map((showtime) => showtime.showDate)
-    ),
-  ];
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -46,68 +39,15 @@ function MovieModal({ movie, onClose }) {
         </div>
 
         <div className="showtimes-section">
-          <h3>Show Dates</h3>
-
+          <h3>Show Times</h3>
           <div className="showtimes">
-            {showDates.map((date) => (
-              <button
-                key={date}
-                type="button"
-                onClick={() => {
-                  setSelectedDate(date);
-                  setSelectedShowtime(null);
-                }}
-                className={`showtime-btn ${
-                  selectedDate === date ? "selected" : ""
-                }`}
-              >
-                {new Date(`${date}T00:00:00`).toLocaleDateString(
-                  "en-US",
-                  {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                  }
-                )}
+            {movie.showtimes?.map((showtime) => (
+              <button key={showtime.showtimeId} onClick={() => setSelectedShowtime(showtime)} className={`showtime-btn ${
+                selectedShowtime?.showtimeId === showtime.showtimeId ? 'selected' : ''}`}>
+                {showtime.showTime}
               </button>
             ))}
           </div>
-
-          {selectedDate && (
-            <>
-              <h3 className="mt-6">Show Times</h3>
-
-              <div className="showtimes">
-                {movie.showtimes
-                  ?.filter(
-                    (showtime) =>
-                      showtime.showDate === selectedDate
-                  )
-                  .map((showtime) => (
-                    <button
-                      key={showtime.showtimeId}
-                      type="button"
-                      onClick={() =>
-                        setSelectedShowtime(showtime)
-                      }
-                      className={`showtime-btn ${
-                        selectedShowtime?.showtimeId ===
-                        showtime.showtimeId
-                          ? "selected"
-                          : ""
-                      }`}
-                    >
-                      {new Date(
-                        `${showtime.showDate}T${showtime.showTime}`
-                      ).toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
-                    </button>
-                  ))}
-              </div>
-            </>
-          )}
         </div>
 
        <button className="book-btn" onClick={() => {

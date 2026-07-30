@@ -14,7 +14,7 @@ CREATE TABLE Users (
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
     promotion_opt_in BOOLEAN NOT NULL DEFAULT FALSE,
-    created TIMESTAMP NOT NULL DEFAULT NOW(), --Field to let users store a pending email change
+    created TIMESTAMP NOT NULL DEFAULT NOW() --Field to let users store a pending email change
     pending_email VARCHAR(100)
 );
 CREATE TABLE password_reset_token (
