@@ -1,17 +1,9 @@
 import NavBar from "./NavBar";
 import AlertModal from "./AlertModal";
 import logo from "../assets/logo.jpg";
-
-import {
-    clearAuthState,
-    loadAuthState,
-} from "../utils/authStorage";
-
-import { useState } from "react";
-import {
-    useLocation,
-    useNavigate,
-} from "react-router-dom";
+import { clearAuthState, loadAuthState } from "../utils/authStorage";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function PaymentPage() {
     const navigate = useNavigate();
@@ -22,6 +14,7 @@ export default function PaymentPage() {
     );
 
     const {
+        bookingId,
         movie,
         selectedShowtime,
         selectedSeats = [],
@@ -37,13 +30,7 @@ export default function PaymentPage() {
         useState("saved");
 
     const [selectedCardId, setSelectedCardId] =
-        useState("1");
-
-    const [promotionCode, setPromotionCode] =
         useState("");
-
-    const [appliedPromotion, setAppliedPromotion] =
-        useState(null);
 
     const [paymentForm, setPaymentForm] = useState({
         cardholderName: "",
@@ -55,42 +42,13 @@ export default function PaymentPage() {
         saveCard: false,
     });
 
-    /*
-     * Mock saved cards.
-     * These are displayed without contacting the backend.
-     */
-    const savedCards = [
-        {
-            cardId: "1",
-            cardType: "Visa",
-            lastFour: "4242",
-            expirationMonth: "08",
-            expirationYear: "2028",
-            cardholderName: "John Smith",
-        },
-        {
-            cardId: "2",
-            cardType: "Mastercard",
-            lastFour: "5555",
-            expirationMonth: "04",
-            expirationYear: "2029",
-            cardholderName: "John Smith",
-        },
-    ];
+    const [savedCards, setSavedCards] = useState([]);
+
+    const [isLoadingCards, setIsLoadingCards] = useState(true);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const subtotal = Number(totalPrice) || 0;
-
-    /*
-     * SAVE10 is the mock promotion.
-     */
-    const discountAmount = appliedPromotion
-        ? subtotal * 0.1
-        : 0;
-
-    const finalTotal = Math.max(
-        0,
-        subtotal - discountAmount
-    );
 
     const handleChange = (event) => {
         const {
@@ -124,44 +82,26 @@ export default function PaymentPage() {
         }));
     };
 
-    const handleApplyPromotion = () => {
-        const cleanedCode =
-            promotionCode.trim().toUpperCase();
-
-        if (!cleanedCode) {
-            setAlertMessage(
-                "Please enter a promotion code."
-            );
-            return;
-        }
-
-        if (cleanedCode !== "SAVE10") {
-            setAppliedPromotion(null);
-            setAlertMessage(
-                "Invalid promotion code. Try SAVE10."
-            );
-            return;
-        }
-
-        setPromotionCode(cleanedCode);
-
-        setAppliedPromotion({
-            code: "SAVE10",
-            discountPercent: 10,
-        });
-
-        setAlertMessage(
-            "Promotion applied successfully."
-        );
-    };
-
-    const handleRemovePromotion = () => {
-        setAppliedPromotion(null);
-        setPromotionCode("");
-    };
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
+
+        if (isSubmitting) {
+            return;
+        }
+
+        if (!bookingId) {
+            setAlertMessage(
+                "No booking was found for this payment."
+            );
+            return;
+        }
+
+        if (!auth.userId || !auth.token) {
+            setAlertMessage(
+                "You must be logged in to complete payment."
+            );
+            return;
+        }
 
         if (
             paymentMethod === "saved" &&
@@ -175,29 +115,142 @@ export default function PaymentPage() {
 
         if (paymentMethod === "new") {
             if (
-                !paymentForm.cardholderName ||
+                !paymentForm.cardholderName.trim() ||
                 !paymentForm.cardNumber ||
                 !paymentForm.expirationMonth ||
                 !paymentForm.expirationYear ||
-                !paymentForm.cvv ||
-                !paymentForm.billingZip
+                !paymentForm.cvv
             ) {
                 setAlertMessage(
                     "Please complete the new card form."
                 );
                 return;
             }
+
+            if (
+                paymentForm.saveCard &&
+                !paymentForm.billingZip.trim()
+            ) {
+                setAlertMessage(
+                    "Please enter a billing ZIP to save this card."
+                );
+                return;
+            }
         }
 
-        /*
-         * Mock payment only.
-         * No request is sent to the backend.
-         */
-        setAlertMessage(
-            `Mock payment of $${finalTotal.toFixed(
-                2
-            )} completed successfully.`
-        );
+        try {
+            setIsSubmitting(true);
+
+            const paymentPayload =
+                paymentMethod === "saved"
+                    ? {
+                        cardId: Number(selectedCardId),
+                    }
+                    : {
+                        cardholderName:
+                            paymentForm.cardholderName.trim(),
+
+                        cardNumber:
+                            paymentForm.cardNumber.replace(
+                                /\s/g,
+                                ""
+                            ),
+
+                        expirationMonth: Number(
+                            paymentForm.expirationMonth
+                        ),
+
+                        expirationYear: Number(
+                            paymentForm.expirationYear
+                        ),
+
+                        cvv: paymentForm.cvv,
+                    };
+
+            const response = await fetch(
+                `http://localhost:8080/api/payments/${bookingId}/pay`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Authorization:
+                            `Bearer ${auth.token}`,
+                    },
+
+                    body: JSON.stringify(paymentPayload),
+                }
+            );
+
+            const responseText = await response.text();
+
+            let responseData = null;
+
+            if (responseText) {
+                try {
+                    responseData =
+                        JSON.parse(responseText);
+                } catch {
+                    responseData = {
+                        message: responseText,
+                    };
+                }
+            }
+
+            if (!response.ok) {
+                throw new Error(
+                    responseData?.message ||
+                        responseData?.paymentStatus ||
+                        "Payment was declined."
+                );
+            }
+
+            if (
+                paymentMethod === "new" &&
+                paymentForm.saveCard
+            ) {
+                const saveCardResponse = await fetch(
+                    `http://localhost:8080/api/users/${auth.userId}/cards`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${auth.token}`,
+                        },
+                        body: JSON.stringify({
+                            cardholderName: paymentForm.cardholderName.trim(),
+                            cardNumber: paymentForm.cardNumber.replace(/\s/g, ""),
+                            expirationMonth: Number(paymentForm.expirationMonth),
+                            expirationYear: Number(paymentForm.expirationYear),
+                            cvv: paymentForm.cvv,
+                            billingZip: paymentForm.billingZip.trim(),
+                        }),
+                    }
+                );
+
+                if (!saveCardResponse.ok) {
+                    console.error(
+                        "Payment succeeded, but the card could not be saved."
+                    );
+                }
+            }
+
+            sessionStorage.removeItem(
+                "pendingCheckout"
+            );
+
+            setAlertMessage("Payment successful!");
+        } catch (error) {
+            console.error("Payment failed:", error);
+
+            setAlertMessage(
+                error.message ||
+                    "Unable to process payment."
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleLogout = () => {
@@ -205,6 +258,78 @@ export default function PaymentPage() {
         setAuth(loadAuthState());
         navigate("/");
     };
+
+    useEffect(() => {
+        if (!auth.userId || !auth.token) {
+            setSavedCards([]);
+            setIsLoadingCards(false);
+            return;
+        }
+
+        const loadSavedCards = async () => {
+            try {
+                setIsLoadingCards(true);
+
+                const response = await fetch(
+                    `http://localhost:8080/api/users/${auth.userId}/cards`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${auth.token}`,
+                        },
+                    }
+                );
+
+                const responseText = await response.text();
+
+                let data = [];
+
+                if (responseText) {
+                    try {
+                        data = JSON.parse(responseText);
+                    } catch {
+                        throw new Error(responseText);
+                    }
+                }
+
+                if (!response.ok) {
+                    throw new Error(
+                        data?.message ||
+                        `Unable to load cards: ${response.status}`
+                    );
+                }
+
+                const cards = Array.isArray(data) ? data : [];
+
+                setSavedCards(cards);
+
+                if (cards.length > 0) {
+                    setSelectedCardId(
+                        String(cards[0].cardId)
+                    );
+                } else {
+                    setSelectedCardId("");
+                    setPaymentMethod("new");
+                }
+            } catch (error) {
+                console.error(
+                    "Unable to load saved cards:",
+                    error
+                );
+
+                setSavedCards([]);
+
+                setAlertMessage(
+                    error.message ||
+                    "Unable to load your saved payment methods."
+                );
+            } finally {
+                setIsLoadingCards(false);
+            }
+        };
+
+        loadSavedCards();
+    }, [auth.userId, auth.token]);
 
     return (
         <>
@@ -229,7 +354,7 @@ export default function PaymentPage() {
 
                         {movie && (
                             <p className="text-gray-300">
-                                {movie.title}
+                                {movie.movieTitle}
                             </p>
                         )}
                     </div>
@@ -296,77 +421,79 @@ export default function PaymentPage() {
                                     Select a Saved Card
                                 </h2>
 
-                                {savedCards.map((card) => {
-                                    const selected =
-                                        selectedCardId ===
-                                        card.cardId;
+                                {isLoadingCards ? (
+                                    <p className="text-gray-300">
+                                        Loading saved cards...
+                                    </p>
+                                ) : savedCards.length === 0 ? (
+                                    <p className="text-gray-300">
+                                        You do not have any saved cards.
+                                    </p>
+                                ) : (
+                                    savedCards.map((card) => {
+                                        const selected =
+                                            selectedCardId === String(card.cardId);
 
-                                    return (
-                                        <label
-                                            key={
-                                                card.cardId
-                                            }
-                                            className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${
-                                                selected
-                                                    ? "border-[#D4AF37] bg-[#003D1A]"
-                                                    : "border-[#4c6d51] bg-[#0b0b0b]"
-                                            }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="radio"
-                                                    name="savedCard"
-                                                    value={
-                                                        card.cardId
-                                                    }
-                                                    checked={
-                                                        selected
-                                                    }
-                                                    onChange={(
-                                                        event
-                                                    ) =>
-                                                        setSelectedCardId(
-                                                            event
-                                                                .target
-                                                                .value
-                                                        )
-                                                    }
-                                                    className="accent-[#D4AF37]"
-                                                />
-
-                                                <div>
-                                                    <p className="font-semibold text-white">
-                                                        {
-                                                            card.cardType
-                                                        }{" "}
-                                                        ending
-                                                        in{" "}
-                                                        {
-                                                            card.lastFour
-                                                        }
-                                                    </p>
-
-                                                    <p className="text-sm text-gray-400">
-                                                        Expires{" "}
-                                                        {
-                                                            card.expirationMonth
-                                                        }
-                                                        /
-                                                        {
-                                                            card.expirationYear
-                                                        }
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-sm text-gray-300">
-                                                {
-                                                    card.cardholderName
+                                        return (
+                                            <label
+                                                key={
+                                                    card.cardId
                                                 }
-                                            </p>
-                                        </label>
-                                    );
-                                })}
+                                                className={`flex cursor-pointer items-center justify-between rounded-xl border p-4 ${
+                                                    selected
+                                                        ? "border-[#D4AF37] bg-[#003D1A]"
+                                                        : "border-[#4c6d51] bg-[#0b0b0b]"
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        type="radio"
+                                                        name="savedCard"
+                                                        value={
+                                                            card.cardId
+                                                        }
+                                                        checked={
+                                                            selected
+                                                        }
+                                                        onChange={(
+                                                            event
+                                                        ) =>
+                                                            setSelectedCardId(
+                                                                event
+                                                                    .target
+                                                                    .value
+                                                            )
+                                                        }
+                                                        className="accent-[#D4AF37]"
+                                                    />
+
+                                                    <div>
+                                                        <p className="font-semibold text-white">
+                                                            Card ending in {card.lastFour}
+                                                        </p>
+
+                                                        <p className="text-sm text-gray-400">
+                                                            Expires{" "}
+                                                            {
+                                                                card.expirationMonth
+                                                            }
+                                                            /
+                                                            {
+                                                                card.expirationYear
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <p className="text-sm text-gray-300">
+                                                    {
+                                                        card.cardholderName
+                                                    }
+                                                </p>
+                                            </label>
+                                        );
+                                    })
+                                )}
                             </section>
                         )}
 
@@ -474,12 +601,8 @@ export default function PaymentPage() {
                                         type="text"
                                         id="billingZip"
                                         name="billingZip"
-                                        value={
-                                            paymentForm.billingZip
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
+                                        value={paymentForm.billingZip}
+                                        onChange={handleChange}
                                         maxLength={10}
                                         className={inputStyle}
                                     />
@@ -489,68 +612,15 @@ export default function PaymentPage() {
                                     <input
                                         type="checkbox"
                                         name="saveCard"
-                                        checked={
-                                            paymentForm.saveCard
-                                        }
-                                        onChange={
-                                            handleChange
-                                        }
+                                        checked={paymentForm.saveCard}
+                                        onChange={handleChange}
                                         className="accent-[#003D1A]"
                                     />
 
-                                    Save this card for future
-                                    purchases
+                                    Save this card for future purchases
                                 </label>
                             </section>
                         )}
-
-                        {/* Promotion */}
-                        <section className="border-t border-[#4c6d51] pt-6">
-                            <h2 className="mb-4 text-lg font-bold text-[#D4AF37]">
-                                Promotion
-                            </h2>
-
-                            <div className="flex gap-3">
-                                <input
-                                    type="text"
-                                    value={
-                                        promotionCode
-                                    }
-                                    onChange={(event) =>
-                                        setPromotionCode(
-                                            event.target.value.toUpperCase()
-                                        )
-                                    }
-                                    disabled={Boolean(
-                                        appliedPromotion
-                                    )}
-                                    placeholder="Try SAVE10"
-                                    className={inputStyle}
-                                />
-
-                                {!appliedPromotion ? (
-                                    <button
-                                        type="button"
-                                        onClick={
-                                            handleApplyPromotion
-                                        }
-                                        className="rounded-md border border-[#D4AF37] bg-[#003D1A] px-5 py-2 text-[#D4AF37] hover:bg-[#0a5229]"
-                                    >
-                                        Apply
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={
-                                            handleRemovePromotion
-                                        }
-                                        className="rounded-md border border-red-500 px-5 py-2 text-red-400"
-                                    >
-                                        Remove
-                                    </button>
-                                )}
-                            </div>
-                        </section>
 
                         {/* Totals */}
                         <section className="flex flex-col gap-3 border-t border-[#4c6d51] pt-6 text-white">
@@ -571,27 +641,12 @@ export default function PaymentPage() {
                                 </span>
                             </div>
 
-                            {appliedPromotion && (
-                                <div className="flex justify-between text-green-400">
-                                    <span>
-                                        SAVE10 discount:
-                                    </span>
-
-                                    <span>
-                                        -$
-                                        {discountAmount.toFixed(
-                                            2
-                                        )}
-                                    </span>
-                                </div>
-                            )}
-
                             <div className="flex justify-between border-t border-[#4c6d51] pt-3 text-xl font-bold text-[#D4AF37]">
                                 <span>Total:</span>
 
                                 <span>
                                     $
-                                    {finalTotal.toFixed(
+                                    {subtotal.toFixed(
                                         2
                                     )}
                                 </span>
@@ -601,10 +656,15 @@ export default function PaymentPage() {
                         <div className="flex justify-center">
                             <button
                                 type="submit"
-                                className="rounded-lg border border-[#D4AF37] bg-[#003D1A] px-8 py-3 font-bold text-[#D4AF37] hover:bg-[#0a5229]"
+                                disabled={isSubmitting}
+                                className="rounded-lg border border-[#D4AF37]
+                                bg-[#003D1A] px-8 py-3 font-bold
+                                text-[#D4AF37] hover:bg-[#0a5229]
+                                disabled:cursor-not-allowed disabled:opacity-60"
                             >
-                                Pay $
-                                {finalTotal.toFixed(2)}
+                                {isSubmitting
+                                    ? "Processing..."
+                                    : `Pay $${subtotal.toFixed(2)}`}
                             </button>
                         </div>
                     </form>
