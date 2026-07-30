@@ -21,21 +21,29 @@ public class PaymentService {
     private final BookingRepository bookingRepository;
     private final PaymentCardRepository paymentCardRepository;
     private final BookingFinalizationService bookingFinalizationService;
+    private final BookingConfirmationService bookingConfirmationService;
     private final PaymentRepository paymentRepository;
 
     public PaymentService(
             BookingRepository bookingRepository,
             PaymentCardRepository paymentCardRepository,
             BookingFinalizationService bookingFinalizationService,
+            BookingConfirmationService bookingConfirmationService,
             PaymentRepository paymentRepository) {
 
         this.bookingRepository = bookingRepository;
         this.paymentCardRepository = paymentCardRepository;
-        this.bookingFinalizationService = bookingFinalizationService;
+        this.bookingFinalizationService =
+                bookingFinalizationService;
+        this.bookingConfirmationService =
+                bookingConfirmationService;
         this.paymentRepository = paymentRepository;
     }
 
-    public PaymentResponse pay(Integer bookingId, PaymentRequest request) {
+    public PaymentResponse pay(
+            Integer bookingId,
+            PaymentRequest request) {
+
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -113,6 +121,12 @@ public class PaymentService {
                         paymentReference
                 );
 
+        if (approved) {
+            bookingConfirmationService.sendConfirmation(
+                    payment
+            );
+        }
+
         return new PaymentResponse(payment);
     }
 
@@ -124,8 +138,8 @@ public class PaymentService {
     }
 
     public PaymentResponse getPaymentById(
-            Integer paymentId
-    ) {
+            Integer paymentId) {
+
         Payment payment = paymentRepository
                 .findById(paymentId)
                 .orElseThrow(() ->
@@ -139,8 +153,8 @@ public class PaymentService {
     }
 
     public PaymentResponse getPaymentByBookingId(
-            Integer bookingId
-    ) {
+            Integer bookingId) {
+
         Payment payment = paymentRepository
                 .findByBookingBookingId(bookingId)
                 .orElseThrow(() ->
@@ -155,8 +169,8 @@ public class PaymentService {
 
     public PaymentResponse updatePaymentStatus(
             Integer paymentId,
-            String paymentStatus
-    ) {
+            String paymentStatus) {
+
         Payment payment = paymentRepository
                 .findById(paymentId)
                 .orElseThrow(() ->
@@ -204,8 +218,8 @@ public class PaymentService {
 
     private boolean mockGatewayCharge(
             String cardNumber,
-            String cvv
-    ) {
+            String cvv) {
+
         String digitsOnly =
                 cardNumber.replaceAll("\\D", "");
 
@@ -218,8 +232,8 @@ public class PaymentService {
 
     private String requiredText(
             String value,
-            String errorMessage
-    ) {
+            String errorMessage) {
+
         if (value == null || value.trim().isEmpty()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
