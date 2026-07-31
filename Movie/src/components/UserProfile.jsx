@@ -1126,6 +1126,7 @@ export default function UserProfile() {
                                 : "+ Add New Card"}
                         </button>
                     </motion.div>
+                    </div> {/* End grid */}
                     <motion.div
     className="bg-[#121212] p-6 rounded-xl border border-[#003D1A] mt-8"
     initial={{ opacity: 0, y: 20 }}
