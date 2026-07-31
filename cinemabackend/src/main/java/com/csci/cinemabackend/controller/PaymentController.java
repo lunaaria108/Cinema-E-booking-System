@@ -13,11 +13,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Mock payment gateway. Every endpoint verifies the caller via their
- * session token: paying/viewing is restricted to the booking's owner (or
- * an admin), and the admin-only management endpoints require admin.
- */
 @RestController
 @RequestMapping("/api/payments")
 @CrossOrigin(origins = "http://localhost:5173")

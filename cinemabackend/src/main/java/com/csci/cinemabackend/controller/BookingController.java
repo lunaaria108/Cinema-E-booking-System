@@ -15,13 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Seat browsing and the reserve ("continue to payment") step of checkout.
- *
- * Every endpoint that touches a specific user's bookings verifies the
- * caller via their session token rather than trusting a client-supplied
- * user/booking id.
- */
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:5173")
@@ -35,11 +28,6 @@ public class BookingController {
         this.authService = authService;
     }
 
-    /**
-     * GET /api/showtimes/{showtimeId}/seats
-     *
-     * Seat availability is not user-specific, so no auth check is needed.
-     */
     @GetMapping("/showtimes/{showtimeId}/seats")
     public ResponseEntity<?> getSeats(@PathVariable Integer showtimeId) {
         try {
@@ -50,12 +38,6 @@ public class BookingController {
         }
     }
 
-    /**
-     * POST /api/checkout/confirm
-     *
-     * The booking is always created for the authenticated caller - there
-     * is no client-supplied userId to spoof.
-     */
     @PostMapping("/checkout/confirm")
     public ResponseEntity<?> confirmCheckout(
             @RequestHeader("Authorization") String authorizationHeader,
@@ -73,9 +55,6 @@ public class BookingController {
         }
     }
 
-    /**
-     * GET /api/bookings/{bookingId}
-     */
     @GetMapping("/bookings/{bookingId}")
     public ResponseEntity<?> getBooking(
             @RequestHeader("Authorization") String authorizationHeader,
@@ -89,9 +68,6 @@ public class BookingController {
         }
     }
 
-    /**
-     * GET /api/users/{userId}/bookings
-     */
     @GetMapping("/users/{userId}/bookings")
     public ResponseEntity<?> getBookingsForUser(
             @RequestHeader("Authorization") String authorizationHeader,

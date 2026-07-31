@@ -31,11 +31,6 @@ import com.csci.cinemabackend.dto.ChangeEmailRequest;
 
 /**
  * Handles user profile, favorite movie, and payment card requests.
- *
- * Every endpoint here is keyed by a userId path variable, so each one
- * verifies (via the session token) that the caller either IS that user
- * or is an admin - a client can no longer read/modify another user's
- * data just by passing a different id.
  */
 @RestController
 @RequestMapping("/api/users")

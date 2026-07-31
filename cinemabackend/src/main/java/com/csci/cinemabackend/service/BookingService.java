@@ -277,11 +277,6 @@ public class BookingService {
         }
     }
 
-    /**
-     * Fetches a booking, but only for its owner (or an admin). Returns 404
-     * rather than 403 on a mismatch so booking ids can't be enumerated by
-     * a caller who isn't authorized to see them.
-     */
     public BookingResponse getBooking(Integer bookingId, User caller) {
         Booking booking = bookingRepository
                 .findById(bookingId)

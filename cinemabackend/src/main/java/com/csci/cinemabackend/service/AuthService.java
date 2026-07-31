@@ -66,12 +66,6 @@ public class AuthService {
                 return resolveSession(token).getUser().getIsAdmin();
         }
 
-        /**
-         * Resolves the caller identity from a Bearer token and returns the
-         * associated user. Used by controllers to verify that a request's
-         * path/body user matches who is actually making the request,
-         * instead of trusting a client-supplied id.
-         */
         public User requireUser(String authorizationHeader) {
                 if (authorizationHeader == null
                                 || !authorizationHeader.startsWith("Bearer ")) {
@@ -94,9 +88,6 @@ public class AuthService {
                 return resolveSession(token).getUser();
         }
 
-        /**
-         * Throws 403 unless the resolved caller is the given user or an admin.
-         */
         public void requireSelfOrAdmin(User caller, Integer userId) {
                 if (caller.getIsAdmin()) {
                         return;

@@ -208,10 +208,6 @@ public class PaymentService {
         return new PaymentResponse(payment);
     }
 
-    /**
-     * Throws 404 (not 403) on a mismatch so booking/payment ids can't be
-     * enumerated by a caller who isn't authorized to see them.
-     */
     private void requireOwnerOrAdmin(Booking booking, User caller) {
         if (Boolean.TRUE.equals(caller.getIsAdmin())) {
             return;
