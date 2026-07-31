@@ -2,6 +2,7 @@ package com.csci.cinemabackend.service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.Comparator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.csci.cinemabackend.dto.AdminCreateMovieRequest;
 import com.csci.cinemabackend.dto.AdminScheduleShowtimeRequest;
+import com.csci.cinemabackend.dto.AdminShowtimeResponse;
 import com.csci.cinemabackend.model.Genre;
 import com.csci.cinemabackend.model.Movie;
 import com.csci.cinemabackend.model.Showtime;
@@ -48,6 +50,25 @@ public class AdminService {
         requireAdmin(authorizationHeader);
         return movieRepository.findAll();
     }
+
+        public List<AdminShowtimeResponse> getShowtimes(String authorizationHeader) {
+        requireAdmin(authorizationHeader);
+
+        return showtimeRepository.findAll()
+            .stream()
+            .sorted(
+                Comparator.comparing(Showtime::getShowDate)
+                    .thenComparing(Showtime::getShowTime)
+                    .thenComparing(Showtime::getHallNumber))
+            .map(showtime -> new AdminShowtimeResponse(
+                showtime.getShowtimeId(),
+                showtime.getMovie() != null ? showtime.getMovie().getMovieId() : null,
+                showtime.getMovie() != null ? showtime.getMovie().getMovieTitle() : "Unknown Movie",
+                showtime.getHallNumber(),
+                showtime.getShowDate(),
+                showtime.getShowTime()))
+            .toList();
+        }
 
     public Movie createMovie(String authorizationHeader, AdminCreateMovieRequest request) {
         requireAdmin(authorizationHeader);

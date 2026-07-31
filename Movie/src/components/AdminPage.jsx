@@ -13,6 +13,7 @@ export default function AdminPage() {
 
   const [genres, setGenres] = useState([]);
   const [movies, setMovies] = useState([]);
+  const [showtimes, setShowtimes] = useState([]);
   const [isLoadingAdminData, setIsLoadingAdminData] = useState(false);
   const [adminMessage, setAdminMessage] = useState("");
   const [adminError, setAdminError] = useState("");
@@ -84,7 +85,7 @@ export default function AdminPage() {
       setIsLoadingAdminData(true);
       setAdminError("");
 
-      const [genreData, movieData] = await Promise.all([
+      const [genreData, movieData, showtimeData] = await Promise.all([
         fetchJsonWithMessage("http://localhost:8080/api/admin/genres", {
           headers: {
             Authorization: `Bearer ${auth.token}`,
@@ -95,10 +96,16 @@ export default function AdminPage() {
             Authorization: `Bearer ${auth.token}`,
           },
         }),
+        fetchJsonWithMessage("http://localhost:8080/api/admin/showtimes", {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }),
       ]);
 
       setGenres(Array.isArray(genreData) ? genreData : []);
       setMovies(Array.isArray(movieData) ? movieData : []);
+      setShowtimes(Array.isArray(showtimeData) ? showtimeData : []);
     } catch (error) {
       setAdminError(
         error.message || "Unable to load admin catalog data."
@@ -255,6 +262,8 @@ export default function AdminPage() {
         }
       );
 
+      await loadAdminData();
+
       setShowtimeForm({
         movieId: "",
         hallNumber: "",
@@ -323,6 +332,29 @@ export default function AdminPage() {
     setOpenMenu(menuId);
     setActiveSection(optionId);
   };
+
+  const selectedHallNumber = Number(showtimeForm.hallNumber);
+
+  const normalizedShowTime =
+    showtimeForm.showTime && showtimeForm.showTime.length === 5
+      ? `${showtimeForm.showTime}:00`
+      : showtimeForm.showTime;
+
+  const conflictingShowtime = showtimes.find((showtime) => {
+    return (
+      Number(showtime.hallNumber) === selectedHallNumber &&
+      showtime.showDate === showtimeForm.showDate &&
+      showtime.showTime === normalizedShowTime
+    );
+  });
+
+  const sameDayReservations = showtimes.filter((showtime) => {
+    if (!showtimeForm.showDate) {
+      return true;
+    }
+
+    return showtime.showDate === showtimeForm.showDate;
+  });
 
   const renderSection = () => {
     switch (activeSection) {
@@ -634,11 +666,42 @@ export default function AdminPage() {
               <button
                 type="submit"
                 className="w-fit rounded bg-[#003D1A] px-5 py-2 text-[#D4AF37]"
-                disabled={!canManageCatalog}
+                disabled={!canManageCatalog || Boolean(conflictingShowtime)}
               >
                 Schedule Showtime
               </button>
+
+              {conflictingShowtime && (
+                <p className="rounded border border-red-700 bg-red-950 p-3 text-red-200">
+                  Hall {conflictingShowtime.hallNumber} is already reserved on {conflictingShowtime.showDate} at {conflictingShowtime.showTime} for {conflictingShowtime.movieTitle}.
+                </p>
+              )}
             </form>
+
+            <div className="mt-6 rounded border border-[#2a2a2a] bg-[#0f0f0f] p-5">
+              <h2 className="text-xl font-semibold text-[#D4AF37]">
+                Existing Hall Reservations
+              </h2>
+
+              {sameDayReservations.length === 0 && (
+                <p className="mt-3 text-gray-300">
+                  No reservations found for the selected date.
+                </p>
+              )}
+
+              {sameDayReservations.length > 0 && (
+                <ul className="mt-3 space-y-2 text-gray-200">
+                  {sameDayReservations.map((showtime) => (
+                    <li
+                      key={showtime.showtimeId}
+                      className="rounded border border-[#1f1f1f] bg-[#141414] p-3"
+                    >
+                      Hall {showtime.hallNumber} | {showtime.showDate} {showtime.showTime} | {showtime.movieTitle}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         );
 

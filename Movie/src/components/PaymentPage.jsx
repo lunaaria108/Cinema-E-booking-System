@@ -14,6 +14,8 @@ import {
 } from "react-router-dom";
 
 export default function PaymentPage() {
+    const TAX_RATE = 0.07;
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -78,18 +80,24 @@ export default function PaymentPage() {
         },
     ];
 
-    const subtotal = Number(totalPrice) || 0;
+    const subtotal = tickets.reduce((sum, ticket) => {
+        return sum + Number(ticket?.price || 0);
+    }, 0);
+
+    const taxAmount = Number((subtotal * TAX_RATE).toFixed(2));
+
+    const subtotalWithTax = Number((subtotal + taxAmount).toFixed(2));
 
     /*
      * SAVE10 is the mock promotion.
      */
     const discountAmount = appliedPromotion
-        ? subtotal * 0.1
+        ? subtotalWithTax * 0.1
         : 0;
 
     const finalTotal = Math.max(
         0,
-        subtotal - discountAmount
+        subtotalWithTax - discountAmount
     );
 
     const handleChange = (event) => {
@@ -568,6 +576,13 @@ export default function PaymentPage() {
                                     {subtotal.toFixed(
                                         2
                                     )}
+                                </span>
+                            </div>
+
+                            <div className="flex justify-between">
+                                <span>Tax (7%):</span>
+                                <span>
+                                    ${taxAmount.toFixed(2)}
                                 </span>
                             </div>
 

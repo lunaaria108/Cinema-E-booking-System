@@ -20,6 +20,8 @@ import {
 } from "react-router-dom";
 
 export default function CheckoutPage() {
+    const TAX_RATE = 0.07;
+
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -318,6 +320,17 @@ export default function CheckoutPage() {
         .filter(Boolean)
         .join(", ");
 
+    const checkoutSubtotal =
+        tickets.reduce((sum, ticket) => {
+            return sum + Number(ticket?.price || 0);
+        }, 0);
+
+    const estimatedTax =
+        Number((checkoutSubtotal * TAX_RATE).toFixed(2));
+
+    const estimatedTotal =
+        Number((checkoutSubtotal + estimatedTax).toFixed(2));
+
     return (
         <div className="min-h-screen bg-[#0b0b0b] text-white">
             <NavBar
@@ -413,17 +426,22 @@ export default function CheckoutPage() {
                             )}
                         </div>
 
-                        <p className="font-bold">
-                            Estimated Subtotal: $
-                            {Number(
-                                totalPrice
-                            ).toFixed(2)}
-                        </p>
+                        <div className="w-full max-w-sm space-y-1 text-left">
+                            <p className="font-bold">
+                                Estimated Subtotal: ${checkoutSubtotal.toFixed(2)}
+                            </p>
+
+                            <p>
+                                Estimated Tax (7%): ${estimatedTax.toFixed(2)}
+                            </p>
+
+                            <p className="font-bold text-[#D4AF37]">
+                                Estimated Total: ${estimatedTotal.toFixed(2)}
+                            </p>
+                        </div>
 
                         <p className="text-center text-sm text-gray-400">
-                            Tax and booking fees will
-                            be included in the final
-                            payment total.
+                            Final total is confirmed by the backend at checkout.
                         </p>
                     </div>
 

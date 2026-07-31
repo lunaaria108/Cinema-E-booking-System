@@ -2,6 +2,7 @@ package com.csci.cinemabackend.controller;
 
 import com.csci.cinemabackend.dto.AdminCreateMovieRequest;
 import com.csci.cinemabackend.dto.AdminScheduleShowtimeRequest;
+import com.csci.cinemabackend.dto.AdminShowtimeResponse;
 import com.csci.cinemabackend.model.Genre;
 import com.csci.cinemabackend.model.Movie;
 import com.csci.cinemabackend.model.Showtime;
@@ -38,6 +39,13 @@ public class AdminController {
             @RequestHeader("Authorization") String authorizationHeader) {
 
         return ResponseEntity.ok(adminService.getMovies(authorizationHeader));
+    }
+
+    @GetMapping("/showtimes")
+    public ResponseEntity<List<AdminShowtimeResponse>> getShowtimes(
+            @RequestHeader("Authorization") String authorizationHeader) {
+
+        return ResponseEntity.ok(adminService.getShowtimes(authorizationHeader));
     }
 
     @PostMapping("/movies")
