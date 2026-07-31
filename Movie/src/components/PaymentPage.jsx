@@ -5,6 +5,8 @@ import { clearAuthState, loadAuthState } from "../utils/authStorage";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+const TAX_RATE = 0.07;
+
 export default function PaymentPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -20,6 +22,9 @@ export default function PaymentPage() {
         selectedSeats = [],
         totalTickets = 0,
         totalPrice = 0,
+        subtotal: passedSubtotal,
+        taxAmount: passedTaxAmount,
+        totalWithTax: passedTotalWithTax,
         tickets = [],
     } = location.state || {};
 
@@ -48,7 +53,17 @@ export default function PaymentPage() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const subtotal = Number(totalPrice) || 0;
+    const subtotal = Number.isFinite(Number(passedSubtotal))
+        ? Number(passedSubtotal)
+        : Number(totalPrice) || 0;
+
+    const taxAmount = Number.isFinite(Number(passedTaxAmount))
+        ? Number(passedTaxAmount)
+        : Number((subtotal * TAX_RATE).toFixed(2));
+
+    const totalWithTax = Number.isFinite(Number(passedTotalWithTax))
+        ? Number(passedTotalWithTax)
+        : Number((subtotal + taxAmount).toFixed(2));
 
     const handleChange = (event) => {
         const {
@@ -641,12 +656,22 @@ export default function PaymentPage() {
                                 </span>
                             </div>
 
+                            <div className="flex justify-between">
+                                <span>Tax (7%):</span>
+                                <span>
+                                    $
+                                    {taxAmount.toFixed(
+                                        2
+                                    )}
+                                </span>
+                            </div>
+
                             <div className="flex justify-between border-t border-[#4c6d51] pt-3 text-xl font-bold text-[#D4AF37]">
                                 <span>Total:</span>
 
                                 <span>
                                     $
-                                    {subtotal.toFixed(
+                                    {totalWithTax.toFixed(
                                         2
                                     )}
                                 </span>
@@ -664,7 +689,7 @@ export default function PaymentPage() {
                             >
                                 {isSubmitting
                                     ? "Processing..."
-                                    : `Pay $${subtotal.toFixed(2)}`}
+                                    : `Pay $${totalWithTax.toFixed(2)}`}
                             </button>
                         </div>
                     </form>

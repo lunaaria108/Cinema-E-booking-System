@@ -8,6 +8,8 @@ import AlertModal from "./AlertModal";
 import ReceiptEmailModal from "./ReceiptEmailModal";
 import logo from "../assets/logo.jpg";
 
+const TAX_RATE = 0.07;
+
 export default function CheckoutPage(){
     const location = useLocation();
     const { movie,
@@ -35,6 +37,9 @@ export default function CheckoutPage(){
     const [showReceiptEmailModal, setShowReceiptEmailModal] = useState(false);
 
     const [receiptEmail, setReceiptEmail] = useState("");
+    const subtotal = Number(totalPrice) || 0;
+    const taxAmount = Number((subtotal * TAX_RATE).toFixed(2));
+    const totalWithTax = Number((subtotal + taxAmount).toFixed(2));
 
     const handleLogout = async () => {
         if (auth.token) {
@@ -124,6 +129,9 @@ export default function CheckoutPage(){
                     selectedSeats,
                     totalTickets,
                     totalPrice,
+                    subtotal,
+                    taxAmount,
+                    totalWithTax: Number(responseData?.totalPrice ?? totalWithTax),
                     tickets,
                 },
             });
@@ -240,7 +248,9 @@ export default function CheckoutPage(){
                             ))}
                         </div>
 
-                        <p className="font-bold">Total Price: ${Number(totalPrice).toFixed(2)}</p>
+                        <p>Subtotal: ${subtotal.toFixed(2)}</p>
+                        <p>Tax (7%): ${taxAmount.toFixed(2)}</p>
+                        <p className="font-bold">Total Price: ${totalWithTax.toFixed(2)}</p>
                     </div>
                     
                     <div className="text-center">
