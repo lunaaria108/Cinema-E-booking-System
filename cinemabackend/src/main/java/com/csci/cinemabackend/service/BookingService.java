@@ -42,7 +42,8 @@ public class BookingService {
             Map.of(
                 "Adult", new BigDecimal("10.00"),
                 "Senior", new BigDecimal("7.00"),
-                "Child", new BigDecimal("5.00")
+                                "Child", new BigDecimal("5.00"),
+                                "Student", new BigDecimal("0.00")
             );
 
   private static final BigDecimal BOOKING_FEE = 

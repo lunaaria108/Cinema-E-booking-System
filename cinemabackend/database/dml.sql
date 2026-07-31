@@ -297,7 +297,8 @@ INSERT INTO TicketPrice
 VALUES
 ('Adult', 12.00),
 ('Senior', 9.00),
-('Child', 8.00);
+('Child', 8.00),
+('Student', 0.00);
 
 
 INSERT INTO BookingFee

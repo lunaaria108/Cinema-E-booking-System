@@ -20,6 +20,7 @@ public class BookingResponse {
     private final String movieTitle;
     private final LocalDate showDate;
     private final LocalTime showTime;
+    private final Integer hallNumber;
 
     public BookingResponse(Booking booking) {
         this.bookingId = booking.getBookingId();
@@ -27,6 +28,7 @@ public class BookingResponse {
         this.movieTitle = booking.getShowtime().getMovie().getMovieTitle();
         this.showDate = booking.getShowtime().getShowDate();
         this.showTime = booking.getShowtime().getShowTime();
+        this.hallNumber = booking.getShowtime().getHallNumber();
         this.status = booking.getStatus();
         this.totalPrice = booking.getTotalPrice();
         this.bookingDate = booking.getBookingDate();
@@ -72,5 +74,9 @@ public class BookingResponse {
 
     public LocalTime getShowTime() {
     return showTime;
+    }
+
+    public Integer getHallNumber() {
+    return hallNumber;
     }
 }

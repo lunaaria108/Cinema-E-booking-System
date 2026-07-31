@@ -113,7 +113,7 @@ CREATE TABLE Promotion (
 );
 CREATE TABLE TicketPrice (
     ticket_price_id SERIAL PRIMARY KEY,
-    ticket_type VARCHAR(10) NOT NULL UNIQUE CHECK (ticket_type IN ('Adult', 'Senior', 'Child')),
+    ticket_type VARCHAR(10) NOT NULL UNIQUE CHECK (ticket_type IN ('Adult', 'Senior', 'Child', 'Student')),
     price DECIMAL(6, 2) NOT NULL,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -142,7 +142,7 @@ CREATE TABLE Ticket (
     booking_id INT NOT NULL,
     showtime_id INT NOT NULL,
     seat_label VARCHAR(10) NOT NULL,
-    ticket_type VARCHAR(10) NOT NULL CHECK (ticket_type IN ('Adult', 'Senior', 'Child')),
+    ticket_type VARCHAR(10) NOT NULL CHECK (ticket_type IN ('Adult', 'Senior', 'Child', 'Student')),
     price DECIMAL(6, 2) NOT NULL,
     CONSTRAINT fk_ticket_booking FOREIGN KEY (booking_id) REFERENCES Booking(booking_id) ON DELETE CASCADE,
     CONSTRAINT fk_ticket_showtime FOREIGN KEY (showtime_id) REFERENCES Showtime(showtime_id) ON DELETE RESTRICT,

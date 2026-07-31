@@ -27,6 +27,11 @@ function HomePage() {
   const [isSearching, setIsSearching] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [isFiltered, setIsFiltered] = useState(false);
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [activeFilters, setActiveFilters] = useState({
+    genre: "",
+    showtime: "",
+  });
 
   const [showLogIn, setShowLogIn] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -238,57 +243,71 @@ function HomePage() {
 
   const handleSearch = async (searchTerm) => {
     const trimmedSearchTerm = searchTerm.trim();
+    const hasActiveFilters = Boolean(
+      activeFilters.genre || activeFilters.showtime
+    );
+
+    setActiveSearchTerm(trimmedSearchTerm);
 
     if (!trimmedSearchTerm) {
-      setIsSearching(false);
-      setIsFiltered(false);
-      setView("featured");
-      await loadMovies();
+      if (!hasActiveFilters) {
+        setIsSearching(false);
+        setIsFiltered(false);
+        setView("featured");
+        await loadMovies();
+        return;
+      }
+
+      await applyMovieFilters({
+        title: "",
+        genre: activeFilters.genre,
+        showtime: activeFilters.showtime,
+      });
+
+      setIsSearching(true);
+      setIsFiltered(true);
       return;
     }
 
-    try {
-      setIsLoadingMovies(true);
-      setMovieError("");
-      setIsSearching(true);
+    await applyMovieFilters({
+      title: trimmedSearchTerm,
+      genre: activeFilters.genre,
+      showtime: activeFilters.showtime,
+    });
 
-      const data = await fetchJson(
-        `http://localhost:8080/api/movies/search?title=${encodeURIComponent(
-          trimmedSearchTerm
-        )}`
-      );
-
-      const movies = Array.isArray(data) ? data : [];
-
-      setFeaturedMovies(movies);
-      setComingSoonMovies([]);
-    } catch (error) {
-      console.error("Movie search failed:", error);
-      setMovieError("Unable to search for movies.");
-      setFeaturedMovies([]);
-      setComingSoonMovies([]);
-    } finally {
-      setIsLoadingMovies(false);
-    }
+    setIsSearching(true);
+    setIsFiltered(hasActiveFilters);
   };
 
-  const handleFilter = async (genre) => {
+  const applyMovieFilters = async ({
+    title = "",
+    genre = "",
+    showtime = "",
+  }) => {
     try {
       setIsLoadingMovies(true);
       setMovieError("");
 
+      const queryParams = new URLSearchParams();
+
+      if (title.trim()) {
+        queryParams.set("title", title.trim());
+      }
+
+      if (genre.trim()) {
+        queryParams.set("genre", genre.trim());
+      }
+
+      if (showtime.trim()) {
+        queryParams.set("showtime", showtime.trim());
+      }
+
       const data = await fetchJson(
-        `http://localhost:8080/api/movies/filter?genre=${encodeURIComponent(
-          genre
-        )}`
+        `http://localhost:8080/api/movies/filter?${queryParams.toString()}`
       );
 
       setFeaturedMovies(Array.isArray(data) ? data : []);
       setComingSoonMovies([]);
-
-      setIsSearching(true);
-      setIsFiltered(true);
-      setShowFilterModal(false);
     } catch (error) {
       console.error("Filtering movies failed:", error);
       setMovieError("Unable to filter movies.");
@@ -299,7 +318,39 @@ function HomePage() {
     }
   };
 
+  const handleFilter = async ({ genre = "", showtime = "" }) => {
+    setActiveFilters({ genre, showtime });
+
+    const hasFilter = Boolean(genre || showtime);
+    const hasSearch = Boolean(activeSearchTerm);
+
+    if (!hasFilter && !hasSearch) {
+      setIsFiltered(false);
+      setIsSearching(false);
+      setView("featured");
+      await loadMovies();
+      setShowFilterModal(false);
+      return;
+    }
+
+    try {
+      await applyMovieFilters({
+        title: activeSearchTerm,
+        genre,
+        showtime,
+      });
+
+      setIsSearching(true);
+      setIsFiltered(hasFilter);
+      setShowFilterModal(false);
+    } catch {
+      // Errors are handled in applyMovieFilters.
+    }
+  };
+
   const handleBrowseMovies = async () => {
+    setActiveSearchTerm("");
+    setActiveFilters({ genre: "", showtime: "" });
     setIsFiltered(false);
     setIsSearching(false);
     setView("featured");

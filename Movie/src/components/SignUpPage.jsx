@@ -67,8 +67,18 @@ export default function SignUpPage() {
         promoOptIn: formData.get("promoOptIn") === "on",
         };
 
-        if (!user.firstname || !user.lastname || !user.username || !user.email || !user.password) {
+        if (!user.firstname || !user.lastname || !user.username || !user.email) {
             setAlertMessage("Please fill out all required fields.");
+            return;
+        }
+
+        if (!String(user.password || "").trim()) {
+            setAlertMessage("Please enter a password.");
+            return;
+        }
+
+        if (!String(user.confirmPassword || "").trim()) {
+            setAlertMessage("Please confirm your password.");
             return;
         }
 

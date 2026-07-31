@@ -51,41 +51,6 @@ export default function UserProfile() {
     const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
     const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
-    const [orderHistory] = useState([
-        {
-            bookingId: 1042,
-            movieTitle: "The Dark Knight",
-            showDate: "July 18, 2026",
-            showTime: "7:30 PM",
-            theater: "Theater 4",
-            seats: ["D5", "D6"],
-            ticketCount: 2,
-            totalPrice: 27.98,
-            status: "Completed",
-        },
-        {
-            bookingId: 1037,
-            movieTitle: "Interstellar",
-            showDate: "July 10, 2026",
-            showTime: "6:15 PM",
-            theater: "Theater 2",
-            seats: ["F8"],
-            ticketCount: 1,
-            totalPrice: 13.99,
-            status: "Completed",
-        },
-        {
-            bookingId: 1029,
-            movieTitle: "Spider-Man: Across the Spider-Verse",
-            showDate: "June 28, 2026",
-            showTime: "8:00 PM",
-            theater: "Theater 6",
-            seats: ["C3", "C4", "C5"],
-            ticketCount: 3,
-            totalPrice: 39.97,
-            status: "Cancelled",
-        },
-    ]);
 
     useEffect(() => {
     if (!auth.userId) return;
@@ -106,7 +71,7 @@ export default function UserProfile() {
             }
 
             const data = await response.json();
-            setOrders(data);
+            setOrders(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error(error);
         }
@@ -581,6 +546,73 @@ export default function UserProfile() {
             );
             setAlertMessage(error.message);
         }
+    };
+
+    const sortedOrders = [...orders].sort((leftOrder, rightOrder) => {
+        const leftDate = new Date(leftOrder?.bookingDate || 0).getTime();
+        const rightDate = new Date(rightOrder?.bookingDate || 0).getTime();
+        return rightDate - leftDate;
+    });
+
+    const formatShowDate = (showDate) => {
+        if (!showDate) {
+            return "Date unavailable";
+        }
+
+        const parsedDate = new Date(`${showDate}T00:00:00`);
+
+        if (Number.isNaN(parsedDate.getTime())) {
+            return showDate;
+        }
+
+        return parsedDate.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+        });
+    };
+
+    const formatShowTime = (showTime) => {
+        if (!showTime) {
+            return "Time unavailable";
+        }
+
+        const parsedTime = new Date(`1970-01-01T${showTime}`);
+
+        if (Number.isNaN(parsedTime.getTime())) {
+            return showTime;
+        }
+
+        return parsedTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+        });
+    };
+
+    const normalizeStatus = (status) => {
+        if (!status) {
+            return "Unknown";
+        }
+
+        if (status === "Paid") {
+            return "Completed";
+        }
+
+        return status;
+    };
+
+    const getStatusClassName = (status) => {
+        const normalizedStatus = normalizeStatus(status);
+
+        if (normalizedStatus === "Completed") {
+            return "bg-green-900 text-green-300";
+        }
+
+        if (normalizedStatus === "Cancelled") {
+            return "bg-red-900 text-red-300";
+        }
+
+        return "bg-yellow-900 text-yellow-300";
     };
 
     if (isLoading) {
@@ -1172,11 +1204,11 @@ export default function UserProfile() {
                             </h2>
 
                             <span className="text-sm text-gray-400">
-                                {orderHistory.length} Orders
+                                {sortedOrders.length} Orders
                             </span>
                         </div>
 
-                        {orderHistory.length === 0 ? (
+                        {sortedOrders.length === 0 ? (
                             <div className="bg-black border border-[#003D1A] rounded-lg p-6 text-center">
                                 <p className="text-gray-400">
                                     You have not placed any orders yet.
@@ -1192,7 +1224,20 @@ export default function UserProfile() {
                             </div>
                         ) : (
                             <div className="flex flex-col gap-4">
-                                {orderHistory.map((order) => (
+                                {sortedOrders.map((order) => {
+                                    const seats = Array.isArray(order?.tickets)
+                                        ? order.tickets
+                                            .map((ticket) => ticket?.seatLabel)
+                                            .filter(Boolean)
+                                        : [];
+
+                                    const ticketCount = Array.isArray(order?.tickets)
+                                        ? order.tickets.length
+                                        : 0;
+
+                                    const statusLabel = normalizeStatus(order?.status);
+
+                                    return (
                                     <div
                                         key={order.bookingId}
                                         className="bg-black border border-[#003D1A] rounded-lg p-4"
@@ -1205,15 +1250,9 @@ export default function UserProfile() {
                                                     </h3>
 
                                                     <span
-                                                        className={`text-xs font-bold px-2 py-1 rounded ${
-                                                            order.status === "Completed"
-                                                                ? "bg-green-900 text-green-300"
-                                                                : order.status === "Cancelled"
-                                                                ? "bg-red-900 text-red-300"
-                                                                : "bg-yellow-900 text-yellow-300"
-                                                        }`}
+                                                        className={`text-xs font-bold px-2 py-1 rounded ${getStatusClassName(order?.status)}`}
                                                     >
-                                                        {order.status}
+                                                        {statusLabel}
                                                     </span>
                                                 </div>
 
@@ -1222,21 +1261,23 @@ export default function UserProfile() {
                                                 </p>
 
                                                 <p className="mt-3 text-gray-200">
-                                                    {order.showDate} at{" "}
-                                                    {order.showTime}
+                                                    {formatShowDate(order?.showDate)} at{" "}
+                                                    {formatShowTime(order?.showTime)}
                                                 </p>
 
                                                 <p className="text-gray-400">
-                                                    {order.theater}
+                                                    {order?.hallNumber
+                                                        ? `Theater ${order.hallNumber}`
+                                                        : "Theater unavailable"}
                                                 </p>
 
                                                 <p className="text-gray-400">
-                                                    Seats: {order.seats.join(", ")}
+                                                    Seats: {seats.length > 0 ? seats.join(", ") : "N/A"}
                                                 </p>
 
                                                 <p className="text-gray-400">
-                                                    {order.ticketCount}{" "}
-                                                    {order.ticketCount === 1
+                                                    {ticketCount}{" "}
+                                                    {ticketCount === 1
                                                         ? "Ticket"
                                                         : "Tickets"}
                                                 </p>
@@ -1248,7 +1289,7 @@ export default function UserProfile() {
                                                 </p>
 
                                                 <p className="text-2xl font-bold text-[#D4AF37]">
-                                                    ${order.totalPrice.toFixed(2)}
+                                                    ${Number(order?.totalPrice || 0).toFixed(2)}
                                                 </p>
 
                                                 <button
@@ -1265,7 +1306,8 @@ export default function UserProfile() {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </motion.div>

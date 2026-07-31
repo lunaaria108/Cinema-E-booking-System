@@ -27,7 +27,7 @@ export default function LoginModal({
             setAlertMessage("Please enter your email or username.");
             return;
         }
-        if (!payload.password) {
+        if (!payload.password.trim()) {
             setAlertMessage("Please enter your password.");
             return;
         }

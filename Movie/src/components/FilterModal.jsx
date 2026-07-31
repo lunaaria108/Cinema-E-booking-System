@@ -2,10 +2,14 @@ import { useState } from 'react';
 
 export default function FilterModal({ onClose, onApplyFilter }) {
     const [selectedGenre, setSelectedGenre] = useState('');
+    const [selectedShowtime, setSelectedShowtime] = useState('');
 
     const handleApplyFilter = () => {
-        if (selectedGenre) {
-            onApplyFilter(selectedGenre);
+        if (selectedGenre || selectedShowtime) {
+            onApplyFilter({
+                genre: selectedGenre,
+                showtime: selectedShowtime,
+            });
             onClose();
         }
     };
@@ -26,12 +30,12 @@ export default function FilterModal({ onClose, onApplyFilter }) {
                         <option value="Comedy">Comedy</option>
                         <option value="Drama">Drama</option>
                         <option value="Horror">Horror</option>
-                        <option value="Sci-Fi">Sci-Fi</option>
+                        <option value="Science Fiction">Science Fiction</option>
                     </select>
                     <select
                         className="bg-[#121212] text-white border border-[#D4AF37] rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                        value={selectedGenre}
-                        onChange={(e) => setSelectedGenre(e.target.value)}
+                        value={selectedShowtime}
+                        onChange={(e) => setSelectedShowtime(e.target.value)}
                     >
                         <option value="">Select Showtime</option>
                         <option value="Morning">Morning</option>
@@ -42,7 +46,7 @@ export default function FilterModal({ onClose, onApplyFilter }) {
                 </div>
                 
                 <button
-                    disabled={!selectedGenre}
+                    disabled={!selectedGenre && !selectedShowtime}
                     onClick={handleApplyFilter}
                     className="bg-[#003D1A] text-[#D4AF37] hover:bg-[#005A2A] py-2 px-4 rounded-md mt-6 w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 >
