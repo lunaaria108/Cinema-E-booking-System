@@ -12,6 +12,7 @@ import java.time.LocalTime;
 public class BookingResponse {
 
     private final Integer bookingId;
+    private final Integer userId;
     private final Integer showtimeId;
     private final String status;
     private final BigDecimal totalPrice;
@@ -24,6 +25,7 @@ public class BookingResponse {
 
     public BookingResponse(Booking booking) {
         this.bookingId = booking.getBookingId();
+        this.userId = booking.getUser().getUserId();
         this.showtimeId = booking.getShowtime().getShowtimeId();
         this.movieTitle = booking.getShowtime().getMovie().getMovieTitle();
         this.showDate = booking.getShowtime().getShowDate();
@@ -43,6 +45,10 @@ public class BookingResponse {
 
     public Integer getBookingId() {
         return bookingId;
+    }
+
+    public Integer getUserId() {
+        return userId;
     }
 
     public Integer getShowtimeId() {

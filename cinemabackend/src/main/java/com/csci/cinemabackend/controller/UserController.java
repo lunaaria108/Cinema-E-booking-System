@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,14 +13,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.csci.cinemabackend.dto.PaymentCardRequest;
 import com.csci.cinemabackend.dto.UpdateProfileRequest;
 import com.csci.cinemabackend.model.FavoriteMovie;
 import com.csci.cinemabackend.model.PaymentCard;
 import com.csci.cinemabackend.model.User;
+import com.csci.cinemabackend.service.AuthService;
 import com.csci.cinemabackend.service.FavoriteMovieService;
 import com.csci.cinemabackend.service.PaymentCardService;
 import com.csci.cinemabackend.service.UserService;
@@ -27,6 +31,11 @@ import com.csci.cinemabackend.dto.ChangeEmailRequest;
 
 /**
  * Handles user profile, favorite movie, and payment card requests.
+ *
+ * Every endpoint here is keyed by a userId path variable, so each one
+ * verifies (via the session token) that the caller either IS that user
+ * or is an admin - a client can no longer read/modify another user's
+ * data just by passing a different id.
  */
 @RestController
 @RequestMapping("/api/users")
@@ -36,15 +45,18 @@ public class UserController {
     private final UserService userService;
     private final FavoriteMovieService favoriteMovieService;
     private final PaymentCardService paymentCardService;
+    private final AuthService authService;
 
     public UserController(
             UserService userService,
             FavoriteMovieService favoriteMovieService,
-            PaymentCardService paymentCardService) {
+            PaymentCardService paymentCardService,
+            AuthService authService) {
 
         this.userService = userService;
         this.favoriteMovieService = favoriteMovieService;
         this.paymentCardService = paymentCardService;
+        this.authService = authService;
     }
 
     /*
@@ -59,8 +71,16 @@ public class UserController {
      * GET /api/users/{userId}
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserProfile(
+    public ResponseEntity<?> getUserProfile(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         Optional<User> user = userService.getUserById(userId);
 
@@ -80,9 +100,17 @@ public class UserController {
      * PUT /api/users/{userId}
      */
     @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUserProfile(
+    public ResponseEntity<?> updateUserProfile(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @RequestBody UpdateProfileRequest request) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         Optional<User> updatedUser = userService.updateProfile(
                 userId,
@@ -113,8 +141,16 @@ public class UserController {
      * GET /api/users/{userId}/favorites
      */
     @GetMapping("/{userId}/favorites")
-    public ResponseEntity<List<FavoriteMovie>> getFavorites(
+    public ResponseEntity<?> getFavorites(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         if (userService.getUserById(userId).isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -131,9 +167,17 @@ public class UserController {
      * POST /api/users/{userId}/favorites/{movieId}
      */
     @PostMapping("/{userId}/favorites/{movieId}")
-    public ResponseEntity<FavoriteMovie> addFavorite(
+    public ResponseEntity<?> addFavorite(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @PathVariable Integer movieId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         Optional<FavoriteMovie> favorite = favoriteMovieService.addFavorite(userId, movieId);
 
@@ -150,9 +194,17 @@ public class UserController {
      * DELETE /api/users/{userId}/favorites/{movieId}
      */
     @DeleteMapping("/{userId}/favorites/{movieId}")
-    public ResponseEntity<Void> removeFavorite(
+    public ResponseEntity<?> removeFavorite(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @PathVariable Integer movieId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         boolean removed = favoriteMovieService.removeFavorite(userId, movieId);
 
@@ -175,8 +227,16 @@ public class UserController {
      * GET /api/users/{userId}/cards
      */
     @GetMapping("/{userId}/cards")
-    public ResponseEntity<List<PaymentCard>> getPaymentCards(
+    public ResponseEntity<?> getPaymentCards(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         if (userService.getUserById(userId).isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -194,10 +254,14 @@ public class UserController {
      */
     @PostMapping("/{userId}/cards")
     public ResponseEntity<?> addPaymentCard(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @RequestBody PaymentCardRequest request) {
 
         try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+
             Optional<PaymentCard> card = paymentCardService.addCard(
                     userId,
                     request.getCardholderName(),
@@ -213,6 +277,8 @@ public class UserController {
 
             return ResponseEntity.ok(card.get());
 
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
         } catch (IllegalArgumentException | IllegalStateException exception) {
 
             return ResponseEntity.badRequest().body(
@@ -222,11 +288,15 @@ public class UserController {
 
     @PutMapping("/{userId}/cards/{cardId}")
     public ResponseEntity<?> updatePaymentCard(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @PathVariable Integer cardId,
             @RequestBody PaymentCardRequest request) {
 
         try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+
             Optional<PaymentCard> card = paymentCardService.updateCard(
                     userId,
                     cardId,
@@ -243,6 +313,8 @@ public class UserController {
 
             return ResponseEntity.ok(card.get());
 
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
         } catch (IllegalArgumentException | IllegalStateException exception) {
 
             return ResponseEntity.badRequest().body(
@@ -256,9 +328,17 @@ public class UserController {
      * DELETE /api/users/{userId}/cards/{cardId}
      */
     @DeleteMapping("/{userId}/cards/{cardId}")
-    public ResponseEntity<Void> deletePaymentCard(
+    public ResponseEntity<?> deletePaymentCard(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @PathVariable Integer cardId) {
+
+        try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
+        }
 
         boolean deleted = paymentCardService.deleteCard(userId, cardId);
 
@@ -280,21 +360,27 @@ public class UserController {
      */
     @PostMapping("/{userId}/change-email")
     public ResponseEntity<?> requestEmailChange(
+            @RequestHeader("Authorization") String authorizationHeader,
             @PathVariable Integer userId,
             @RequestBody ChangeEmailRequest request) {
         try {
+            User caller = authService.requireUser(authorizationHeader);
+            authService.requireSelfOrAdmin(caller, userId);
+
             userService.requestEmailChange(userId, request.getNewEmail(), request.getCurrentPassword());
             return ResponseEntity.ok(Map.of("message", "Email change request sent successfully"));
         } catch (IllegalArgumentException exception) {
             return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
-        } catch (org.springframework.web.server.ResponseStatusException exception) {
-            return ResponseEntity.status(exception.getStatusCode()).body(
-                    Map.of("message",
-                            exception.getReason()));
+        } catch (ResponseStatusException exception) {
+            return errorResponse(exception);
         } catch (Exception exception) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     Map.of("message", "An unexpected error occured: " + exception.getMessage()));
         }
     }
 
+    private ResponseEntity<?> errorResponse(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode()).body(
+                Map.of("message", exception.getReason()));
+    }
 }

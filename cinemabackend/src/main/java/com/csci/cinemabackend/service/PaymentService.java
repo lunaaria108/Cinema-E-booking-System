@@ -5,6 +5,7 @@ import com.csci.cinemabackend.dto.PaymentResponse;
 import com.csci.cinemabackend.model.Booking;
 import com.csci.cinemabackend.model.Payment;
 import com.csci.cinemabackend.model.PaymentCard;
+import com.csci.cinemabackend.model.User;
 import com.csci.cinemabackend.repository.BookingRepository;
 import com.csci.cinemabackend.repository.PaymentCardRepository;
 import com.csci.cinemabackend.repository.PaymentRepository;
@@ -45,7 +46,8 @@ public class PaymentService {
 
     public PaymentResponse pay(
             Integer bookingId,
-            PaymentRequest request) {
+            PaymentRequest request,
+            User caller) {
 
         if (request == null) {
             throw new ResponseStatusException(
@@ -59,6 +61,8 @@ public class PaymentService {
                         HttpStatus.NOT_FOUND,
                         "Booking not found"
                 ));
+
+        requireOwnerOrAdmin(booking, caller);
 
         if (!"Pending".equals(booking.getStatus())) {
             throw new ResponseStatusException(
@@ -169,7 +173,8 @@ public class PaymentService {
     }
 
     public PaymentResponse getPaymentById(
-            Integer paymentId) {
+            Integer paymentId,
+            User caller) {
 
         Payment payment = paymentRepository
                 .findById(paymentId)
@@ -180,11 +185,14 @@ public class PaymentService {
                         )
                 );
 
+        requireOwnerOrAdmin(payment.getBooking(), caller);
+
         return new PaymentResponse(payment);
     }
 
     public PaymentResponse getPaymentByBookingId(
-            Integer bookingId) {
+            Integer bookingId,
+            User caller) {
 
         Payment payment = paymentRepository
                 .findByBookingBookingId(bookingId)
@@ -195,7 +203,26 @@ public class PaymentService {
                         )
                 );
 
+        requireOwnerOrAdmin(payment.getBooking(), caller);
+
         return new PaymentResponse(payment);
+    }
+
+    /**
+     * Throws 404 (not 403) on a mismatch so booking/payment ids can't be
+     * enumerated by a caller who isn't authorized to see them.
+     */
+    private void requireOwnerOrAdmin(Booking booking, User caller) {
+        if (Boolean.TRUE.equals(caller.getIsAdmin())) {
+            return;
+        }
+
+        if (!booking.getUser().getUserId().equals(caller.getUserId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Booking not found"
+            );
+        }
     }
 
     public PaymentResponse updatePaymentStatus(
