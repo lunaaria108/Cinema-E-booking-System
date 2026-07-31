@@ -40,13 +40,13 @@ public class BookingService {
 
     private static final Map<String, BigDecimal> TICKET_PRICES =
             Map.of(
-                    "Adult", new BigDecimal("12.50"),
-                    "Senior", new BigDecimal("9.50"),
-                    "Child", new BigDecimal("8.00")
+                "Adult", new BigDecimal("10.00"),
+                "Senior", new BigDecimal("7.00"),
+                "Child", new BigDecimal("5.00")
             );
 
-    private static final BigDecimal BOOKING_FEE =
-            new BigDecimal("1.50");
+  private static final BigDecimal BOOKING_FEE = 
+    BigDecimal.ZERO;
 
     private final BookingRepository bookingRepository;
     private final TicketRepository ticketRepository;
