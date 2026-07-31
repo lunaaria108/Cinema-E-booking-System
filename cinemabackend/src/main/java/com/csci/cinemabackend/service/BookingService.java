@@ -110,6 +110,7 @@ public class BookingService {
 
     @Transactional
     public BookingResponse confirmCheckout(
+            Integer userId,
             CheckoutConfirmRequest request) {
 
         if (request == null) {
@@ -118,11 +119,6 @@ public class BookingService {
                     "Checkout request is required"
             );
         }
-
-        Integer userId = requiredInteger(
-                request.getUserId(),
-                "User is required"
-        );
 
         Integer showtimeId = requiredInteger(
                 request.getShowtimeId(),
@@ -281,7 +277,7 @@ public class BookingService {
         }
     }
 
-    public BookingResponse getBooking(Integer bookingId) {
+    public BookingResponse getBooking(Integer bookingId, User caller) {
         Booking booking = bookingRepository
                 .findById(bookingId)
                 .orElseThrow(() ->
@@ -290,6 +286,15 @@ public class BookingService {
                                 "Booking not found"
                         )
                 );
+
+        if (!Boolean.TRUE.equals(caller.getIsAdmin())
+                && !booking.getUser().getUserId().equals(caller.getUserId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Booking not found"
+            );
+        }
 
         return new BookingResponse(booking);
     }

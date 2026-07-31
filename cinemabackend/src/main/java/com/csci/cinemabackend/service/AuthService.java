@@ -63,6 +63,44 @@ public class AuthService {
         }
 
         public boolean isAdmin(String token) {
+                return resolveSession(token).getUser().getIsAdmin();
+        }
+
+        public User requireUser(String authorizationHeader) {
+                if (authorizationHeader == null
+                                || !authorizationHeader.startsWith("Bearer ")) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Missing or invalid Authorization header");
+                }
+
+                String token = authorizationHeader
+                                .substring("Bearer ".length())
+                                .trim();
+
+                if (token.isEmpty()) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.UNAUTHORIZED,
+                                        "Missing session token");
+                }
+
+                return resolveSession(token).getUser();
+        }
+
+        public void requireSelfOrAdmin(User caller, Integer userId) {
+                if (caller.getIsAdmin()) {
+                        return;
+                }
+
+                if (!caller.getUserId().equals(userId)) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "You do not have access to this resource");
+                }
+        }
+
+        private UserSession resolveSession(String token) {
                 UserSession session = userSessionRepository
                                 .findByTokenAndRevokedFalse(token)
                                 .orElseThrow(() -> new ResponseStatusException(
@@ -74,7 +112,8 @@ public class AuthService {
                                         HttpStatus.UNAUTHORIZED,
                                         "Session expired");
                 }
-                return session.getUser().getIsAdmin();
+
+                return session;
         }
 
         public AuthResponse register(RegistrationRequest request) {
