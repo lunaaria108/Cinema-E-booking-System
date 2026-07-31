@@ -1291,18 +1291,6 @@ export default function UserProfile() {
                                                 <p className="text-2xl font-bold text-[#D4AF37]">
                                                     ${Number(order?.totalPrice || 0).toFixed(2)}
                                                 </p>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setAlertMessage(
-                                                            `Viewing details for order #${order.bookingId}.`
-                                                        )
-                                                    }
-                                                    className="mt-3 text-[#D4AF37] border border-[#D4AF37] px-4 py-2 rounded text-sm hover:bg-[#003D1A]"
-                                                >
-                                                    View Details
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
