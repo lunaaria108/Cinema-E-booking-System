@@ -13,6 +13,7 @@ export default function UserProfile() {
     const navigate = useNavigate();
 
     const [auth, setAuth] = useState(() => loadAuthState());
+    const [orders, setOrders] = useState([]);
 
     const [user, setUser] = useState({
         userName: "",
@@ -50,6 +51,34 @@ export default function UserProfile() {
     const [alertMessage, setAlertMessage] = useState("");
     const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
 
+    useEffect(() => {
+    if (!auth.userId) return;
+
+    const loadOrders = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/users/${auth.userId}/bookings`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Unable to load orders.");
+            }
+
+            const data = await response.json();
+            setOrders(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    loadOrders();
+}, [auth.userId, auth.token]);
+    
     useEffect(() => {
         if (!auth.userId) {
             setIsLoading(false);
@@ -1097,6 +1126,79 @@ export default function UserProfile() {
                                 : "+ Add New Card"}
                         </button>
                     </motion.div>
+                    <motion.div
+    className="bg-[#121212] p-6 rounded-xl border border-[#003D1A] mt-8"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+>
+    <h2 className="text-2xl text-[#D4AF37] mb-4">
+        Order History
+    </h2>
+
+    {orders.length === 0 ? (
+        <p className="text-gray-400">
+            No previous orders found.
+        </p>
+    ) : (
+        orders.map((order) => (
+            <div
+                key={order.bookingId}
+                className="bg-black border border-[#003D1A] rounded-lg p-4 mb-4"
+            >
+                <h3 className="text-xl text-[#D4AF37]">
+                    {order.movieTitle}
+                </h3>
+
+                <p>
+                    Booking #{order.bookingId}
+                </p>
+
+                <p>
+                    Date: {order.showDate}
+                </p>
+
+                <p>
+                    Time: {order.showTime}
+                </p>
+
+                <p>
+                    Status: {order.status}
+                </p>
+
+                <p className="font-bold">
+                    Total: $
+                    {Number(order.totalPrice).toFixed(2)}
+                </p>
+
+                <div className="mt-3">
+                    <p className="font-bold mb-2">
+                        Tickets
+                    </p>
+
+                    {order.tickets.map((ticket) => (
+                        <div
+                            key={ticket.ticketId}
+                            className="ml-3 text-sm border-l border-gray-700 pl-3 mb-2"
+                        >
+                            <p>
+                                Seat: {ticket.seatLabel}
+                            </p>
+
+                            <p>
+                                Type: {ticket.ticketType}
+                            </p>
+
+                            <p>
+                                Price: $
+                                {Number(ticket.price).toFixed(2)}
+                            </p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        ))
+    )}
+</motion.div>
                 </div>
             </div>
             {alertMessage && (
