@@ -14,6 +14,7 @@ export default function UserProfile() {
     const navigate = useNavigate();
 
     const [auth, setAuth] = useState(() => loadAuthState());
+    const [orders, setOrders] = useState([]);
 
     const [user, setUser] = useState({
         userName: "",
@@ -86,6 +87,34 @@ export default function UserProfile() {
         },
     ]);
 
+    useEffect(() => {
+    if (!auth.userId) return;
+
+    const loadOrders = async () => {
+        try {
+            const response = await fetch(
+                `http://localhost:8080/api/users/${auth.userId}/bookings`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Unable to load orders.");
+            }
+
+            const data = await response.json();
+            setOrders(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    loadOrders();
+}, [auth.userId, auth.token]);
+    
     useEffect(() => {
         if (!auth.userId) {
             setIsLoading(false);
